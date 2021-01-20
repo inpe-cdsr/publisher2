@@ -3,3 +3,4 @@ environment.env*
 
 __pycache__
 .vscode
+.trash

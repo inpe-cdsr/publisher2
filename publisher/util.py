@@ -21,13 +21,27 @@ def get_dn_item_from_asset(asset):
         'radio_processing': 'DN',
     }
 
+    item['properties'] = {
+        'datetime': asset['viewing']['center'][0:18],
+        'path': asset['image']['path'],
+        'row': asset['image']['row'],
+        'cloud_cover': ''
+    }
+
+    # create name (old scene_id) based on its properties (e.g. CBERS4A_MUX_070122_20200813)
+    item['properties']['name'] = (
+        f"{item['collection']['satellite']}_{item['collection']['instrument']}_"
+        f"{item['properties']['path']}{item['properties']['row']}_"
+        f"{item['properties']['datetime']}"
+    )
+
     return item
 
 
 def get_item_from_asset(asset):
     '''Get Item from asset'''
 
-    # if there is `DN` information in the dict
+    # if there is `DN` information in the asset
     if 'prdf' in asset:
         return get_dn_item_from_asset(asset['prdf'])
 

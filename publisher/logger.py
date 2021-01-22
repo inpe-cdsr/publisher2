@@ -15,7 +15,7 @@ def get_logger(name, level=INFO):
     # add formatter to ch
     ch.setFormatter(
         # create formatter
-        Formatter('%(asctime)s - %(name)s - %(levelname)s | %(message)s')
+        Formatter('%(asctime)s - %(name)s - %(levelname)-8s | %(message)s')
     )
 
     # add ch to logger

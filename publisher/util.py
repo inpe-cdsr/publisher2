@@ -1,5 +1,7 @@
 from xmltodict import parse as xmltodict_parse
 
+from publisher.common import fill_string_with_left_zeros
+
 
 def get_dict_from_xml_file(xml_path):
     # read the XML file, convert it to dict and return
@@ -22,9 +24,11 @@ def get_dn_item_from_asset(asset):
     }
 
     item['properties'] = {
-        'datetime': asset['viewing']['center'][0:18],
-        'path': asset['image']['path'],
-        'row': asset['image']['row'],
+        # get just the date and time of the string
+        'datetime': asset['viewing']['center'][0:19],
+        'path': fill_string_with_left_zeros(asset['image']['path']),
+        'row': fill_string_with_left_zeros(asset['image']['row']),
+        # CQ fills it
         'cloud_cover': ''
     }
 
@@ -32,7 +36,7 @@ def get_dn_item_from_asset(asset):
     item['properties']['name'] = (
         f"{item['collection']['satellite']}_{item['collection']['instrument']}_"
         f"{item['properties']['path']}{item['properties']['row']}_"
-        f"{item['properties']['datetime']}"
+        f"{item['properties']['datetime'].split('T')[0].replace('-', '')}"
     )
 
     return item

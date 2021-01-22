@@ -4,7 +4,7 @@ from publisher.common import fill_string_with_left_zeros
 
 
 def get_dict_from_xml_file(xml_path):
-    '''Read an XML fil, convert it to a dictionary and return it.'''
+    '''Read an XML file, convert it to a dictionary and return it.'''
 
     with open(xml_path, 'r') as data:
         return xmltodict_parse(data.read())
@@ -109,7 +109,7 @@ def get_dn_item_from_xml_as_dict(xml_as_dict, radio_processing='DN'):
     return item
 
 
-def get_item_from_xml_as_dict(xml_as_dict):
+def create_item_from_xml_as_dict(xml_as_dict):
     '''Get Item from an XML file as dictionary.'''
 
     # if there is `DN` information in the XML file

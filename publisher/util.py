@@ -77,6 +77,25 @@ def get_bbox_from_xml_as_dict(xml_as_dict):
     ]
 
 
+def get_geometry_from_xml_as_dict(xml_as_dict):
+    '''Get geometry information (i.e. footprint) from XML file as dictionary.'''
+
+    # Label: UL - upper left; UR - upper right; LR - bottom right; LL - bottom left
+
+    # create geometry object
+    # specification: https://tools.ietf.org/html/rfc7946#section-3.1.6
+    return {
+        'type': 'Polygon',
+        'coordinates': [[
+            [xml_as_dict['image']['imageData']['UL']['longitude'], xml_as_dict['image']['imageData']['UL']['latitude']],
+            [xml_as_dict['image']['imageData']['UR']['longitude'], xml_as_dict['image']['imageData']['UR']['latitude']],
+            [xml_as_dict['image']['imageData']['LR']['longitude'], xml_as_dict['image']['imageData']['LR']['latitude']],
+            [xml_as_dict['image']['imageData']['LL']['longitude'], xml_as_dict['image']['imageData']['LL']['latitude']],
+            [xml_as_dict['image']['imageData']['UL']['longitude'], xml_as_dict['image']['imageData']['UL']['latitude']]
+        ]]
+    }
+
+
 def get_dn_item_from_asset(asset, radio_processing='DN'):
     '''Get Item from an XML file as dict'''
 
@@ -85,19 +104,7 @@ def get_dn_item_from_asset(asset, radio_processing='DN'):
     item['collection'] = get_collection_from_xml_as_dict(asset, radio_processing)
     item['properties'] = get_properties_from_xml_as_dict(asset, item['collection'])
     item['bbox'] = get_bbox_from_xml_as_dict(asset)
-
-    # create geometry object
-    # specification: https://tools.ietf.org/html/rfc7946#section-3.1.6
-    item['geometry'] = {
-        'type': 'Polygon',
-        'coordinates': [[
-            [asset['image']['imageData']['UL']['longitude'], asset['image']['imageData']['UL']['latitude']],
-            [asset['image']['imageData']['UR']['longitude'], asset['image']['imageData']['UR']['latitude']],
-            [asset['image']['imageData']['LR']['longitude'], asset['image']['imageData']['LR']['latitude']],
-            [asset['image']['imageData']['LL']['longitude'], asset['image']['imageData']['LL']['latitude']],
-            [asset['image']['imageData']['UL']['longitude'], asset['image']['imageData']['UL']['latitude']]
-        ]]
-    }
+    item['geometry'] = get_geometry_from_xml_as_dict(asset)
 
     return item
 

@@ -18,7 +18,7 @@ def get_dn_item_from_asset(asset):
         'satellite': asset['satellite']['name'] + asset['satellite']['number'],
         'instrument': asset['satellite']['instrument']['#text'],
         # geometric processing: L2, L4, etc.
-        'geo_processing': 'L' + asset['image']['level'],
+        'geo_processing': asset['image']['level'],
         # radiometric processing: DN or SR
         'radio_processing': 'DN',
     }
@@ -26,7 +26,14 @@ def get_dn_item_from_asset(asset):
     # create collection name based on its properties (e.g. `CBERS4A_MUX_L2_DN`)
     item['collection']['name'] = (
         f"{item['collection']['satellite']}_{item['collection']['instrument']}_"
-        f"{item['collection']['geo_processing']}_{item['collection']['radio_processing']}"
+        f"L{item['collection']['geo_processing']}_{item['collection']['radio_processing']}"
+    )
+
+    # create collection description based on its properties (e.g. `CBERS4A MUX Level2 DN dataset`)
+    item['collection']['description'] = (
+        f"{item['collection']['satellite']} {item['collection']['instrument']} "
+        f"Level {item['collection']['geo_processing']} {item['collection']['radio_processing']} "
+        'dataset'
     )
 
     item['properties'] = {

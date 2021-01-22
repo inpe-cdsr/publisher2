@@ -15,7 +15,7 @@ def get_collection_from_xml_as_dict(xml_as_dict, radio_processing):
 
     collection = {
         'satellite': xml_as_dict['satellite']['name'] + xml_as_dict['satellite']['number'],
-        'instrument': xml_as_dict['satellite']['instrument']['#text'],
+        'sensor': xml_as_dict['satellite']['instrument']['#text'],
         # geometric processing: L2, L4, etc.
         'geo_processing': xml_as_dict['image']['level'],
         # radiometric processing: DN or SR
@@ -24,13 +24,13 @@ def get_collection_from_xml_as_dict(xml_as_dict, radio_processing):
 
     # create collection name based on its properties (e.g. `CBERS4A_MUX_L2_DN`)
     collection['name'] = (
-        f"{collection['satellite']}_{collection['instrument']}_"
+        f"{collection['satellite']}_{collection['sensor']}_"
         f"L{collection['geo_processing']}_{collection['radio_processing']}"
     )
 
     # create collection description based on its properties (e.g. `CBERS4A MUX Level2 DN dataset`)
     collection['description'] = (
-        f"{collection['satellite']} {collection['instrument']} "
+        f"{collection['satellite']} {collection['sensor']} "
         f"Level {collection['geo_processing']} {collection['radio_processing']} "
         'dataset'
     )
@@ -53,7 +53,7 @@ def get_properties_from_xml_as_dict(xml_as_dict, collection):
 
     # create item name based on its properties (e.g. `CBERS4A_MUX_070122_20200813`)
     properties['name'] = (
-        f"{collection['satellite']}_{collection['instrument']}_"
+        f"{collection['satellite']}_{collection['sensor']}_"
         f"{properties['path']}{properties['row']}_"
         f"{properties['datetime'].split('T')[0].replace('-', '')}"
     )

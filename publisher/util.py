@@ -9,7 +9,7 @@ def get_dict_from_xml_file(xml_path):
         return xmltodict_parse(data.read())
 
 
-def get_collection_from_xml(xml_as_dict, radio_processing):
+def get_collection_from_xml_as_dict(xml_as_dict, radio_processing):
     '''Get collection information from XML file as dict'''
 
     collection = {
@@ -37,36 +37,43 @@ def get_collection_from_xml(xml_as_dict, radio_processing):
     return collection
 
 
-def get_dn_item_from_asset(asset, radio_processing='DN'):
-    '''Get Item from an XML file as dict'''
-
-    item = {
-        'collection': get_collection_from_xml(asset, radio_processing)
-    }
+def get_properties_from_xml_as_dict(xml_as_dict, collection):
+    '''Get properties information from XML file as dict'''
 
     # get the item's properties
-    item['properties'] = {
+    properties = {
         # get just the date and time of the string
-        'datetime': asset['viewing']['center'][0:19],
-        'path': fill_string_with_left_zeros(asset['image']['path']),
-        'row': fill_string_with_left_zeros(asset['image']['row']),
+        'datetime': xml_as_dict['viewing']['center'][0:19],
+        'path': fill_string_with_left_zeros(xml_as_dict['image']['path']),
+        'row': fill_string_with_left_zeros(xml_as_dict['image']['row']),
         # CQ fills it
         'cloud_cover': ''
     }
 
     # create item name based on its properties (e.g. `CBERS4A_MUX_070122_20200813`)
-    item['properties']['name'] = (
-        f"{item['collection']['satellite']}_{item['collection']['instrument']}_"
-        f"{item['properties']['path']}{item['properties']['row']}_"
-        f"{item['properties']['datetime'].split('T')[0].replace('-', '')}"
+    properties['name'] = (
+        f"{collection['satellite']}_{collection['instrument']}_"
+        f"{properties['path']}{properties['row']}_"
+        f"{properties['datetime'].split('T')[0].replace('-', '')}"
     )
+
+    return properties
+
+
+def get_dn_item_from_asset(asset, radio_processing='DN'):
+    '''Get Item from an XML file as dict'''
+
+    item = {}
+
+    item['collection'] = get_collection_from_xml_as_dict(asset, radio_processing)
+    item['properties'] = get_properties_from_xml_as_dict(asset, item['collection'])
 
     # label: UL - upper left; UR - upper right; LR - bottom right; LL - bottom left
 
     # create bbox object
     # specification: https://tools.ietf.org/html/rfc7946#section-5
     # `all axes of the most southwesterly point followed by all axes of the more northeasterly point`
-    item['properties']['bbox'] = [
+    item['bbox'] = [
         asset['image']['imageData']['LL']['longitude'], # bottom left longitude
         asset['image']['imageData']['LL']['latitude'], # bottom left latitude
         asset['image']['imageData']['UR']['longitude'], # upper right longitude
@@ -75,7 +82,7 @@ def get_dn_item_from_asset(asset, radio_processing='DN'):
 
     # create geometry object
     # specification: https://tools.ietf.org/html/rfc7946#section-3.1.6
-    item['properties']['geometry'] = {
+    item['geometry'] = {
         'type': 'Polygon',
         'coordinates': [[
             [asset['image']['imageData']['UL']['longitude'], asset['image']['imageData']['UL']['latitude']],

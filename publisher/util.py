@@ -78,7 +78,7 @@ def get_bbox_from_xml_as_dict(xml_as_dict):
 
 
 def get_geometry_from_xml_as_dict(xml_as_dict):
-    '''Get geometry information (i.e. footprint) from XML file as dictionary.'''
+    '''Get geometry information (i.e. footprint) from an XML file as dictionary.'''
 
     # Label: UL - upper left; UR - upper right; LR - bottom right; LL - bottom left
 
@@ -96,24 +96,24 @@ def get_geometry_from_xml_as_dict(xml_as_dict):
     }
 
 
-def get_dn_item_from_asset(asset, radio_processing='DN'):
-    '''Get Item from an XML file as dict'''
+def get_dn_item_from_xml_as_dict(xml_as_dict, radio_processing='DN'):
+    '''Get Item from an XML file as dictionary.'''
 
     item = {}
 
-    item['collection'] = get_collection_from_xml_as_dict(asset, radio_processing)
-    item['properties'] = get_properties_from_xml_as_dict(asset, item['collection'])
-    item['bbox'] = get_bbox_from_xml_as_dict(asset)
-    item['geometry'] = get_geometry_from_xml_as_dict(asset)
+    item['collection'] = get_collection_from_xml_as_dict(xml_as_dict, radio_processing)
+    item['properties'] = get_properties_from_xml_as_dict(xml_as_dict, item['collection'])
+    item['bbox'] = get_bbox_from_xml_as_dict(xml_as_dict)
+    item['geometry'] = get_geometry_from_xml_as_dict(xml_as_dict)
 
     return item
 
 
-def get_item_from_asset(asset):
-    '''Get Item from asset'''
+def get_item_from_xml_as_dict(xml_as_dict):
+    '''Get Item from an XML file as dictionary.'''
 
-    # if there is `DN` information in the asset
-    if 'prdf' in asset:
-        return get_dn_item_from_asset(asset['prdf'], radio_processing='DN')
+    # if there is `DN` information in the XML file
+    if 'prdf' in xml_as_dict:
+        return get_dn_item_from_xml_as_dict(xml_as_dict['prdf'], radio_processing='DN')
 
     return None

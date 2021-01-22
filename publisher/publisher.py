@@ -3,7 +3,7 @@ from os import walk, sep
 from os.path import join as os_path_join
 
 from publisher.logger import get_logger
-from publisher.util import get_dict_from_xml_file, get_item_from_asset
+from publisher.util import get_dict_from_xml_file, get_item_from_xml_as_dict
 
 
 logger = get_logger(__name__)
@@ -32,6 +32,6 @@ class Publisher:
 
                 # logger.info(f'\n dict_asset: {json_dumps(dict_asset)}')
 
-                item = get_item_from_asset(dict_asset)
+                item = get_item_from_xml_as_dict(dict_asset)
 
                 logger.info(f'item: {item}\n\n')

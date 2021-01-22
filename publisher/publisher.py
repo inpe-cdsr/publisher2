@@ -16,6 +16,7 @@ class Publisher:
         self.BASE_DIR = BASE_DIR
         self.items = []
         self.SATELLITES = None
+        self.errors = []
         self._read_metadata_file()
 
     def _read_metadata_file(self):
@@ -64,32 +65,47 @@ class Publisher:
         logger.info('Publisher.main()')
 
         for dirpath, dirs, files in walk(self.BASE_DIR):
-            print('-' * 130)
-
-            logger.info(f'dirpath: {dirpath}')
-
-            # get just the valid assets
-            valid_assets = list(filter(
+            # get just the valid files
+            valid_files = list(filter(
                 lambda f: not f.endswith('.aux.xml') and \
                             (f.endswith('.tif') or f.endswith('.xml') or f.endswith('.png')),
                 files
             ))
 
-            # if there are not valid assets, continue...
-            if not valid_assets:
-                logger.warning(f'There are NOT valid assets in this folder...')
+            # if there are not valid files, continue...
+            if not valid_files:
+                self.errors.append(
+                    {
+                        'type': 'warning',
+                        'message': 'There are NOT valid files in this folder.',
+                        'metadata': {
+                            'folder': dirpath
+                        }
+                    }
+                )
                 continue
 
-            logger.info(f'valid_assets: {valid_assets}')
-
-            # get just valid XML files
-            xml_files = sorted(filter(lambda f: f.endswith('.xml'), valid_assets))
+            # get just the XML files
+            xml_files = sorted(filter(lambda f: f.endswith('.xml'), valid_files))
 
             # if there are valid XML files...
             if not xml_files:
-                logger.warning(f'There are NOT valid XML assets in this folder...')
+                self.errors.append(
+                    {
+                        'type': 'warning',
+                        'message': 'There are NOT XML files in this folder.',
+                        'metadata': {
+                            'folder': dirpath
+                        }
+                    }
+                )
                 continue
 
+            print('-' * 130)
+
+            logger.info(f'dirpath: {dirpath}')
+
+            logger.info(f'valid_files: {valid_files}')
             logger.info(f'xml_files: {xml_files}')
 
             # get the first XML asset just to get information, then get the XML asset path
@@ -114,3 +130,5 @@ class Publisher:
         print('-' * 130)
 
         logger.info(f'self.items: {self.items}\n')
+
+        logger.info(f'self.errors: {self.errors}\n')

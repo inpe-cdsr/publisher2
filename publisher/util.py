@@ -9,32 +9,40 @@ def get_dict_from_xml_file(xml_path):
         return xmltodict_parse(data.read())
 
 
-def get_dn_item_from_asset(asset):
-    '''Get DN Item from asset'''
+def get_collection_from_xml(xml_as_dict, radio_processing):
+    '''Get collection information from XML file as dict'''
 
-    item = {}
-
-    item['collection'] = {
-        'satellite': asset['satellite']['name'] + asset['satellite']['number'],
-        'instrument': asset['satellite']['instrument']['#text'],
+    collection = {
+        'satellite': xml_as_dict['satellite']['name'] + xml_as_dict['satellite']['number'],
+        'instrument': xml_as_dict['satellite']['instrument']['#text'],
         # geometric processing: L2, L4, etc.
-        'geo_processing': asset['image']['level'],
+        'geo_processing': xml_as_dict['image']['level'],
         # radiometric processing: DN or SR
-        'radio_processing': 'DN',
+        'radio_processing': radio_processing,
     }
 
     # create collection name based on its properties (e.g. `CBERS4A_MUX_L2_DN`)
-    item['collection']['name'] = (
-        f"{item['collection']['satellite']}_{item['collection']['instrument']}_"
-        f"L{item['collection']['geo_processing']}_{item['collection']['radio_processing']}"
+    collection['name'] = (
+        f"{collection['satellite']}_{collection['instrument']}_"
+        f"L{collection['geo_processing']}_{collection['radio_processing']}"
     )
 
     # create collection description based on its properties (e.g. `CBERS4A MUX Level2 DN dataset`)
-    item['collection']['description'] = (
-        f"{item['collection']['satellite']} {item['collection']['instrument']} "
-        f"Level {item['collection']['geo_processing']} {item['collection']['radio_processing']} "
+    collection['description'] = (
+        f"{collection['satellite']} {collection['instrument']} "
+        f"Level {collection['geo_processing']} {collection['radio_processing']} "
         'dataset'
     )
+
+    return collection
+
+
+def get_dn_item_from_asset(asset, radio_processing='DN'):
+    '''Get Item from an XML file as dict'''
+
+    item = {
+        'collection': get_collection_from_xml(asset, radio_processing)
+    }
 
     # get the item's properties
     item['properties'] = {
@@ -86,6 +94,6 @@ def get_item_from_asset(asset):
 
     # if there is `DN` information in the asset
     if 'prdf' in asset:
-        return get_dn_item_from_asset(asset['prdf'])
+        return get_dn_item_from_asset(asset['prdf'], radio_processing='DN')
 
     return None

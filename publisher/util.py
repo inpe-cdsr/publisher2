@@ -23,6 +23,12 @@ def get_dn_item_from_asset(asset):
         'radio_processing': 'DN',
     }
 
+    # create collection name based on its properties (e.g. `CBERS4A_MUX_L2_DN`)
+    item['collection']['name'] = (
+        f"{item['collection']['satellite']}_{item['collection']['instrument']}_"
+        f"{item['collection']['geo_processing']}_{item['collection']['radio_processing']}"
+    )
+
     item['properties'] = {
         # get just the date and time of the string
         'datetime': asset['viewing']['center'][0:19],
@@ -32,7 +38,7 @@ def get_dn_item_from_asset(asset):
         'cloud_cover': ''
     }
 
-    # create name (old scene_id) based on its properties (e.g. CBERS4A_MUX_070122_20200813)
+    # create item name based on its properties (e.g. `CBERS4A_MUX_070122_20200813`)
     item['properties']['name'] = (
         f"{item['collection']['satellite']}_{item['collection']['instrument']}_"
         f"{item['properties']['path']}{item['properties']['row']}_"

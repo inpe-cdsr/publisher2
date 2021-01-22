@@ -4,13 +4,14 @@ from publisher.common import fill_string_with_left_zeros
 
 
 def get_dict_from_xml_file(xml_path):
-    # read the XML file, convert it to dict and return
+    '''Read an XML fil, convert it to a dictionary and return it.'''
+
     with open(xml_path, 'r') as data:
         return xmltodict_parse(data.read())
 
 
 def get_collection_from_xml_as_dict(xml_as_dict, radio_processing):
-    '''Get collection information from XML file as dict'''
+    '''Get collection information from XML file as dictionary.'''
 
     collection = {
         'satellite': xml_as_dict['satellite']['name'] + xml_as_dict['satellite']['number'],
@@ -38,7 +39,7 @@ def get_collection_from_xml_as_dict(xml_as_dict, radio_processing):
 
 
 def get_properties_from_xml_as_dict(xml_as_dict, collection):
-    '''Get properties information from XML file as dict'''
+    '''Get properties information from XML file as dictionary.'''
 
     # get the item's properties
     properties = {
@@ -60,6 +61,22 @@ def get_properties_from_xml_as_dict(xml_as_dict, collection):
     return properties
 
 
+def get_bbox_from_xml_as_dict(xml_as_dict):
+    '''Get bounding box information from XML file as dictionary.'''
+
+    # Label: UL - upper left; UR - upper right; LR - bottom right; LL - bottom left
+
+    # create bbox object
+    # specification: https://tools.ietf.org/html/rfc7946#section-5
+    # `all axes of the most southwesterly point followed by all axes of the more northeasterly point`
+    return [
+        xml_as_dict['image']['imageData']['LL']['longitude'], # bottom left longitude
+        xml_as_dict['image']['imageData']['LL']['latitude'], # bottom left latitude
+        xml_as_dict['image']['imageData']['UR']['longitude'], # upper right longitude
+        xml_as_dict['image']['imageData']['UR']['latitude'], # upper right latitude
+    ]
+
+
 def get_dn_item_from_asset(asset, radio_processing='DN'):
     '''Get Item from an XML file as dict'''
 
@@ -67,18 +84,7 @@ def get_dn_item_from_asset(asset, radio_processing='DN'):
 
     item['collection'] = get_collection_from_xml_as_dict(asset, radio_processing)
     item['properties'] = get_properties_from_xml_as_dict(asset, item['collection'])
-
-    # label: UL - upper left; UR - upper right; LR - bottom right; LL - bottom left
-
-    # create bbox object
-    # specification: https://tools.ietf.org/html/rfc7946#section-5
-    # `all axes of the most southwesterly point followed by all axes of the more northeasterly point`
-    item['bbox'] = [
-        asset['image']['imageData']['LL']['longitude'], # bottom left longitude
-        asset['image']['imageData']['LL']['latitude'], # bottom left latitude
-        asset['image']['imageData']['UR']['longitude'], # upper right longitude
-        asset['image']['imageData']['UR']['latitude'], # upper right latitude
-    ]
+    item['bbox'] = get_bbox_from_xml_as_dict(asset)
 
     # create geometry object
     # specification: https://tools.ietf.org/html/rfc7946#section-3.1.6

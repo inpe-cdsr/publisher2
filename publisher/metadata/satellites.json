@@ -13,19 +13,19 @@
 					],
 					"assets": {
 						"DN": {
-							"blue":  "BAND5.xml",
-							"green": "BAND6.xml",
-							"red":   "BAND7.xml",
-							"nir":   "BAND8.xml"
+							"blue":  "BAND5.tif",
+							"green": "BAND6.tif",
+							"red":   "BAND7.tif",
+							"nir":   "BAND8.tif"
 						},
 						"SR": {
-							"blue":    "BAND5_GRID_SURFACE.xml",
-							"green":   "BAND6_GRID_SURFACE.xml",
-							"red":     "BAND7_GRID_SURFACE.xml",
-							"nir":     "BAND8_GRID_SURFACE.xml",
-							"quality": "CMASK_GRID_SURFACE.xml",
-							"evi":     "EVI.xml",
-							"ndvi":    "NDVI.xml"
+							"blue":    "BAND5_GRID_SURFACE.tif",
+							"green":   "BAND6_GRID_SURFACE.tif",
+							"red":     "BAND7_GRID_SURFACE.tif",
+							"nir":     "BAND8_GRID_SURFACE.tif",
+							"quality": "CMASK_GRID_SURFACE.tif",
+							"evi":     "EVI.tif",
+							"ndvi":    "NDVI.tif"
 						}
 					}
 				},
@@ -39,19 +39,19 @@
 					],
 					"assets": {
 						"DN": {
-							"blue":  "BAND13.xml",
-							"green": "BAND14.xml",
-							"red":   "BAND15.xml",
-							"nir":   "BAND16.xml"
+							"blue":  "BAND13.tif",
+							"green": "BAND14.tif",
+							"red":   "BAND15.tif",
+							"nir":   "BAND16.tif"
 						},
 						"SR": {
-							"blue":    "BAND13_GRID_SURFACE.xml",
-							"green":   "BAND14_GRID_SURFACE.xml",
-							"red":     "BAND15_GRID_SURFACE.xml",
-							"nir":     "BAND16_GRID_SURFACE.xml",
-							"quality": "CMASK_GRID_SURFACE.xml",
-							"evi":     "EVI.xml",
-							"ndvi":    "NDVI.xml"
+							"blue":    "BAND13_GRID_SURFACE.tif",
+							"green":   "BAND14_GRID_SURFACE.tif",
+							"red":     "BAND15_GRID_SURFACE.tif",
+							"nir":     "BAND16_GRID_SURFACE.tif",
+							"quality": "CMASK_GRID_SURFACE.tif",
+							"evi":     "EVI.tif",
+							"ndvi":    "NDVI.tif"
 						}
 					}
 				},
@@ -65,11 +65,11 @@
 					],
 					"assets": {
 						"DN": {
-							"pan": "BAND0.xml",
-							"blue":  "BAND1.xml",
-							"green": "BAND2.xml",
-							"red":   "BAND3.xml",
-							"nir":   "BAND4.xml"
+							"pan": "BAND0.tif",
+							"blue":  "BAND1.tif",
+							"green": "BAND2.tif",
+							"red":   "BAND3.tif",
+							"nir":   "BAND4.tif"
 						},
 						"SR": null
 					}

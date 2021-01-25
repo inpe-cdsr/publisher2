@@ -1,4 +1,6 @@
+from glob import glob
 from os import walk
+from os.path import join
 
 from xmltodict import parse as xmltodict_parse
 
@@ -15,6 +17,54 @@ def get_dict_from_xml_file(xml_path):
 ##################################################
 # Item
 ##################################################
+
+def create_assets_from_metadata(assets_matadata, dir_path):
+    '''Create assets object based on assets metadata.'''
+
+    assets = {}
+
+    # create a shortened path starting on `/TIFF`
+    index = dir_path.find('/TIFF')
+    shortened_dir_path = dir_path[index:]
+
+    for band, band_template in assets_matadata.items():
+        # search for all TIFF files based on a template with `band_template`
+        # for example: search all TIFF files that matched with '/folder/*BAND6.tif'
+        tiff_files = glob(f'{dir_path}/*{band_template}')
+
+        if tiff_files:
+            band_name = band
+
+            # print('\n\n\n shortened_dir_path: ', shortened_dir_path)
+            # print('\n tiff_files[0]: ', tiff_files[0])
+            # print('\n join(shortened_dir_path, tiff_files[0]): ', join(shortened_dir_path, tiff_files[0]))
+
+            # add TIFF file as an asset
+            assets[band_name] = {
+                'href': join(shortened_dir_path, tiff_files[0]),
+                'type': 'image/tiff; application=geotiff',
+                'common_name': band,
+                'roles': ['data']
+            }
+
+            # add XML file as an asset
+            assets[band_name + '_xml'] = {
+                'href': join(shortened_dir_path, tiff_files[0].replace('.tif', '.xml')),
+                'type': 'application/xml',
+                'roles': ['metadata']
+            }
+
+    # search for all files that end with `.png`
+    png_files = glob(f'{dir_path}/*.png')
+
+    if png_files:
+        assets['thumbnail'] = {
+            'href': join(shortened_dir_path, png_files[0]),
+            'type': 'image/png',
+            'roles': ['thumbnail']
+        }
+
+    return assets
 
 def get_collection_from_xml_as_dict(xml_as_dict, radio_processing):
     '''Get collection information from XML file as dictionary.'''

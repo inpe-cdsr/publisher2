@@ -2,7 +2,8 @@ from json import loads
 from os.path import join as os_path_join, dirname, abspath
 
 from publisher.logger import get_logger
-from publisher.util import create_item_from_xml_as_dict, get_dict_from_xml_file, PublisherWalk
+from publisher.util import create_assets_from_metadata, create_item_from_xml_as_dict, \
+                           get_dict_from_xml_file, PublisherWalk
 
 
 # create logger object
@@ -84,17 +85,14 @@ class Publisher:
             logger.info(f'item: {item}\n')
 
             assets_matadata = self.__get_assets_metadata(**item['collection'])
-
             logger.info(f'assets_matadata: {assets_matadata}\n')
 
-            for k, v in assets_matadata.items():
-                logger.info(f'{k}: {v}')
-
-            # TODO: compare assets_matadata with xml_files and build assets property
+            item['assets'] = create_assets_from_metadata(assets_matadata, dir_path)
+            logger.info(f'item[assets]: {item["assets"]}\n')
 
             self.items.append(item)
 
-        print('-' * 130, '\n')
+        print(f'\n{ "-" * 130 }\n')
 
-        logger.info(f'self.items: {self.items}\n')
+        # logger.info(f'self.items: {self.items}\n')
         logger.info(f'p_walk.errors: {p_walk.errors}\n')

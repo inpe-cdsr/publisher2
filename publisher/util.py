@@ -33,7 +33,8 @@ def create_assets_from_metadata(assets_matadata, dir_path):
         tiff_files = glob(f'{dir_path}/*{band_template}')
 
         if tiff_files:
-            band_name = band
+            # get just the band name from the template (e.g. `BAND6`)
+            band_name = band_template.replace('.tif', '')
 
             # add TIFF file as an asset
             assets[band_name] = {

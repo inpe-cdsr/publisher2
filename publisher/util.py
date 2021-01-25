@@ -1,3 +1,5 @@
+from os import walk
+
 from xmltodict import parse as xmltodict_parse
 
 from publisher.common import fill_string_with_left_zeros
@@ -9,6 +11,10 @@ def get_dict_from_xml_file(xml_path):
     with open(xml_path, 'r') as data:
         return xmltodict_parse(data.read())
 
+
+##################################################
+# Item
+##################################################
 
 def get_collection_from_xml_as_dict(xml_as_dict, radio_processing):
     '''Get collection information from XML file as dictionary.'''
@@ -117,3 +123,87 @@ def create_item_from_xml_as_dict(xml_as_dict):
         return get_dn_item_from_xml_as_dict(xml_as_dict['prdf'], radio_processing='DN')
 
     return None
+
+
+##################################################
+# Generator
+##################################################
+
+class PublisherWalk:
+    '''This class is a Generator that encapsulates `os.walk()` generator to return just valid directories.'''
+
+    def __init__(self, BASE_DIR):
+        self.BASE_DIR = BASE_DIR
+        self.errors = []
+
+        # create an iterator from generator method
+        self.__generator_iterator = self.__generator()
+
+    def __get_valid_files(self, files, dir_path):
+        '''Return just valid files (i.e. files that end with `.tif`, `.xml` or `.png`).'''
+
+        # get just the valid files
+        valid_files = sorted(filter(
+            lambda f: not f.endswith('.aux.xml') and \
+                        (f.endswith('.tif') or f.endswith('.xml') or f.endswith('.png')),
+            files
+        ))
+
+        # if there are not valid files, continue...
+        if not valid_files:
+            self.errors.append(
+                {
+                    'type': 'warning',
+                    'message': 'There are NOT valid files in this folder.',
+                    'metadata': {
+                        'folder': dir_path
+                    }
+                }
+            )
+            return None
+
+        return valid_files
+
+    def __get_xml_files(self, files, dir_path):
+        '''Return just XML files.'''
+
+        # get just the XML files
+        xml_files = list(filter(lambda f: f.endswith('.xml'), files))
+
+        # if there are valid XML files...
+        if not xml_files:
+            self.errors.append(
+                {
+                    'type': 'warning',
+                    'message': 'There are NOT XML files in this folder.',
+                    'metadata': {
+                        'folder': dir_path
+                    }
+                }
+            )
+            return None
+
+        return xml_files
+
+    def __generator(self):
+        '''Generator that returns just directories with valid files.'''
+
+        for dir_path, dirs, files in walk(self.BASE_DIR):
+
+            valid_files = self.__get_valid_files(files, dir_path)
+            if not valid_files:
+                continue
+
+            xml_files = self.__get_xml_files(valid_files, dir_path)
+            if not xml_files:
+                continue
+
+            yield dir_path, dirs, valid_files, xml_files
+
+    def __iter__(self):
+        # this method makes the class to be an iterable
+        return self
+
+    def __next__(self):
+        # this method makes the class to be a generator
+        return next(self.__generator_iterator)

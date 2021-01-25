@@ -32,10 +32,6 @@ class Publisher:
     def _get_assets_metadata(self, satellite=None, sensor=None, radio_processing=None, **kwargs):
         '''Get assets metadata based on the parameters.'''
 
-        logger.info('Publisher._get_assets_metadata()')
-
-        logger.info(f'satellite name: {satellite} - sensor name: {sensor} - radio_processing: {radio_processing}\n')
-
         # get the satellite information
         satellite = list(filter(lambda s: s['name'] == satellite, self.SATELLITES['satellites']))
 
@@ -63,7 +59,7 @@ class Publisher:
         '''Return just valid files (i.e. files that end with `.tif`, `.xml` or `.png`).'''
 
         # get just the valid files
-        valid_files = list(filter(
+        valid_files = sorted(filter(
             lambda f: not f.endswith('.aux.xml') and \
                         (f.endswith('.tif') or f.endswith('.xml') or f.endswith('.png')),
             files
@@ -88,7 +84,7 @@ class Publisher:
         '''Return just XML files.'''
 
         # get just the XML files
-        xml_files = sorted(filter(lambda f: f.endswith('.xml'), files))
+        xml_files = list(filter(lambda f: f.endswith('.xml'), files))
 
         # if there are valid XML files...
         if not xml_files:
@@ -120,7 +116,7 @@ class Publisher:
             if not xml_files:
                 continue
 
-            print('-' * 130)
+            print('-' * 130, '\n')
 
             logger.info(f'dir_path: {dir_path}')
 
@@ -144,9 +140,14 @@ class Publisher:
 
             logger.info(f'assets_matadata: {assets_matadata}\n')
 
+            for k, v in assets_matadata.items():
+                logger.info(f'{k}: {v}')
+
+            # TODO: compare assets_matadata with xml_files and build assets property
+
             self.items.append(item)
 
-        print('-' * 130)
+        print('-' * 130, '\n')
 
         logger.info(f'self.items: {self.items}\n')
 

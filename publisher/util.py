@@ -24,8 +24,8 @@ def create_assets_from_metadata(assets_matadata, dir_path):
     assets = {}
 
     # create a shortened path starting on `/TIFF`
-    index = dir_path.find('/TIFF')
-    shortened_dir_path = dir_path[index:]
+    # index = dir_path.find('/TIFF')
+    # shortened_dir_path = dir_path[index:]
 
     for band, band_template in assets_matadata.items():
         # search for all TIFF files based on a template with `band_template`
@@ -35,13 +35,10 @@ def create_assets_from_metadata(assets_matadata, dir_path):
         if tiff_files:
             band_name = band
 
-            # print('\n\n\n shortened_dir_path: ', shortened_dir_path)
-            # print('\n tiff_files[0]: ', tiff_files[0])
-            # print('\n join(shortened_dir_path, tiff_files[0]): ', join(shortened_dir_path, tiff_files[0]))
-
             # add TIFF file as an asset
             assets[band_name] = {
-                'href': join(shortened_dir_path, tiff_files[0]),
+                # 'href': join(shortened_dir_path, tiff_files[0]),
+                'href': tiff_files[0],
                 'type': 'image/tiff; application=geotiff',
                 'common_name': band,
                 'roles': ['data']
@@ -49,7 +46,8 @@ def create_assets_from_metadata(assets_matadata, dir_path):
 
             # add XML file as an asset
             assets[band_name + '_xml'] = {
-                'href': join(shortened_dir_path, tiff_files[0].replace('.tif', '.xml')),
+                # 'href': join(shortened_dir_path, tiff_files[0].replace('.tif', '.xml')),
+                'href': tiff_files[0].replace('.tif', '.xml'),
                 'type': 'application/xml',
                 'roles': ['metadata']
             }
@@ -59,7 +57,8 @@ def create_assets_from_metadata(assets_matadata, dir_path):
 
     if png_files:
         assets['thumbnail'] = {
-            'href': join(shortened_dir_path, png_files[0]),
+            # 'href': join(shortened_dir_path, png_files[0]),
+            'href': png_files[0],
             'type': 'image/png',
             'roles': ['thumbnail']
         }

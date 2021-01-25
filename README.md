@@ -33,3 +33,19 @@ Run the script:
 ```
 $ python main.py
 ```
+
+
+## Docker
+
+Build the Docker image (development or production):
+
+```
+$ docker build -t inpe-cdsr-publisher2 -f Dockerfile . --no-cache
+$ docker build -t registry.dpi.inpe.br/cdsr/publisher2:0.0.1 -f Dockerfile . --no-cache
+```
+
+If you have credentials, then push the image to your registry. For example:
+
+```
+$ docker push registry.dpi.inpe.br/cdsr/publisher2:0.0.1
+```

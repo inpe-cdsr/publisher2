@@ -63,12 +63,10 @@ class Publisher:
         p_walk = PublisherWalk(self.BASE_DIR)
 
         # for dir_path, dirs, files in walk(self.BASE_DIR):
-        for dir_path, dirs, valid_files, xml_files in p_walk:
+        for dir_path, dirs, xml_files in p_walk:
             print(f'\n{ "-" * 130 }\n')
 
             logger.info(f'dir_path: {dir_path}')
-
-            logger.info(f'valid_files: {valid_files}')
             logger.info(f'xml_files: {xml_files}')
 
             # get the first XML asset just to get information, then get the XML asset path

@@ -180,7 +180,8 @@ def create_item_from_xml_as_dict(xml_as_dict):
 ##################################################
 
 class PublisherWalk:
-    '''This class is a Generator that encapsulates `os.walk()` generator to return just valid directories.'''
+    '''This class is a Generator that encapsulates `os.walk()` generator to return just valid directories.
+    A valid directory is a folder that contains XML files.'''
 
     def __init__(self, BASE_DIR):
         self.BASE_DIR = BASE_DIR
@@ -189,38 +190,13 @@ class PublisherWalk:
         # create an iterator from generator method
         self.__generator_iterator = self.__generator()
 
-    def __get_valid_files(self, files, dir_path):
-        '''Return just valid files (i.e. files that end with `.tif`, `.xml` or `.png`).'''
-
-        # get just the valid files
-        valid_files = sorted(filter(
-            lambda f: not f.endswith('.aux.xml') and \
-                        (f.endswith('.tif') or f.endswith('.xml') or f.endswith('.png')),
-            files
-        ))
-
-        # if there are not valid files, continue...
-        if not valid_files:
-            self.errors.append(
-                {
-                    'type': 'warning',
-                    'message': 'There are NOT valid files in this folder.',
-                    'metadata': {
-                        'folder': dir_path
-                    }
-                }
-            )
-            return None
-
-        return valid_files
-
     def __get_xml_files(self, files, dir_path):
         '''Return just XML files.'''
 
         # get just the XML files
         xml_files = list(filter(lambda f: f.endswith('.xml'), files))
 
-        # if there are valid XML files...
+        # if there are NOT valid XML files, then I save the error
         if not xml_files:
             self.errors.append(
                 {
@@ -239,16 +215,17 @@ class PublisherWalk:
         '''Generator that returns just directories with valid files.'''
 
         for dir_path, dirs, files in walk(self.BASE_DIR):
-
-            valid_files = self.__get_valid_files(files, dir_path)
-            if not valid_files:
+            # folders that end with '_BC_UTM_WGS84' suffix are folders that should have files.
+            # other folders I can ignore, because I don't expect to have any files in them.
+            if not dir_path.endswith('_BC_UTM_WGS84'):
                 continue
 
-            xml_files = self.__get_xml_files(valid_files, dir_path)
+            xml_files = self.__get_xml_files(files, dir_path)
             if not xml_files:
                 continue
 
-            yield dir_path, dirs, valid_files, xml_files
+            # yield just valid directories
+            yield dir_path, dirs, xml_files
 
     def __iter__(self):
         # this method makes the class to be an iterable

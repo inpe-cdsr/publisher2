@@ -132,8 +132,6 @@ def get_properties_from_xml_as_dict(xml_as_dict, collection):
         # 'cloud_cover': '',
         'satellite': collection['satellite'],
         'sensor': collection['sensor'],
-        # TODO: get sync_loss
-        # 'sync_loss': item['sync_loss'],
         # 'deleted': item['deleted']
     }
 
@@ -143,6 +141,23 @@ def get_properties_from_xml_as_dict(xml_as_dict, collection):
         f"{properties['path']}{properties['row']}_"
         f"{properties['datetime'].split('T')[0].replace('-', '')}"
     )
+
+    # if there is sync loss in the XML file, then I get it and add it in properties
+    if 'syncLoss' in xml_as_dict['image']:
+        sync_loss_bands = xml_as_dict['image']['syncLoss']['band']
+        # get the max value to sync loss
+        properties['sync_loss'] = max([
+            float(sync_loss_band['#text']) for sync_loss_band in sync_loss_bands
+        ])
+
+    # if there is sun position in the XML file, then I get it and add it in properties
+    if 'sunPosition' in xml_as_dict['image']:
+        properties['sun_position'] = dict(xml_as_dict['image']['sunPosition'])
+        # rename key from 'sunAzimuth' to 'sun_azimuth'
+        properties['sun_position']['sun_azimuth'] = properties['sun_position'].pop('sunAzimuth')
+        # convert values to float
+        for key in properties['sun_position']:
+            properties['sun_position'][key] = float(properties['sun_position'][key])
 
     return properties
 

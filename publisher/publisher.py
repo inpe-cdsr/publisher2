@@ -1,13 +1,17 @@
 from json import loads
 from os.path import join as os_path_join, dirname, abspath
 
+from pandas import read_csv
+
+from publisher.environment import FILES_PATH, IS_TO_GET_DATA_FROM_DB, LOGGING_LEVEL
 from publisher.logger import get_logger
+from publisher.model import PostgreSQLConnection
 from publisher.util import create_assets_from_metadata, create_insert_clause, \
                            create_item_from_xml_as_dict, get_dict_from_xml_file, PublisherWalk
 
 
 # create logger object
-logger = get_logger(__name__)
+logger = get_logger(__name__, level=LOGGING_LEVEL)
 
 
 class Publisher:
@@ -16,8 +20,20 @@ class Publisher:
         self.BASE_DIR = BASE_DIR
         self.items = []
         self.SATELLITES = None
+        self.db = PostgreSQLConnection()
 
+        # read satellites metadata file
         self.__read_metadata_file()
+
+        if IS_TO_GET_DATA_FROM_DB:
+            # get all available collections from database and save the result in a CSV file
+            self.df_collections = self.db.select_from_collections()
+            self.df_collections.to_csv(f'{FILES_PATH}/collections.csv', index=False)
+        else:
+            # get all available collections from CSV file
+            self.df_collections = read_csv(f'{FILES_PATH}/collections.csv')
+
+        logger.debug(f'self.df_collections: {self.df_collections}\n')
 
     def __read_metadata_file(self):
         '''Read JSON satellite metadata file.'''
@@ -95,7 +111,7 @@ class Publisher:
             collection_id = 1
 
             insert = create_insert_clause(item, collection_id)
-            logger.info(f'insert: {insert}\n')
+            logger.debug(f'insert: {insert}\n')
 
             items_insert.append(insert)
 

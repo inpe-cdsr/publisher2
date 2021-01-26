@@ -1,6 +1,11 @@
 from logging import DEBUG, Formatter, getLogger, INFO, StreamHandler
 
 
+AVAILABLE_LEVELS = {
+    'DEBUG': DEBUG,
+    'INFO': INFO
+}
+
 def get_logger(name, level=INFO):
     """Create a logger object"""
 

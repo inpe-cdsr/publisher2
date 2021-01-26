@@ -132,6 +132,7 @@ def get_properties_from_xml_as_dict(xml_as_dict, collection):
         # 'cloud_cover': '',
         'satellite': collection['satellite'],
         'sensor': collection['sensor'],
+        # TODO: get sync_loss
         # 'sync_loss': item['sync_loss'],
         # 'deleted': item['deleted']
     }
@@ -264,3 +265,12 @@ class PublisherWalk:
     def __next__(self):
         # this method makes the class to be a generator
         return next(self.__generator_iterator)
+
+
+##################################################
+# Other
+##################################################
+
+def str2bool(value):
+    # Source: https://stackoverflow.com/a/715468
+    return str(value).lower() in ('true', 't', '1', 'yes', 'y')

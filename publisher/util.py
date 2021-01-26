@@ -31,6 +31,9 @@ def create_insert_clause(item, collection_id, srid=4326):
     datetime = properties['datetime']
 
     return (
+        # delete old item before adding a new one, if it exists
+        f'DELETE FROM bdc.items WHERE name=\'{properties["name"]}\'; '
+        # insert new item
         'INSERT INTO bdc.items '
         '(name, collection_id, start_date, end_date, '
         'cloud_cover, assets, metadata, geom, min_convex_hull, srid) '
@@ -38,7 +41,7 @@ def create_insert_clause(item, collection_id, srid=4326):
         f'(\'{properties["name"]}\', {collection_id}, \'{datetime}\', \'{datetime}\', '
         f'NULL, \'{dumps(item["assets"])}\', \'{dumps(properties)}\', '
         f'ST_GeomFromGeoJSON(\'{dumps(item["geometry"])}\'), '
-        f'ST_MakeEnvelope({min_x}, {min_y}, {max_x}, {max_y}, {srid}), {srid}); '
+        f'ST_MakeEnvelope({min_x}, {min_y}, {max_x}, {max_y}, {srid}), {srid});'
     )
 
 
@@ -145,8 +148,8 @@ def get_properties_from_xml_as_dict(xml_as_dict, collection):
     # if there is sync loss in the XML file, then I get it and add it in properties
     if 'syncLoss' in xml_as_dict['image']:
         sync_loss_bands = xml_as_dict['image']['syncLoss']['band']
-        # get the sum value from the sync losses
-        properties['sync_loss'] = sum([
+        # get the max value from the sync losses
+        properties['sync_loss'] = max([
             float(sync_loss_band['#text']) for sync_loss_band in sync_loss_bands
         ])
 
@@ -178,7 +181,7 @@ def get_bbox_from_xml_as_dict(xml_as_dict):
     ]
 
 
-def get_geometry_from_xml_as_dict(xml_as_dict):
+def get_geometry_from_xml_as_dict(xml_as_dict, epsg=4326):
     '''Get geometry information (i.e. footprint) from an XML file as dictionary.'''
 
     # Label: UL - upper left; UR - upper right; LR - bottom right; LL - bottom left
@@ -194,7 +197,7 @@ def get_geometry_from_xml_as_dict(xml_as_dict):
             [xml_as_dict['image']['imageData']['LL']['longitude'], xml_as_dict['image']['imageData']['LL']['latitude']],
             [xml_as_dict['image']['imageData']['UL']['longitude'], xml_as_dict['image']['imageData']['UL']['latitude']]
         ]],
-        # 'crs': {'type': 'name','properties': {'name': 'EPSG:4326'}}
+        'crs': {'type': 'name','properties': {'name': f'EPSG:{epsg}'}}
     }
 
 

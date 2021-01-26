@@ -2,9 +2,9 @@
 # -*- coding:utf-8 -*-
 
 from publisher import Publisher
-from publisher.environment import BASE_DIR
+from publisher.environment import BASE_DIR, IS_TO_GET_DATA_FROM_DB
 
 
 if __name__ == '__main__':
-    app = Publisher(BASE_DIR)
+    app = Publisher(BASE_DIR, IS_TO_GET_DATA_FROM_DB)
     app.main()

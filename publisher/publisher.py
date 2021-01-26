@@ -3,7 +3,7 @@ from os.path import join as os_path_join, dirname, abspath
 
 from pandas import read_csv
 
-from publisher.environment import FILES_PATH, IS_TO_GET_DATA_FROM_DB, LOGGING_LEVEL
+from publisher.environment import FILES_PATH, LOGGING_LEVEL
 from publisher.logger import get_logger
 from publisher.model import PostgreSQLConnection
 from publisher.util import create_assets_from_metadata, create_insert_clause, \
@@ -15,9 +15,10 @@ logger = get_logger(__name__, level=LOGGING_LEVEL)
 
 
 class Publisher:
-    def __init__(self, BASE_DIR):
+    def __init__(self, BASE_DIR, IS_TO_GET_DATA_FROM_DB):
         # base directory to search the files
         self.BASE_DIR = BASE_DIR
+        self.IS_TO_GET_DATA_FROM_DB = IS_TO_GET_DATA_FROM_DB
         self.items = []
         self.SATELLITES = None
         self.db = PostgreSQLConnection()
@@ -25,7 +26,7 @@ class Publisher:
         # read satellites metadata file
         self.__read_metadata_file()
 
-        if IS_TO_GET_DATA_FROM_DB:
+        if self.IS_TO_GET_DATA_FROM_DB:
             # get all available collections from database and save the result in a CSV file
             self.df_collections = self.db.select_from_collections()
             self.df_collections.to_csv(f'{FILES_PATH}/collections.csv', index=False)
@@ -113,13 +114,13 @@ class Publisher:
             collection = self.df_collections.loc[
                 self.df_collections['name'] == item['collection']['name']
             ].reset_index(drop=True)
-            logger.debug(f'collection:\n{collection}')
+            # logger.debug(f'collection:\n{collection}')
             collection_id = collection.at[0, 'id']
-            logger.debug(f'collection_id: {collection_id}\n')
+            logger.debug(f'collection_id: {collection_id}')
 
             # create INSERT clause based on item information
             insert = create_insert_clause(item, collection_id)
-            logger.debug(f'insert: {insert}\n')
+            # logger.debug(f'insert: {insert}')
 
             items_insert.append(insert)
 
@@ -127,6 +128,9 @@ class Publisher:
 
         print(f'\n{ "-" * 130 }\n')
 
-        # logger.info(f'self.items: {self.items}\n')
-        # logger.info(f'items_insert: {items_insert}\n')
+        logger.info('Inserting items into database...')
+        concanate_inserts = ' '.join(items_insert)
+        # logger.debug(f'concanate_inserts: \n{concanate_inserts}\n')
+        self.db.execute(concanate_inserts, is_transaction=True)
+
         logger.info(f'p_walk.errors: {p_walk.errors}\n')

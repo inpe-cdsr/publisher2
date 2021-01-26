@@ -29,10 +29,10 @@ class PostgreSQLConnection():
             raise SQLAlchemyError(error)
 
     def execute(self, query, params=None, is_transaction=False):
-        logger.debug('PostgreSQLConnection.execute()')
-        logger.debug(f'PostgreSQLConnection.execute() - is_transaction: {is_transaction}')
-        logger.debug(f'PostgreSQLConnection.execute() - query: {query}')
-        logger.debug(f'PostgreSQLConnection.execute() - params: {params}')
+        # logger.debug('PostgreSQLConnection.execute()')
+        # logger.debug(f'PostgreSQLConnection.execute() - is_transaction: {is_transaction}')
+        # logger.debug(f'PostgreSQLConnection.execute() - query: {query}')
+        # logger.debug(f'PostgreSQLConnection.execute() - params: {params}')
 
         try:
             # INSERT, UPDATE and DELETE

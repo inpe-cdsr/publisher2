@@ -33,7 +33,7 @@ class Publisher:
             # get all available collections from CSV file
             self.df_collections = read_csv(f'{FILES_PATH}/collections.csv')
 
-        logger.debug(f'self.df_collections: {self.df_collections}\n')
+        logger.debug(f'self.df_collections:\n{self.df_collections}\n')
 
     def __read_metadata_file(self):
         '''Read JSON satellite metadata file.'''
@@ -107,8 +107,16 @@ class Publisher:
             item['assets'] = create_assets_from_metadata(assets_matadata, dir_path)
             logger.info(f'item[assets]: {item["assets"]}\n')
 
-            # TODO: get collection id from database
-            collection_id = 1
+            logger.debug(f'item[collection][name]: {item["collection"]["name"]}')
+
+            # get collection id from dataframe
+            collection = self.df_collections.loc[
+                self.df_collections['name'] == item['collection']['name']
+            ].reset_index(drop=True)
+            logger.debug(f'collection:\n{collection}')
+
+            collection_id = collection.at[0, 'id']
+            logger.debug(f'collection_id: {collection_id}\n')
 
             insert = create_insert_clause(item, collection_id)
             logger.debug(f'insert: {insert}\n')

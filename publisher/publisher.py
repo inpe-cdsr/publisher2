@@ -15,11 +15,12 @@ logger = get_logger(__name__, level=LOGGING_LEVEL)
 
 
 class Publisher:
-    def __init__(self, BASE_DIR, IS_TO_GET_DATA_FROM_DB):
+    def __init__(self, BASE_DIR, IS_TO_GET_DATA_FROM_DB, query=None):
         # base directory to search the files
         self.BASE_DIR = BASE_DIR
         self.IS_TO_GET_DATA_FROM_DB = IS_TO_GET_DATA_FROM_DB
-        self.items = []
+        self.query = query
+        # self.items = []
         self.SATELLITES = None
         self.db = PostgreSQLConnection()
 
@@ -80,7 +81,7 @@ class Publisher:
         # list to save the INSERT clauses based on item metadata
         items_insert = []
 
-        p_walk = PublisherWalk(self.BASE_DIR)
+        p_walk = PublisherWalk(self.BASE_DIR, self.query)
 
         # for dir_path, dirs, files in walk(self.BASE_DIR):
         for dir_path, dirs, xml_files in p_walk:
@@ -121,16 +122,15 @@ class Publisher:
             # create INSERT clause based on item information
             insert = create_insert_clause(item, collection_id)
             # logger.debug(f'insert: {insert}')
-
             items_insert.append(insert)
 
-            self.items.append(item)
+            # self.items.append(item)
 
         print(f'\n{ "-" * 130 }\n')
 
         logger.info('Inserting items into database...')
         concanate_inserts = ' '.join(items_insert)
         # logger.debug(f'concanate_inserts: \n{concanate_inserts}\n')
-        self.db.execute(concanate_inserts, is_transaction=True)
+        # self.db.execute(concanate_inserts, is_transaction=True)
 
-        logger.info(f'p_walk.errors: {p_walk.errors}\n')
+        # logger.debug(f'p_walk.errors: {p_walk.errors}\n')

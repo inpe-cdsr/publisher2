@@ -1,7 +1,7 @@
 from glob import glob
 from json import dumps
 from os import walk
-from os.path import join
+from os.path import join, sep
 
 from xmltodict import parse as xmltodict_parse
 
@@ -232,12 +232,43 @@ class PublisherWalk:
     '''This class is a Generator that encapsulates `os.walk()` generator to return just valid directories.
     A valid directory is a folder that contains XML files.'''
 
-    def __init__(self, BASE_DIR):
+    def __init__(self, BASE_DIR, query=None):
         self.BASE_DIR = BASE_DIR
+        self.query = query
         self.errors = []
 
         # create an iterator from generator method
         self.__generator_iterator = self.__generator()
+
+    def __is_dir_path_valid(self, dir_path):
+        '''Check if `dir_path` parameter is valid based on `query`.'''
+        # TODO: CBERS_4A_MUX_RAW_2019_12_27.00_00_00 até 05_00_00_ETC2 considera dia anterior
+        # .../data/TIFF/CBERS4A/2019_12/CBERS_4A_WFI_RAW_2019_12_27.13_53_00_ETC2/215_132_0/4_BC_UTM_WGS84
+
+        # create a shortened path starting on `/TIFF`
+        index = dir_path.find('TIFF')
+        splitted_dir_path = dir_path[index:].split(sep)
+
+        # a valid dir path must have at least five folders (+1 the base path (i.e. /TIFF))
+        if len(splitted_dir_path) < 6:
+            return False
+
+        print(f'\n{ "-" * 130 }\n')
+        print('\n splitted_dir_path: ', splitted_dir_path)
+
+        satellite_dir = splitted_dir_path[1]
+        year_month_dir = splitted_dir_path[2]
+        scene_dir = splitted_dir_path[3]
+        path_row_dir = splitted_dir_path[4]
+        level_dir = splitted_dir_path[5]
+
+        print(' satellite_dir: ', satellite_dir)
+        print(' year_month_dir: ', year_month_dir)
+        print(' scene_dir: ', scene_dir)
+        print(' path_row_dir: ', path_row_dir)
+        print(' level_dir: ', level_dir, '\n')
+
+        return True
 
     def __get_xml_files(self, files, dir_path):
         '''Return just XML files.'''
@@ -264,9 +295,8 @@ class PublisherWalk:
         '''Generator that returns just directories with valid files.'''
 
         for dir_path, dirs, files in walk(self.BASE_DIR):
-            # folders that end with '_BC_UTM_WGS84' suffix are folders that should have files.
-            # other folders I can ignore, because I don't expect to have any files in them.
-            if not dir_path.endswith('_BC_UTM_WGS84'):
+            # if dir_path is not valid, then ignore this folder
+            if not self.__is_dir_path_valid(dir_path):
                 continue
 
             xml_files = self.__get_xml_files(files, dir_path)

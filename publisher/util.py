@@ -145,8 +145,8 @@ def get_properties_from_xml_as_dict(xml_as_dict, collection):
     # if there is sync loss in the XML file, then I get it and add it in properties
     if 'syncLoss' in xml_as_dict['image']:
         sync_loss_bands = xml_as_dict['image']['syncLoss']['band']
-        # get the max value to sync loss
-        properties['sync_loss'] = max([
+        # get the sum value from the sync losses
+        properties['sync_loss'] = sum([
             float(sync_loss_band['#text']) for sync_loss_band in sync_loss_bands
         ])
 
@@ -240,14 +240,14 @@ class PublisherWalk:
         '''Return just XML files.'''
 
         # get just the XML files
-        xml_files = list(filter(lambda f: f.endswith('.xml'), files))
+        xml_files = list(filter(lambda f: f.endswith('.xml') and 'BAND' in f, files))
 
         # if there are NOT valid XML files, then I save the error
         if not xml_files:
             self.errors.append(
                 {
                     'type': 'warning',
-                    'message': 'There are NOT XML files in this folder.',
+                    'message': 'There are NOT band XML files in this folder.',
                     'metadata': {
                         'folder': dir_path
                     }

@@ -114,10 +114,10 @@ class Publisher:
                 self.df_collections['name'] == item['collection']['name']
             ].reset_index(drop=True)
             logger.debug(f'collection:\n{collection}')
-
             collection_id = collection.at[0, 'id']
             logger.debug(f'collection_id: {collection_id}\n')
 
+            # create INSERT clause based on item information
             insert = create_insert_clause(item, collection_id)
             logger.debug(f'insert: {insert}\n')
 

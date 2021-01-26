@@ -1,4 +1,5 @@
 from glob import glob
+from json import dumps
 from os import walk
 from os.path import join
 
@@ -17,6 +18,29 @@ def get_dict_from_xml_file(xml_path):
 ##################################################
 # Item
 ##################################################
+
+def create_insert_clause(item, collection_id, srid=4326):
+    '''Create `INSERT` clause based on item metadata.'''
+
+    min_x = item['bbox'][0]
+    min_y = item['bbox'][1]
+    max_x = item['bbox'][2]
+    max_y = item['bbox'][3]
+
+    properties = item['properties']
+    datetime = properties['datetime']
+
+    return (
+        'INSERT INTO bdc.items '
+        '(name, collection_id, start_date, end_date, '
+        'cloud_cover, assets, metadata, geom, min_convex_hull, srid) '
+        'VALUES '
+        f'(\'{properties["name"]}\', {collection_id}, \'{datetime}\', \'{datetime}\', '
+        f'NULL, \'{dumps(item["assets"])}\', \'{dumps(properties)}\', '
+        f'ST_GeomFromGeoJSON(\'{dumps(item["geometry"])}\'), '
+        f'ST_MakeEnvelope({min_x}, {min_y}, {max_x}, {max_y}, {srid}), {srid}); '
+    )
+
 
 def create_assets_from_metadata(assets_matadata, dir_path):
     '''Create assets object based on assets metadata.'''
@@ -66,6 +90,7 @@ def create_assets_from_metadata(assets_matadata, dir_path):
 
     return assets
 
+
 def get_collection_from_xml_as_dict(xml_as_dict, radio_processing):
     '''Get collection information from XML file as dictionary.'''
 
@@ -104,7 +129,11 @@ def get_properties_from_xml_as_dict(xml_as_dict, collection):
         'path': fill_string_with_left_zeros(xml_as_dict['image']['path']),
         'row': fill_string_with_left_zeros(xml_as_dict['image']['row']),
         # CQ fills it
-        'cloud_cover': ''
+        # 'cloud_cover': '',
+        'satellite': collection['satellite'],
+        'sensor': collection['sensor'],
+        # 'sync_loss': item['sync_loss'],
+        # 'deleted': item['deleted']
     }
 
     # create item name based on its properties (e.g. `CBERS4A_MUX_070122_20200813`)
@@ -148,7 +177,8 @@ def get_geometry_from_xml_as_dict(xml_as_dict):
             [xml_as_dict['image']['imageData']['LR']['longitude'], xml_as_dict['image']['imageData']['LR']['latitude']],
             [xml_as_dict['image']['imageData']['LL']['longitude'], xml_as_dict['image']['imageData']['LL']['latitude']],
             [xml_as_dict['image']['imageData']['UL']['longitude'], xml_as_dict['image']['imageData']['UL']['latitude']]
-        ]]
+        ]],
+        # 'crs': {'type': 'name','properties': {'name': 'EPSG:4326'}}
     }
 
 

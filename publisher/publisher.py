@@ -2,8 +2,8 @@ from json import loads
 from os.path import join as os_path_join, dirname, abspath
 
 from publisher.logger import get_logger
-from publisher.util import create_assets_from_metadata, create_item_from_xml_as_dict, \
-                           get_dict_from_xml_file, PublisherWalk
+from publisher.util import create_assets_from_metadata, create_insert_clause, \
+                           create_item_from_xml_as_dict, get_dict_from_xml_file, PublisherWalk
 
 
 # create logger object
@@ -60,6 +60,9 @@ class Publisher:
 
         logger.info('Publisher.main()')
 
+        # list to save the INSERT clauses based on item metadata
+        items_insert = []
+
         p_walk = PublisherWalk(self.BASE_DIR)
 
         # for dir_path, dirs, files in walk(self.BASE_DIR):
@@ -88,9 +91,18 @@ class Publisher:
             item['assets'] = create_assets_from_metadata(assets_matadata, dir_path)
             logger.info(f'item[assets]: {item["assets"]}\n')
 
+            # TODO: get collection id from database
+            collection_id = 1
+
+            insert = create_insert_clause(item, collection_id)
+            logger.info(f'insert: {insert}\n')
+
+            items_insert.append(insert)
+
             self.items.append(item)
 
         print(f'\n{ "-" * 130 }\n')
 
         # logger.info(f'self.items: {self.items}\n')
+        # logger.info(f'items_insert: {items_insert}\n')
         logger.info(f'p_walk.errors: {p_walk.errors}\n')

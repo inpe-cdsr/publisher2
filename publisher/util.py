@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from glob import glob
 from json import dumps
 from os import walk
@@ -228,6 +229,59 @@ def create_item_from_xml_as_dict(xml_as_dict):
 # Generator
 ##################################################
 
+
+def decode_scene_dir(scene_dir):
+    '''Decode a scene directory, returning its information.'''
+
+    scene_dir_first, scene_dir_second = scene_dir.split('.')
+
+    if scene_dir_first.startswith('CBERS_4'):
+        # examples: CBERS_4_MUX_DRD_2020_07_31.13_07_00_CB11
+        # or CBERS_4A_MUX_RAW_2019_12_27.13_53_00_ETC2
+        # or CBERS_4A_MUX_RAW_2019_12_28.14_15_00
+
+        satellite, number, sensor, _, *date = scene_dir_first.split('_')
+        # create satellite name with its number
+        satellite = satellite + number
+        date = '-'.join(date)
+        time = scene_dir_second.split('_')
+
+        if len(time) == 3:
+            # this time has just time, then I join the parts (e.g. '13_53_00')
+            time = ':'.join(time)
+        elif len(time) == 4:
+            # this time has NOT just time, then I join the time parts (e.g. '13_53_00_ETC2')
+            time = ':'.join(time[0:3])
+        else:
+            raise Exception(f'Invalid scene dir: {scene_dir}')
+
+    elif scene_dir_first.startswith('CBERS2B') or scene_dir_first.startswith('LANDSAT'):
+        # examples: CBERS2B_CCD_20070925.145654
+        # or LANDSAT1_MSS_19750907.130000
+
+        satellite, sensor, date = scene_dir_first.split('_')
+        time = scene_dir_second
+
+        if len(date) != 8:
+            # example: a time should be something like this: '20070925'
+            raise Exception(f'Invalid scene dir: {scene_dir}')
+
+        # I build the date string based on the old one (e.g. from '20070925' to '2007-09-25')
+        date = f'{date[0:4]}-{date[4:6]}-{date[6:8]}'
+
+        if len(time) != 6:
+            # example: a time should be something like this: '145654'
+            raise Exception(f'Invalid scene dir: {scene_dir}')
+
+        # I build the time string based on the old one (e.g. from '145654' to '14:56:54')
+        time = f'{time[0:2]}:{time[2:4]}:{time[4:6]}'
+
+    else:
+        raise Exception(f'Invalid scene dir: {scene_dir}')
+
+    return satellite, sensor, date, time
+
+
 class PublisherWalk:
     '''This class is a Generator that encapsulates `os.walk()` generator to return just valid directories.
     A valid directory is a folder that contains XML files.'''
@@ -242,10 +296,8 @@ class PublisherWalk:
 
     def __is_dir_path_valid(self, dir_path):
         '''Check if `dir_path` parameter is valid based on `query`.'''
-        # TODO: CBERS_4A_MUX_RAW_2019_12_27.00_00_00 até 05_00_00_ETC2 considera dia anterior
-        # .../data/TIFF/CBERS4A/2019_12/CBERS_4A_WFI_RAW_2019_12_27.13_53_00_ETC2/215_132_0/4_BC_UTM_WGS84
 
-        # create a shortened path starting on `/TIFF`
+        # get dir path starting at `/TIFF`
         index = dir_path.find('TIFF')
         splitted_dir_path = dir_path[index:].split(sep)
 
@@ -253,25 +305,60 @@ class PublisherWalk:
         if len(splitted_dir_path) < 6:
             return False
 
-        print(f'\n{ "-" * 130 }\n')
-        print('\n splitted_dir_path: ', splitted_dir_path)
+        _, satellite_dir, year_month_dir, scene_dir, path_row_dir, level_dir = splitted_dir_path
 
-        satellite_dir = splitted_dir_path[1]
-        year_month_dir = splitted_dir_path[2]
-        scene_dir = splitted_dir_path[3]
-        path_row_dir = splitted_dir_path[4]
-        level_dir = splitted_dir_path[5]
+        # if the informed satellite is not equal to the dir, then the folder is invalid
+        if 'satellite' in self.query and self.query['satellite'] != satellite_dir:
+            return False
 
-        print(' satellite_dir: ', satellite_dir)
-        print(' year_month_dir: ', year_month_dir)
-        print(' scene_dir: ', scene_dir)
-        print(' path_row_dir: ', path_row_dir)
-        print(' level_dir: ', level_dir, '\n')
+        _, sensor, date, time = decode_scene_dir(scene_dir)
+
+        # if the informed sensor is not equal to the dir, then the folder is invalid
+        if 'sensor' in self.query and self.query['sensor'] != sensor:
+            return False
+
+        # if the actual dir is not inside the date range, then the folder is invalid
+        if 'start_date' in self.query and 'end_date' in self.query:
+            # if time dir is between 0h and 5h, then consider it one day ago,
+            # because date is the reception date and not viewing date
+            if time >= '00:00:00' and time <= '05:00:00':
+                # convert date from str to datetime
+                date = datetime.strptime(date, '%Y-%m-%d')
+                # subtract one day from the date and convert from date to str again
+                date = (date - timedelta(days=1)).strftime('%Y-%m-%d')
+
+            if not (date >= self.query['start_date'] and date <= self.query['end_date']):
+                return False
+
+        # if the informed path/row is not inside the dir, then the folder is invalid
+        if 'path' in self.query or 'row' in self.query:
+            splitted_path_row = path_row_dir.split('_')
+
+            if len(splitted_path_row) == 3:
+                # example: /CBERS2B/2010_03/CBERS2B_CCD_20100301.130915/151_098_0/2_BC_UTM_WGS84
+                path, row, _ = splitted_path_row
+            elif len(splitted_path_row) == 5:
+                # example: /CBERS2B/2010_03/CBERS2B_HRC_20100301.130915/151_B_141_5_0/2_BC_UTM_WGS84
+                path, _, row, _, _ = splitted_path_row
+            else:
+                raise Exception(f'Invalid path/row dir: {path_row_dir}')
+
+            if 'path' in self.query and self.query['path'] != int(path):
+                return False
+
+            if 'row' in self.query and self.query['row'] != int(row):
+                return False
+
+        # if the level_dir does not start with the informed geo_processing, then the folder is invalid
+        if 'geo_processing' in self.query and not level_dir.startswith(str(self.query['geo_processing'])):
+            return False
 
         return True
 
     def __get_xml_files(self, files, dir_path):
         '''Return just XML files.'''
+
+        # TODO: check the radio_processing (DN or SR)
 
         # get just the XML files
         xml_files = list(filter(lambda f: f.endswith('.xml') and 'BAND' in f, files))
@@ -295,10 +382,15 @@ class PublisherWalk:
         '''Generator that returns just directories with valid files.'''
 
         for dir_path, dirs, files in walk(self.BASE_DIR):
-            # if dir_path is not valid, then ignore this folder
+            # if the dir does not have any file, then ignore it
+            if not files:
+                continue
+
+            # if dir is not valid based on query, then ignore it
             if not self.__is_dir_path_valid(dir_path):
                 continue
 
+            # if a valid dir does not have files, then ignore it
             xml_files = self.__get_xml_files(files, dir_path)
             if not xml_files:
                 continue
@@ -318,6 +410,10 @@ class PublisherWalk:
 ##################################################
 # Other
 ##################################################
+
+def print_line(size_line=130):
+    print(f'\n{ "-" * size_line }\n')
+
 
 def str2bool(value):
     # Source: https://stackoverflow.com/a/715468

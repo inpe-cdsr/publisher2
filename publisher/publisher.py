@@ -7,7 +7,8 @@ from publisher.environment import FILES_PATH, LOGGING_LEVEL
 from publisher.logger import get_logger
 from publisher.model import PostgreSQLConnection
 from publisher.util import create_assets_from_metadata, create_insert_clause, \
-                           create_item_from_xml_as_dict, get_dict_from_xml_file, PublisherWalk
+                           create_item_from_xml_as_dict, get_dict_from_xml_file, print_line, \
+                           PublisherWalk
 
 
 # create logger object
@@ -35,7 +36,12 @@ class Publisher:
             # get all available collections from CSV file
             self.df_collections = read_csv(f'{FILES_PATH}/collections.csv')
 
-        logger.debug(f'self.df_collections:\n{self.df_collections}\n')
+        print_line()
+        logger.debug(f'BASE_DIR: {self.BASE_DIR}')
+        logger.debug(f'IS_TO_GET_DATA_FROM_DB: {self.IS_TO_GET_DATA_FROM_DB}')
+        logger.debug(f'query: {self.query}')
+        logger.debug(f'df_collections:\n{self.df_collections}')
+        print_line()
 
     def __read_metadata_file(self):
         '''Read JSON satellite metadata file.'''
@@ -85,7 +91,7 @@ class Publisher:
 
         # for dir_path, dirs, files in walk(self.BASE_DIR):
         for dir_path, dirs, xml_files in p_walk:
-            print(f'\n{ "-" * 130 }\n')
+            print_line()
 
             logger.info(f'dir_path: {dir_path}')
             logger.info(f'xml_files: {xml_files}')
@@ -126,7 +132,7 @@ class Publisher:
 
             # self.items.append(item)
 
-        print(f'\n{ "-" * 130 }\n')
+        print_line()
 
         logger.info('Inserting items into database...')
         concanate_inserts = ' '.join(items_insert)

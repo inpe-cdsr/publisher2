@@ -7,12 +7,12 @@ from publisher.environment import BASE_DIR, IS_TO_GET_DATA_FROM_DB
 
 if __name__ == '__main__':
     query = {
-        'start_date': '2019-12-27',
-        'end_date': '2019-12-28',
-        'path': 215,
-        'row': 132,
         'satellite': 'CBERS4A',
         'sensor': 'WFI',
+        'start_date': '2019-12-01',
+        'end_date': '2020-06-30',
+        'path': 215,
+        'row': 132,
         'geo_processing': 4,
         'radio_processing': 'DN'
     }

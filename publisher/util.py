@@ -3,6 +3,7 @@ from glob import glob
 from json import dumps
 from os import walk
 from os.path import join, sep
+from re import search
 
 from xmltodict import parse as xmltodict_parse
 
@@ -356,12 +357,21 @@ class PublisherWalk:
         return True
 
     def __get_xml_files(self, files, dir_path):
-        '''Return just XML files.'''
+        '''Return just XML files based on query.'''
 
-        # TODO: check the radio_processing (DN or SR)
+        # rp - radio_processing
+        rp = self.query['radio_processing']  # DN or SR
 
-        # get just the XML files
-        xml_files = list(filter(lambda f: f.endswith('.xml') and 'BAND' in f, files))
+        # rp_template - radio_processing_template
+        rp_template = {
+            # example: CBERS_4_AWFI_20201228_157_135_L4_RIGHT_BAND16.xml
+            'DN': '^[a-zA-Z0-9_]+BAND\d+.xml',
+            # example: CBERS_4_AWFI_20201228_157_135_L4_BAND16_GRID_SURFACE.xml
+            'SR': '^[a-zA-Z0-9_]+BAND\d+_GRID_SURFACE.xml'
+        }
+
+        # get just the XML files based on the radiometric processing regex
+        xml_files = list(filter(lambda f: search(rp_template[rp], f), files))
 
         # if there are NOT valid XML files, then I save the error
         if not xml_files:

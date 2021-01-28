@@ -31,7 +31,7 @@ $ pyenv activate inpe_cdsr_publisher2 && \
 Run the script:
 
 ```
-$ python main.py
+$ flask run
 ```
 
 

@@ -1,6 +1,19 @@
 environment.env*
 !environment.env.EXAMPLE
 
-__pycache__
 .vscode
 .trash
+
+# https://flask.palletsprojects.com/en/1.1.x/tutorial/layout/
+*.pyc
+__pycache__/
+
+instance/
+
+.pytest_cache/
+.coverage
+htmlcov/
+
+dist/
+build/
+*.egg-info/

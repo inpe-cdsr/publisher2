@@ -337,10 +337,10 @@ class PublisherWalk:
             splitted_path_row = path_row_dir.split('_')
 
             if len(splitted_path_row) == 3:
-                # example: /CBERS2B/2010_03/CBERS2B_CCD_20100301.130915/151_098_0/2_BC_UTM_WGS84
+                # example: `151_098_0`
                 path, row, _ = splitted_path_row
             elif len(splitted_path_row) == 5:
-                # example: /CBERS2B/2010_03/CBERS2B_HRC_20100301.130915/151_B_141_5_0/2_BC_UTM_WGS84
+                # example: `151_B_141_5_0`
                 path, _, row, _, _ = splitted_path_row
             else:
                 raise Exception(f'Invalid path/row dir: {path_row_dir}')
@@ -353,6 +353,7 @@ class PublisherWalk:
 
         # if the level_dir does not start with the informed geo_processing, then the folder is invalid
         if 'geo_processing' in self.query and not level_dir.startswith(str(self.query['geo_processing'])):
+            # example: `2_BC_UTM_WGS84`
             return False
 
         return True

@@ -4,6 +4,8 @@ from publisher.logger import AVAILABLE_LEVELS, INFO
 from publisher.util import str2bool
 
 
+FLASK_SECRET_KEY = getenv('FLASK_SECRET_KEY', 'test')
+
 # base directory to recursively traverse
 BASE_DIR = getenv('BASE_DIR', '/')
 # path to files folder

@@ -41,6 +41,15 @@ $ export PR_LOGGING_LEVEL=WARNING &&
     python -m unittest discover tests "test_*.py" -v
 ```
 
+Run the teste cases and get coverage report:
+
+```
+$ export PR_LOGGING_LEVEL=WARNING &&
+    coverage run -m unittest discover tests "test_*.py" -v &&
+    coverage report -m &&
+    coverage html
+```
+
 
 ## Docker
 

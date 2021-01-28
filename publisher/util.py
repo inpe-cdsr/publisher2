@@ -320,13 +320,14 @@ class PublisherWalk:
 
         # if the actual dir is not inside the date range, then the folder is invalid
         if 'start_date' in self.query and 'end_date' in self.query:
+            # convert date from str to datetime
+            date = datetime.strptime(date, '%Y-%m-%d')
+
             # if time dir is between 0h and 5h, then consider it one day ago,
-            # because date is the reception date and not viewing date
+            # because date is reception date and not viewing date
             if time >= '00:00:00' and time <= '05:00:00':
-                # convert date from str to datetime
-                date = datetime.strptime(date, '%Y-%m-%d')
-                # subtract one day from the date and convert from date to str again
-                date = (date - timedelta(days=1)).strftime('%Y-%m-%d')
+                # subtract one day from the date
+                date -= timedelta(days=1)
 
             if not (date >= self.query['start_date'] and date <= self.query['end_date']):
                 return False

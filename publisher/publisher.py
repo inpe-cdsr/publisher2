@@ -9,6 +9,7 @@ from publisher.model import PostgreSQLConnection
 from publisher.util import create_assets_from_metadata, create_insert_clause, \
                            create_item_from_xml_as_dict, get_dict_from_xml_file, print_line, \
                            PublisherWalk
+from publisher.validator import validate, QUERY_SCHEMA
 
 
 # create logger object
@@ -35,13 +36,6 @@ class Publisher:
         else:
             # get all available collections from CSV file
             self.df_collections = read_csv(f'{FILES_PATH}/collections.csv')
-
-        print_line()
-        logger.debug(f'BASE_DIR: {self.BASE_DIR}')
-        logger.debug(f'IS_TO_GET_DATA_FROM_DB: {self.IS_TO_GET_DATA_FROM_DB}')
-        logger.debug(f'query: {self.query}')
-        logger.debug(f'df_collections:\n{self.df_collections}')
-        print_line()
 
     def __read_metadata_file(self):
         '''Read JSON satellite metadata file.'''
@@ -84,12 +78,25 @@ class Publisher:
 
         logger.info('Publisher.main()')
 
+        print_line()
+        logger.debug(f'BASE_DIR: {self.BASE_DIR}')
+        logger.debug(f'IS_TO_GET_DATA_FROM_DB: {self.IS_TO_GET_DATA_FROM_DB}')
+        logger.debug(f'df_collections:\n{self.df_collections}')
+
+        is_valid, self.query, errors = validate(self.query, QUERY_SCHEMA)
+
+        # validate self.query
+        if not is_valid:
+            raise Exception(f'Invalid query: {self.query}. Errors: {errors}')
+
+        logger.debug(f'query: {self.query}')
+        print_line()
+
         # list to save the INSERT clauses based on item metadata
         items_insert = []
 
         p_walk = PublisherWalk(self.BASE_DIR, self.query)
 
-        # for dir_path, dirs, files in walk(self.BASE_DIR):
         for dir_path, dirs, xml_files in p_walk:
             print_line()
 

@@ -1,9 +1,10 @@
-from logging import DEBUG, Formatter, getLogger, INFO, StreamHandler
-
+from logging import Formatter, getLogger, StreamHandler, \
+                    DEBUG, INFO, WARNING
 
 AVAILABLE_LEVELS = {
     'DEBUG': DEBUG,
-    'INFO': INFO
+    'INFO': INFO,
+    'WARNING': WARNING
 }
 
 def get_logger(name, level=INFO):

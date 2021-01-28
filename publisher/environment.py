@@ -1,7 +1,12 @@
 from os import getenv
 
 from publisher.logger import AVAILABLE_LEVELS, INFO
-from publisher.util import str2bool
+
+
+def str2bool(value):
+    '''Convert string to boolean'''
+    # Source: https://stackoverflow.com/a/715468
+    return str(value).lower() in ('true', 't', '1', 'yes', 'y')
 
 
 FLASK_SECRET_KEY = getenv('FLASK_SECRET_KEY', 'test')

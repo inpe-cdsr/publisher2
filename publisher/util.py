@@ -417,16 +417,3 @@ class PublisherWalk:
     def __next__(self):
         # this method makes the class to be a generator
         return next(self.__generator_iterator)
-
-
-##################################################
-# Other
-##################################################
-
-def print_line(size_line=130):
-    print(f'\n{ "-" * size_line }\n')
-
-
-def str2bool(value):
-    # Source: https://stackoverflow.com/a/715468
-    return str(value).lower() in ('true', 't', '1', 'yes', 'y')

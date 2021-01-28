@@ -3,11 +3,12 @@ from os.path import join as os_path_join, dirname, abspath
 
 from pandas import read_csv
 
+from publisher.common import print_line
 from publisher.environment import PR_FILES_PATH, PR_LOGGING_LEVEL
 from publisher.logger import get_logger
 from publisher.model import PostgreSQLConnection
 from publisher.util import create_assets_from_metadata, create_insert_clause, \
-                           create_item_from_xml_as_dict, get_dict_from_xml_file, print_line, \
+                           create_item_from_xml_as_dict, get_dict_from_xml_file, \
                            PublisherWalk
 from publisher.validator import validate, QUERY_SCHEMA
 

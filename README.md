@@ -34,10 +34,11 @@ Run the script:
 $ flask run
 ```
 
-Run the test cases:
+Run the test cases with `WARNING` logging level to supress unnecessary logging messages:
 
 ```
-$ python -m unittest discover tests "test_*.py" -v
+$ export PR_LOGGING_LEVEL=WARNING &&
+    python -m unittest discover tests "test_*.py" -v
 ```
 
 

@@ -3,7 +3,7 @@
 
 import os
 
-from flask import Flask
+from flask import Flask, request
 
 from publisher.environment import FLASK_SECRET_KEY, PR_BASE_DIR, PR_IS_TO_GET_DATA_FROM_DB
 from publisher.publisher import Publisher
@@ -39,19 +39,9 @@ def create_app(test_config=None):
 
     @app.route('/publish')
     def publish():
-        query = {
-            'satellite': 'CBERS4A',
-            'sensor': 'wfi',
-            'start_date': '2019-12-01',
-            'end_date': '2020-06-30',
-            'path': '215',
-            'row': '132',
-            'geo_processing': '4',
-            'radio_processing': 'DN'
-        }
-
+        # `dict(request.args)`` returns the query string as a dict
         publisher_app = Publisher(
-            PR_BASE_DIR, PR_IS_TO_GET_DATA_FROM_DB, query=query
+            PR_BASE_DIR, PR_IS_TO_GET_DATA_FROM_DB, query=dict(request.args)
         )
         publisher_app.main()
 

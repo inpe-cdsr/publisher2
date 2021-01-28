@@ -5,7 +5,7 @@ import os
 
 from flask import Flask
 
-from publisher.environment import BASE_DIR, FLASK_SECRET_KEY, IS_TO_GET_DATA_FROM_DB
+from publisher.environment import FLASK_SECRET_KEY, PR_BASE_DIR, PR_IS_TO_GET_DATA_FROM_DB
 from publisher.publisher import Publisher
 
 
@@ -50,7 +50,9 @@ def create_app(test_config=None):
             'radio_processing': 'DN'
         }
 
-        publisher_app = Publisher(BASE_DIR, IS_TO_GET_DATA_FROM_DB, query=query)
+        publisher_app = Publisher(
+            PR_BASE_DIR, PR_IS_TO_GET_DATA_FROM_DB, query=query
+        )
         publisher_app.main()
 
         return '/publish has been executed'

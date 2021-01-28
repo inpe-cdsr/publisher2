@@ -3,7 +3,7 @@ from os.path import join as os_path_join, dirname, abspath
 
 from pandas import read_csv
 
-from publisher.environment import FILES_PATH, LOGGING_LEVEL
+from publisher.environment import PR_FILES_PATH, PR_LOGGING_LEVEL
 from publisher.logger import get_logger
 from publisher.model import PostgreSQLConnection
 from publisher.util import create_assets_from_metadata, create_insert_clause, \
@@ -13,7 +13,7 @@ from publisher.validator import validate, QUERY_SCHEMA
 
 
 # create logger object
-logger = get_logger(__name__, level=LOGGING_LEVEL)
+logger = get_logger(__name__, level=PR_LOGGING_LEVEL)
 
 
 class Publisher:
@@ -32,10 +32,10 @@ class Publisher:
         if self.IS_TO_GET_DATA_FROM_DB:
             # get all available collections from database and save the result in a CSV file
             self.df_collections = self.db.select_from_collections()
-            self.df_collections.to_csv(f'{FILES_PATH}/collections.csv', index=False)
+            self.df_collections.to_csv(f'{PR_FILES_PATH}/collections.csv', index=False)
         else:
             # get all available collections from CSV file
-            self.df_collections = read_csv(f'{FILES_PATH}/collections.csv')
+            self.df_collections = read_csv(f'{PR_FILES_PATH}/collections.csv')
 
     def __read_metadata_file(self):
         '''Read JSON satellite metadata file.'''

@@ -6,12 +6,12 @@ from pandas import read_sql
 from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
 
-from publisher.environment import LOGGING_LEVEL
+from publisher.environment import PR_LOGGING_LEVEL
 from publisher.logger import get_logger
 
 
 # create logger object
-logger = get_logger(__name__, level=LOGGING_LEVEL)
+logger = get_logger(__name__, level=PR_LOGGING_LEVEL)
 
 
 class PostgreSQLConnection():

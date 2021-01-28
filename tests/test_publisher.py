@@ -1,12 +1,16 @@
 from unittest import TestCase, main
 
 from publisher import create_app
+from publisher.model import SQLiteConnection
+
+
+test_config={'TESTING': True}
 
 
 class PublisherIndexTestCase(TestCase):
 
     def setUp(self):
-        self.app = create_app()
+        self.app = create_app(test_config)
 
     def test_index(self):
         api = self.app.test_client()
@@ -18,7 +22,7 @@ class PublisherIndexTestCase(TestCase):
 class PublisherPublishTestCase(TestCase):
 
     def setUp(self):
-        self.app = create_app()
+        self.app = create_app(test_config)
 
     def test_publish(self):
         api = self.app.test_client()

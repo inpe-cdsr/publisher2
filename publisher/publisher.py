@@ -6,7 +6,6 @@ from pandas import read_csv
 from publisher.common import print_line
 from publisher.environment import PR_FILES_PATH, PR_LOGGING_LEVEL
 from publisher.logger import create_logger
-from publisher.model import PostgreSQLConnection
 from publisher.util import create_assets_from_metadata, create_insert_clause, \
                            create_item_from_xml_as_dict, get_dict_from_xml_file, \
                            PublisherWalk
@@ -18,14 +17,14 @@ logger = create_logger(__name__, level=PR_LOGGING_LEVEL)
 
 
 class Publisher:
-    def __init__(self, BASE_DIR, IS_TO_GET_DATA_FROM_DB, query=None):
+    def __init__(self, BASE_DIR, IS_TO_GET_DATA_FROM_DB, DBConnection, query=None):
         # base directory to search the files
         self.BASE_DIR = BASE_DIR
         self.IS_TO_GET_DATA_FROM_DB = IS_TO_GET_DATA_FROM_DB
         self.query = query
         # self.items = []
         self.SATELLITES = None
-        self.db = PostgreSQLConnection()
+        self.db = DBConnection()
 
         # read satellites metadata file
         self.__read_metadata_file()

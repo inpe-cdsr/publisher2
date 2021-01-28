@@ -1,9 +1,9 @@
-from publisher.logger import get_logger
 from publisher.environment import PR_LOGGING_LEVEL
+from publisher.logger import create_logger
 
 
 # create logger object
-__logger = get_logger(__name__, level=PR_LOGGING_LEVEL)
+__logger = create_logger(__name__, level=PR_LOGGING_LEVEL)
 
 
 def fill_string_with_left_zeros(string, max_string_size=3):

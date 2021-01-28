@@ -5,7 +5,7 @@ from pandas import read_csv
 
 from publisher.common import print_line
 from publisher.environment import PR_FILES_PATH, PR_LOGGING_LEVEL
-from publisher.logger import get_logger
+from publisher.logger import create_logger
 from publisher.model import PostgreSQLConnection
 from publisher.util import create_assets_from_metadata, create_insert_clause, \
                            create_item_from_xml_as_dict, get_dict_from_xml_file, \
@@ -14,7 +14,7 @@ from publisher.validator import validate, QUERY_SCHEMA
 
 
 # create logger object
-logger = get_logger(__name__, level=PR_LOGGING_LEVEL)
+logger = create_logger(__name__, level=PR_LOGGING_LEVEL)
 
 
 class Publisher:

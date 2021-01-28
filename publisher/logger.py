@@ -7,8 +7,8 @@ AVAILABLE_LEVELS = {
     'WARNING': WARNING
 }
 
-def get_logger(name, level=INFO):
-    """Create a logger object"""
+def create_logger(name, level=INFO):
+    '''Create a logger object.'''
 
     # create logger
     logger = getLogger(name)

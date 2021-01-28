@@ -34,7 +34,7 @@ Run the script:
 $ flask run
 ```
 
-Run the test cases with `WARNING` logging level to supress unnecessary logging messages:
+Run the test cases with `WARNING` logging level to suppress unnecessary logging messages:
 
 ```
 $ export PR_LOGGING_LEVEL=WARNING &&

@@ -34,6 +34,12 @@ Run the script:
 $ flask run
 ```
 
+Run the test cases:
+
+```
+$ python -m unittest discover tests "test_*.py" -v
+```
+
 
 ## Docker
 

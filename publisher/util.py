@@ -309,17 +309,17 @@ class PublisherWalk:
         _, satellite_dir, year_month_dir, scene_dir, path_row_dir, level_dir = splitted_dir_path
 
         # if the informed satellite is not equal to the dir, then the folder is invalid
-        if 'satellite' in self.query and self.query['satellite'] != satellite_dir:
+        if self.query['satellite'] is not None and self.query['satellite'] != satellite_dir:
             return False
 
         _, sensor, date, time = decode_scene_dir(scene_dir)
 
         # if the informed sensor is not equal to the dir, then the folder is invalid
-        if 'sensor' in self.query and self.query['sensor'] != sensor:
+        if self.query['sensor'] is not None and self.query['sensor'] != sensor:
             return False
 
         # if the actual dir is not inside the date range, then the folder is invalid
-        if 'start_date' in self.query and 'end_date' in self.query:
+        if self.query['start_date'] is not None and self.query['end_date'] is not None:
             # convert date from str to datetime
             date = datetime.strptime(date, '%Y-%m-%d')
 
@@ -333,7 +333,7 @@ class PublisherWalk:
                 return False
 
         # if the informed path/row is not inside the dir, then the folder is invalid
-        if 'path' in self.query or 'row' in self.query:
+        if self.query['path'] is not None or self.query['row'] is not None:
             splitted_path_row = path_row_dir.split('_')
 
             if len(splitted_path_row) == 3:
@@ -345,14 +345,14 @@ class PublisherWalk:
             else:
                 raise Exception(f'Invalid path/row dir: {path_row_dir}')
 
-            if 'path' in self.query and self.query['path'] != int(path):
+            if self.query['path'] is not None and self.query['path'] != int(path):
                 return False
 
-            if 'row' in self.query and self.query['row'] != int(row):
+            if self.query['row'] is not None and self.query['row'] != int(row):
                 return False
 
         # if the level_dir does not start with the informed geo_processing, then the folder is invalid
-        if 'geo_processing' in self.query and not level_dir.startswith(str(self.query['geo_processing'])):
+        if self.query['geo_processing'] is not None and not level_dir.startswith(str(self.query['geo_processing'])):
             # example: `2_BC_UTM_WGS84`
             return False
 
@@ -360,9 +360,6 @@ class PublisherWalk:
 
     def __get_xml_files(self, files, dir_path):
         '''Return just XML files based on query.'''
-
-        # rp - radio_processing
-        rp = self.query['radio_processing']  # DN or SR
 
         # rp_template - radio_processing_template
         rp_template = {
@@ -372,8 +369,17 @@ class PublisherWalk:
             'SR': '^[a-zA-Z0-9_]+BAND\d+_GRID_SURFACE.xml'
         }
 
-        # get just the XML files based on the radiometric processing regex
-        xml_files = list(filter(lambda f: search(rp_template[rp], f), files))
+        # rp - radio_processing
+        rp = self.query['radio_processing']  # DN or SR
+
+        if rp is not None:
+            # get just the XML files based on the radiometric processing regex
+            xml_files = list(filter(lambda f: search(rp_template[rp], f), files))
+        else:
+            # if rp is None, then publisher searchs for both `DN` and `SR` XML files
+            xml_files = list(filter(
+                lambda f: search(rp_template['DN'], f) or search(rp_template['SR'], f), files
+            ))
 
         # if there are NOT valid XML files, then I save the error
         if not xml_files:

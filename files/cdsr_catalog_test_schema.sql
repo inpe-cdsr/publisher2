@@ -11,5 +11,6 @@ CREATE TABLE item (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT UNIQUE NOT NULL,
   description TEXT NOT NULL,
+  collection_id INTEGER NOT NULL,
   FOREIGN KEY (collection_id) REFERENCES collection (id)
 );

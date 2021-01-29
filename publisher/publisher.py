@@ -17,14 +17,14 @@ logger = create_logger(__name__, level=PR_LOGGING_LEVEL)
 
 
 class Publisher:
-    def __init__(self, BASE_DIR, IS_TO_GET_DATA_FROM_DB, DBConnection, query=None):
+    def __init__(self, BASE_DIR, IS_TO_GET_DATA_FROM_DB, db_connection, query=None):
         # base directory to search the files
         self.BASE_DIR = BASE_DIR
         self.IS_TO_GET_DATA_FROM_DB = IS_TO_GET_DATA_FROM_DB
         self.query = query
         # self.items = []
         self.SATELLITES = None
-        self.db = DBConnection()
+        self.db = db_connection
 
         # read satellites metadata file
         self.__read_metadata_file()

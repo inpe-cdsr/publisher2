@@ -8,7 +8,7 @@ from pandas import read_sql
 from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
 
-from publisher.environment import PR_LOGGING_LEVEL
+from publisher.environment import PR_FILES_PATH, PR_LOGGING_LEVEL
 from publisher.logger import create_logger
 
 
@@ -69,9 +69,20 @@ class PostgreSQLConnection(DBConnection):
 
 
 class SQLiteConnection(DBConnection):
+    # http://pythonclub.com.br/gerenciando-banco-dados-sqlite3-python-parte1.html
 
-    def __init__(self):
+    def __init__(self, db_uri):
+        self.__db_uri = db_uri
+        # init a new test database before running the test cases
         self.__init_db()
+
+    def __init_db(self):
+        # open schema file
+        with open(f'{PR_FILES_PATH}/cdsr_catalog_test_schema.sql', 'r') as data:
+            schema = data.read()
+
+        # execute the schema file
+        self.execute(schema, is_transaction=True)
 
     def execute(self, query, params=None, is_transaction=False):
         # logger.debug('SQLiteConnection.execute()')
@@ -82,8 +93,7 @@ class SQLiteConnection(DBConnection):
         try:
             # INSERT, UPDATE and DELETE
             if is_transaction:
-                # in-memory database
-                db = sqlite3_connect('instance/cdsr_catalog.db')
+                db = sqlite3_connect(self.__db_uri)
                 cursor = db.cursor()
 
                 # execute many clauses together
@@ -100,20 +110,5 @@ class SQLiteConnection(DBConnection):
             logger.error(f'SQLiteConnection.execute() - An error occurred during query execution.')
             logger.error(f'SQLiteConnection.execute() - error.code: {error.code} - error.args: {error.args}')
             logger.error(f'SQLiteConnection.execute() - error: {error}\n')
-
-            raise SQLAlchemyError(error)
-
-    def __init_db(self):
-        try:
-            with open('publisher/schema.sql', 'r') as data:
-                schema = data.read()
-
-            # execute the file
-            self.execute(schema, is_transaction=True)
-
-        except SQLAlchemyError as error:
-            logger.error(f'SQLiteConnection.init_db() - An error occurred during query execution.')
-            logger.error(f'SQLiteConnection.init_db() - error.code: {error.code} - error.args: {error.args}')
-            logger.error(f'SQLiteConnection.init_db() - error: {error}\n')
 
             raise SQLAlchemyError(error)

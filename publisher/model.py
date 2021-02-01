@@ -2,9 +2,12 @@
 
 from abc import ABC, abstractmethod
 from json import dumps
+from os import getenv
 from sqlite3 import connect as sqlite3_connect
 
 from pandas import read_sql
+from psycopg2 import connect as psycopg2_connect
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -28,9 +31,15 @@ class DBConnection(ABC):
 class PostgreSQLConnection(DBConnection):
 
     def __init__(self):
+        self._create_engine()
+
+    def _create_engine(self, connect_string=None):
         try:
-            # the elements for connection are got by environment variables
+            # default: the elements for connection are got by environment variables
             self.engine = create_engine('postgresql+psycopg2://')
+
+            if connect_string is not None:
+                self.engine = create_engine(connect_string)
 
         except SQLAlchemyError as error:
             logger.error(f'PostgreSQLConnection.__init__() - An error occurred during engine creation.')
@@ -68,47 +77,57 @@ class PostgreSQLConnection(DBConnection):
             raise SQLAlchemyError(error)
 
 
-class SQLiteConnection(DBConnection):
-    # http://pythonclub.com.br/gerenciando-banco-dados-sqlite3-python-parte1.html
+class PostgreSQLTestConnection(PostgreSQLConnection):
 
-    def __init__(self, db_uri):
-        self.__db_uri = db_uri
-        # init a new test database before running the test cases
+    def __init__(self):
+        self.PGUSER = getenv('PGUSER', 'postgres')
+        self.PGPASSWORD = getenv('PGPASSWORD', 'postgres')
+        self.PGHOST = getenv('PGHOST', 'inpe_cdsr_postgis')
+        self.PGPORT = int(getenv('PGPORT', 5432))
+        self.PGDATABASE = getenv('PGDATABASE', 'cdsr_catalog_test')
+
         self.__init_db()
 
-    def __init_db(self):
+    def __recreate_test_database(self):
+        # connect to `postgres` database in order to recreate other database
+        con = psycopg2_connect(
+            user=self.PGUSER, password=self.PGPASSWORD,
+            host=self.PGHOST, port=self.PGPORT,
+            dbname='postgres'
+        )
+
+        con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+
+        cur = con.cursor()
+
+        cur.execute(f'DROP DATABASE IF EXISTS {self.PGDATABASE};')
+        cur.execute(f'CREATE DATABASE {self.PGDATABASE};')
+
+        con.close()
+
+        logger.info(f'\nRecreated `{self.PGDATABASE}` database.')
+
+    def __restore_test_database(self):
+        # connect with test database
+        con = psycopg2_connect(
+            user=self.PGUSER, password=self.PGPASSWORD,
+            host=self.PGHOST, port=self.PGPORT,
+            dbname=self.PGDATABASE
+        )
+
+        cur = con.cursor()
+
         # open schema file
-        with open(f'{PR_FILES_PATH}/cdsr_catalog_test_schema.sql', 'r') as data:
+        with open(f'tests/db/cdsr_catalog_test.sql', 'r') as data:
             schema = data.read()
 
-        # execute the schema file
-        self.execute(schema, is_transaction=True)
+        cur.execute(schema)
 
-    def execute(self, query, params=None, is_transaction=False):
-        # logger.debug('SQLiteConnection.execute()')
-        # logger.debug(f'SQLiteConnection.execute() - is_transaction: {is_transaction}')
-        # logger.debug(f'SQLiteConnection.execute() - query: {query}')
-        # logger.debug(f'SQLiteConnection.execute() - params: {params}')
+        con.commit()
+        con.close()
 
-        try:
-            # INSERT, UPDATE and DELETE
-            if is_transaction:
-                db = sqlite3_connect(self.__db_uri)
-                cursor = db.cursor()
+        logger.info(f'Restored `{self.PGDATABASE}` database.\n')
 
-                # execute many clauses together
-                cursor.executescript(query)
-
-                db.commit()
-                db.close()
-                return
-
-            # SELECT (return dataframe)
-            # return read_sql(query, con=self.engine)
-
-        except SQLAlchemyError as error:
-            logger.error(f'SQLiteConnection.execute() - An error occurred during query execution.')
-            logger.error(f'SQLiteConnection.execute() - error.code: {error.code} - error.args: {error.args}')
-            logger.error(f'SQLiteConnection.execute() - error: {error}\n')
-
-            raise SQLAlchemyError(error)
+    def __init_db(self):
+        self.__recreate_test_database()
+        self.__restore_test_database()

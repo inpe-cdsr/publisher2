@@ -56,7 +56,7 @@ $ export PR_LOGGING_LEVEL=WARNING &&
 Build the Docker image (development or production):
 
 ```
-$ docker build -t inpe-cdsr-publisher2 -f Dockerfile . --no-cache
+$ docker build -t inpe-cdsr-publisher2:0.0.2 -f Dockerfile . --no-cache
 $ docker build -t registry.dpi.inpe.br/cdsr/publisher2:0.0.1 -f Dockerfile . --no-cache
 ```
 
@@ -64,4 +64,14 @@ If you have credentials, then push the image to your registry. For example:
 
 ```
 $ docker push registry.dpi.inpe.br/cdsr/publisher2:0.0.1
+```
+
+
+## Usage
+
+Run a Docker container using the previous Docker image:
+
+```
+$ docker run --name inpe_cdsr_publisher2 -p 5000:5000 -v $(pwd):/app && \
+    --env-file ./environment.env inpe-cdsr-publisher2
 ```

@@ -1,7 +1,6 @@
 from unittest import TestCase, main
 
 from publisher import create_app
-from publisher.model import SQLiteConnection
 
 
 test_config={'TESTING': True}

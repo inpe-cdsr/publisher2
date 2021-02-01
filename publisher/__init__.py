@@ -7,7 +7,7 @@ from os.path import join as os_path_join
 from flask import Flask, request
 
 from publisher.environment import FLASK_SECRET_KEY, PR_BASE_DIR, PR_IS_TO_GET_DATA_FROM_DB
-from publisher.model import PostgreSQLConnection, SQLiteConnection
+from publisher.model import PostgreSQLConnection, PostgreSQLTestConnection
 from publisher.publisher import Publisher
 
 
@@ -37,9 +37,7 @@ def create_app(test_config=None):
         db_connection = PostgreSQLConnection()
     else:
         # testing
-        db_connection = SQLiteConnection(
-            os_path_join(app.instance_path, 'cdsr_catalog_test.sqlite')
-        )
+        db_connection = PostgreSQLTestConnection()
 
     try:
         # ensure the instance folder exists

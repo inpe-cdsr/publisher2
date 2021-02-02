@@ -33,13 +33,10 @@ class PostgreSQLConnection(DBConnection):
     def __init__(self):
         self._create_engine()
 
-    def _create_engine(self, connect_string=None):
+    def _create_engine(self):
         try:
-            # default: the elements for connection are got by environment variables
+            # the elements for connection are got by environment variables
             self.engine = create_engine('postgresql+psycopg2://')
-
-            if connect_string is not None:
-                self.engine = create_engine(connect_string)
 
         except SQLAlchemyError as error:
             logger.error(f'PostgreSQLConnection.__init__() - An error occurred during engine creation.')
@@ -88,6 +85,8 @@ class PostgreSQLTestConnection(PostgreSQLConnection):
 
         self.__init_db()
 
+        super().__init__()
+
     def __recreate_test_database(self):
         # connect to `postgres` database in order to recreate other database
         con = psycopg2_connect(
@@ -131,3 +130,6 @@ class PostgreSQLTestConnection(PostgreSQLConnection):
     def __init_db(self):
         self.__recreate_test_database()
         self.__restore_test_database()
+
+    def delete_from_items(self):
+        self.execute('DELETE FROM bdc.items;', is_transaction=True)

@@ -144,6 +144,6 @@ class Publisher:
         logger.info('Inserting items into database...')
         concanate_inserts = ' '.join(items_insert)
         # logger.debug(f'concanate_inserts: \n{concanate_inserts}\n')
-        # self.db.execute(concanate_inserts, is_transaction=True)
+        self.db.execute(concanate_inserts, is_transaction=True)
 
         # logger.debug(f'p_walk.errors: {p_walk.errors}\n')

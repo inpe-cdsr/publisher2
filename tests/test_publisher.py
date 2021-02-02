@@ -11,8 +11,8 @@ from publisher.model import PostgreSQLTestConnection
 test_config={'TESTING': True}
 
 
-def read_item_from_csv(path):
-    expected = read_csv(path)
+def read_item_from_csv(file_name):
+    expected = read_csv(f'tests/publisher/{file_name}')
 
     expected['start_date'] = to_datetime(expected['start_date'])
     expected['end_date'] = to_datetime(expected['end_date'])
@@ -39,6 +39,11 @@ class PublisherPublishTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
+        result = self.db.select_from_items()
+        expected = read_item_from_csv('test_publish.csv')
+
+        assert_frame_equal(expected, result)
+
     def test_publish_with_all_parameters(self):
         query = {
             'satellite': 'CBERS4A',
@@ -57,11 +62,15 @@ class PublisherPublishTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('tests/publisher/test_publish_with_all_parameters.csv')
+        expected = read_item_from_csv('test_publish_with_all_parameters.csv')
 
         assert_frame_equal(expected, result)
 
     def test_publish_with_not_all_parameters(self):
+        ##################################################
+        # 1
+        ##################################################
+
         query = {
             'satellite': 'CBERS4A',
             'sensor': 'wfi',
@@ -75,6 +84,17 @@ class PublisherPublishTestCase(TestCase):
 
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+
+        result = self.db.select_from_items()
+        expected = read_item_from_csv('test_publish_with_not_all_parameters_01.csv')
+
+        assert_frame_equal(expected, result)
+
+        ##################################################
+        # 2
+        ##################################################
+
+        self.db.delete_from_items()
 
         query = {
             'start_date': '2019-12-01',
@@ -90,6 +110,17 @@ class PublisherPublishTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
+        result = self.db.select_from_items()
+        expected = read_item_from_csv('test_publish_with_not_all_parameters_02.csv')
+
+        assert_frame_equal(expected, result)
+
+        ##################################################
+        # 3
+        ##################################################
+
+        self.db.delete_from_items()
+
         query = {
             'satellite': 'CBERS4A',
             'sensor': 'wfi',
@@ -104,7 +135,16 @@ class PublisherPublishTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
+        result = self.db.select_from_items()
+        expected = read_item_from_csv('test_publish_with_not_all_parameters_03.csv')
+
+        assert_frame_equal(expected, result)
+
     def test_publish_with_invalid_parameters(self):
+        ##################################################
+        # 1
+        ##################################################
+
         query = {
             'satelliti': 'CBERS4A',
             'sensors': 'wfi',
@@ -120,6 +160,17 @@ class PublisherPublishTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
+        result = self.db.select_from_items()
+        expected = read_item_from_csv('test_publish_with_invalid_parameters_01.csv')
+
+        assert_frame_equal(expected, result)
+
+        ##################################################
+        # 2
+        ##################################################
+
+        self.db.delete_from_items()
+
         query = {
             'satellite': 'CBERS4A',
             'sensor': 'wfi',
@@ -134,6 +185,11 @@ class PublisherPublishTestCase(TestCase):
 
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+
+        result = self.db.select_from_items()
+        expected = read_item_from_csv('test_publish_with_invalid_parameters_02.csv')
+
+        assert_frame_equal(expected, result)
 
 
 # if __name__ == '__main__':

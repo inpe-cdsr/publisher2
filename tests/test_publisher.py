@@ -87,6 +87,28 @@ class PublisherPublishTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
+    def test_publish__with_all_parameters__cbers4a_wpm(self):
+        query = {
+            'satellite': 'CBERS4A',
+            'sensor': 'wPm',
+            'start_date': '2020-04-01',
+            'end_date': '2020-04-30',
+            'path': '202',
+            'row': 112,
+            'geo_processing': '2',
+            'radio_processing': 'DN'
+        }
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+
+        result = self.db.select_from_items()
+        expected = read_item_from_csv('test_publish__with_all_parameters__cbers4a_wpm.csv')
+
+        assert_frame_equal(expected, result)
+
     def test_publish__with_invalid_parameters__invalid_date_parameter(self):
         query = {
             'satelliti': 'CBERS4A',

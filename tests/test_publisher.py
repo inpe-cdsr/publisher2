@@ -179,47 +179,16 @@ class PublisherPublishTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
-    def test_publish__all_parameters__invalid_satellite_name(self):
+    def test_publish__all_parameters__invalid_parameters_content(self):
         query = {
-            'satellite': 'CIBYRS4A', # <-- invalid satellite name
-            'sensor': 'wPm',
-            'start_date': '2020-05-01',
-            'end_date': '2020-05-30',
-            'path': '202',
-            'row': 112,
-            'geo_processing': '2',
-            'radio_processing': 'DN'
-        }
-
-        response = self.api.get('/publish', query_string=query)
-        expected = {
-            'code': 400,
-            'name': 'Bad Request',
-            'description': {
-                'satellite': ["value does not match regex '^CBERS[1-4][A-B]*|^LANDSAT\\d\'"]
-            }
-        }
-
-        self.assertEqual(400, response.status_code)
-        self.assertEqual(expected, loads(response.get_data(as_text=True)))
-
-        # check if the database if empty
-        result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull'])  # empty dataframe
-
-        assert_frame_equal(expected, result)
-
-    def test_publish__all_parameters__invalid_start_and_end_dates(self):
-        query = {
-            'satellite': 'CBERS4A',
+            'satellite': 'CIBYRS4A',
             'sensor': 'wPm',
             'start_date': '2020-15-31',
             'end_date': '2020-05',
-            'path': '202',
-            'row': 112,
-            'geo_processing': '2',
-            'radio_processing': 'DN'
+            'path': '0',
+            'row': 361,
+            'geo_processing': '5',
+            'radio_processing': 'Dz'
         }
 
         response = self.api.get('/publish', query_string=query)
@@ -227,6 +196,7 @@ class PublisherPublishTestCase(TestCase):
             'code': 400,
             'name': 'Bad Request',
             'description': {
+                'satellite': ["value does not match regex '^CBERS[1-4][A-B]*|^LANDSAT\\d\'"],
                 'start_date': [
                     "field 'start_date' cannot be coerced: time data '2020-15-31' does not match format '%Y-%m-%d'",
                     'must be of datetime type'
@@ -234,7 +204,11 @@ class PublisherPublishTestCase(TestCase):
                 'end_date': [
                     "field 'end_date' cannot be coerced: time data '2020-05' does not match format '%Y-%m-%d'",
                     'must be of datetime type'
-                ]
+                ],
+                'path': ['min value is 1'],
+                'row': ['max value is 360'],
+                'geo_processing': ['max value is 4'],
+                'radio_processing': ['unallowed value DZ']
             }
         }
 

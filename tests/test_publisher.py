@@ -43,7 +43,7 @@ class PublisherPublishTestCase(TestCase):
 
         assert_frame_equal(expected, result)
     '''
-    def test_publish__with_all_parameters__cbers4a_mux(self):
+    def test_publish__all_parameters__cbers4a_mux(self):
         query = {
             'satellite': 'CBERS4A',
             'sensor': 'MUx',
@@ -61,11 +61,11 @@ class PublisherPublishTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__with_all_parameters__cbers4a_mux.csv')
+        expected = read_item_from_csv('test_publish__all_parameters__cbers4a_mux.csv')
 
         assert_frame_equal(expected, result)
 
-    def test_publish__with_all_parameters__cbers4a_wfi(self):
+    def test_publish__all_parameters__cbers4a_wfi(self):
         query = {
             'satellite': 'CBERS4A',
             'sensor': 'wfi',
@@ -83,11 +83,11 @@ class PublisherPublishTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__with_all_parameters__cbers4a_wfi.csv')
+        expected = read_item_from_csv('test_publish__all_parameters__cbers4a_wfi.csv')
 
         assert_frame_equal(expected, result)
 
-    def test_publish__with_all_parameters__cbers4a_wpm(self):
+    def test_publish__all_parameters__cbers4a_wpm(self):
         query = {
             'satellite': 'CBERS4A',
             'sensor': 'wPm',
@@ -105,11 +105,11 @@ class PublisherPublishTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__with_all_parameters__cbers4a_wpm.csv')
+        expected = read_item_from_csv('test_publish__all_parameters__cbers4a_wpm.csv')
 
         assert_frame_equal(expected, result)
 
-    def test_publish__with_invalid_parameters__invalid_date_parameter(self):
+    def test_publish__invalid_parameters__invalid_date_parameter(self):
         query = {
             'satelliti': 'CBERS4A',
             'sensors': 'wfi',
@@ -126,11 +126,11 @@ class PublisherPublishTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__with_invalid_parameters__invalid_date_parameter.csv')
+        expected = read_item_from_csv('test_publish__invalid_parameters__invalid_date_parameter.csv')
 
         assert_frame_equal(expected, result)
 
-    def test_publish__with_invalid_parameters__invalid_pathy_parameter(self):
+    def test_publish__invalid_parameters__invalid_pathy_parameter(self):
         query = {
             'satellite': 'CBERS4A',
             'sensor': 'wfi',
@@ -147,11 +147,11 @@ class PublisherPublishTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__with_invalid_parameters__invalid_pathy_parameter.csv')
+        expected = read_item_from_csv('test_publish__invalid_parameters__invalid_pathy_parameter.csv')
 
         assert_frame_equal(expected, result)
 
-    def test_publish__with_not_all_parameters__missing_geo_and_radio_processings(self):
+    def test_publish__not_all_parameters__missing_geo_and_radio_processings(self):
         query = {
             'satellite': 'CBERS4A',
             'sensor': 'wfi',
@@ -167,11 +167,11 @@ class PublisherPublishTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__with_not_all_parameters__missing_geo_and_radio_processings.csv')
+        expected = read_item_from_csv('test_publish__not_all_parameters__missing_geo_and_radio_processings.csv')
 
         assert_frame_equal(expected, result)
 
-    def test_publish__with_not_all_parameters__missing_path_and_row(self):
+    def test_publish__not_all_parameters__missing_path_and_row(self):
         query = {
             'satellite': 'CBERS4A',
             'sensor': 'wfi',
@@ -187,11 +187,11 @@ class PublisherPublishTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__with_not_all_parameters__missing_path_and_row.csv')
+        expected = read_item_from_csv('test_publish__not_all_parameters__missing_path_and_row.csv')
 
         assert_frame_equal(expected, result)
 
-    def test_publish__with_not_all_parameters__missing_satellite_and_sensor(self):
+    def test_publish__not_all_parameters__missing_satellite_and_sensor(self):
         query = {
             'start_date': '2019-12-01',
             'end_date': '2020-06-30',
@@ -207,6 +207,6 @@ class PublisherPublishTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__with_not_all_parameters__missing_satellite_and_sensor.csv')
+        expected = read_item_from_csv('test_publish__not_all_parameters__missing_satellite_and_sensor.csv')
 
         assert_frame_equal(expected, result)

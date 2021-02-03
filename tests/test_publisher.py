@@ -9,6 +9,7 @@ from publisher.model import PostgreSQLTestConnection
 
 
 test_config={'TESTING': True}
+app = create_app(test_config)
 
 
 def read_item_from_csv(file_name):
@@ -26,7 +27,6 @@ class PublisherPublishTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        app = create_app(test_config)
         cls.api = app.test_client()
         cls.db = PostgreSQLTestConnection()
 

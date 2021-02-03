@@ -179,6 +179,75 @@ class PublisherPublishTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
+    def test_publish__all_parameters__invalid_satellite_name(self):
+        query = {
+            'satellite': 'CIBYRS4A', # <-- invalid satellite name
+            'sensor': 'wPm',
+            'start_date': '2020-05-01',
+            'end_date': '2020-05-30',
+            'path': '202',
+            'row': 112,
+            'geo_processing': '2',
+            'radio_processing': 'DN'
+        }
+
+        response = self.api.get('/publish', query_string=query)
+        expected = {
+            'code': 400,
+            'name': 'Bad Request',
+            'description': {
+                'satellite': ["value does not match regex '^CBERS[1-4][A-B]*|^LANDSAT\\d\'"]
+            }
+        }
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(expected, loads(response.get_data(as_text=True)))
+
+        # check if the database if empty
+        result = self.db.select_from_items()
+        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
+                                      'metadata','geom','min_convex_hull'])  # empty dataframe
+
+        assert_frame_equal(expected, result)
+
+    def test_publish__all_parameters__invalid_start_and_end_dates(self):
+        query = {
+            'satellite': 'CBERS4A',
+            'sensor': 'wPm',
+            'start_date': '2020-15-31',
+            'end_date': '2020-05',
+            'path': '202',
+            'row': 112,
+            'geo_processing': '2',
+            'radio_processing': 'DN'
+        }
+
+        response = self.api.get('/publish', query_string=query)
+        expected = {
+            'code': 400,
+            'name': 'Bad Request',
+            'description': {
+                'start_date': [
+                    "field 'start_date' cannot be coerced: time data '2020-15-31' does not match format '%Y-%m-%d'",
+                    'must be of datetime type'
+                ],
+                'end_date': [
+                    "field 'end_date' cannot be coerced: time data '2020-05' does not match format '%Y-%m-%d'",
+                    'must be of datetime type'
+                ]
+            }
+        }
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(expected, loads(response.get_data(as_text=True)))
+
+        # check if the database if empty
+        result = self.db.select_from_items()
+        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
+                                      'metadata','geom','min_convex_hull'])  # empty dataframe
+
+        assert_frame_equal(expected, result)
+
     def test_publish__invalid_parameters__invalid_date_satelliti_sensors_parameters(self):
         query = {
             'satelliti': 'CBERS4A',
@@ -194,8 +263,11 @@ class PublisherPublishTestCase(TestCase):
         expected = {
             'code': 400,
             'name': 'Bad Request',
-            'description': ("Invalid query. Errors: {'date': ['unknown field'], "
-                            "'satelliti': ['unknown field'], 'sensors': ['unknown field']}")
+            'description': {
+                'satelliti': ['unknown field'],
+                'sensors': ['unknown field'],
+                'date': ['unknown field']
+            }
         }
 
         self.assertEqual(400, response.status_code)
@@ -223,8 +295,11 @@ class PublisherPublishTestCase(TestCase):
         expected = {
             'code': 400,
             'name': 'Bad Request',
-            'description': ("Invalid query. Errors: {'pathy': ['unknown field'], "
-                            "'processing': ['unknown field'], 'rown': ['unknown field']}")
+            'description': {
+                'pathy': ['unknown field'],
+                'rown': ['unknown field'],
+                'processing': ['unknown field']
+            }
         }
 
         self.assertEqual(400, response.status_code)

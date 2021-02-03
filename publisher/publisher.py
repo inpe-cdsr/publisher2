@@ -90,7 +90,7 @@ class Publisher:
 
         # validate self.query
         if not is_valid:
-            raise BadRequest(f'Invalid query. Errors: {errors}')
+            raise BadRequest(errors)
 
         logger.info(f'query: {self.query}')
         print_line()

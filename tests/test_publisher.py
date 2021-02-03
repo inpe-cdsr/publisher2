@@ -44,7 +44,7 @@ class PublisherPublishTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
-    def test_publish__all_parameters__cbers4a_mux_geo_2(self):
+    def test_publish__all_parameters__cbers4a_mux_l2_dn(self):
         query = {
             'satellite': 'CBERS4A',
             'sensor': 'MUx',
@@ -62,9 +62,57 @@ class PublisherPublishTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__all_parameters__cbers4a_mux_geo_2.csv')
+        expected = read_item_from_csv('test_publish__all_parameters__cbers4a_mux_l2_dn.csv')
 
         assert_frame_equal(expected, result)
+
+    def test_publish__all_parameters__cbers4a_mux_l2_dn__next_to_0h(self):
+        # scene_dir with time between 0h and 5h, consider one day ago
+        # CBERS4A/2020_04/CBERS_4A_MUX_RAW_2020_04_06.00_56_20_CP5/164_025_0/
+        query = {
+            'satellite': 'CBERS4A',
+            'sensor': 'MUX',
+            'start_date': '2020-04-05',
+            'end_date': '2020-04-05',
+            'path': 164,
+            'row': 25,
+            'geo_processing': 2,
+            'radio_processing': 'DN'
+        }
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+
+        result = self.db.select_from_items()
+        expected = read_item_from_csv('test_publish__all_parameters__cbers4a_mux_l2_dn__next_to_0h.csv')
+
+        assert_frame_equal(expected, result)
+
+    # def test_publish__all_parameters__cbers4a_mux_l2_dn__next_to_5h(self):
+    #     # scene_dir with time between 0h and 5h, consider one day ago
+    #     # CBERS4A/2020_08/CBERS_4A_WPM_RAW_2020_08_17.03_52_45_ETC2/373_019_0/
+    #     query = {
+    #         'satellite': 'CBERS4A',
+    #         'sensor': 'MUX',
+    #         'start_date': '2020-08-16',
+    #         'end_date': '2020-08-16',
+    #         'path': '373',
+    #         'row': '019',
+    #         'geo_processing': '2',
+    #         'radio_processing': 'DN'
+    #     }
+
+    #     response = self.api.get('/publish', query_string=query)
+
+    #     self.assertEqual(200, response.status_code)
+    #     self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+
+    #     result = self.db.select_from_items()
+    #     expected = read_item_from_csv('test_publish__all_parameters__cbers4a_mux_l2_dn__next_to_5h.csv')
+
+    #     assert_frame_equal(expected, result)
 
     def test_publish__all_parameters__cbers4a_mux__invalid_query(self):
         query = {
@@ -83,13 +131,14 @@ class PublisherPublishTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
+        # check if the database if empty
         result = self.db.select_from_items()
         expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
                                       'metadata','geom','min_convex_hull']) # empty dataframe
 
         assert_frame_equal(expected, result)
 
-    def test_publish__all_parameters__cbers4a_wfi(self):
+    def test_publish__all_parameters__cbers4a_wfi_l4_dn(self):
         query = {
             'satellite': 'CBERS4A',
             'sensor': 'wfi',
@@ -107,7 +156,7 @@ class PublisherPublishTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__all_parameters__cbers4a_wfi.csv')
+        expected = read_item_from_csv('test_publish__all_parameters__cbers4a_wfi_l4_dn.csv')
 
         assert_frame_equal(expected, result)
 
@@ -128,13 +177,14 @@ class PublisherPublishTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
+        # check if the database if empty
         result = self.db.select_from_items()
         expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
                                       'metadata','geom','min_convex_hull'])  # empty dataframe
 
         assert_frame_equal(expected, result)
 
-    def test_publish__all_parameters__cbers4a_wpm(self):
+    def test_publish__all_parameters__cbers4a_wpm_l2_dn(self):
         query = {
             'satellite': 'CBERS4A',
             'sensor': 'wPm',
@@ -152,7 +202,7 @@ class PublisherPublishTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__all_parameters__cbers4a_wpm.csv')
+        expected = read_item_from_csv('test_publish__all_parameters__cbers4a_wpm_l2_dn.csv')
 
         assert_frame_equal(expected, result)
 
@@ -173,6 +223,7 @@ class PublisherPublishTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
+        # check if the database if empty
         result = self.db.select_from_items()
         expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
                                       'metadata','geom','min_convex_hull']) # empty dataframe

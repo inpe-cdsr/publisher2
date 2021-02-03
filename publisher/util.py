@@ -5,6 +5,7 @@ from os import walk
 from os.path import join, sep
 from re import search
 
+from werkzeug.exceptions import InternalServerError
 from xmltodict import parse as xmltodict_parse
 
 from publisher.common import fill_string_with_left_zeros
@@ -254,7 +255,7 @@ def decode_scene_dir(scene_dir):
             # this time has NOT just time, then I join the time parts (e.g. '13_53_00_ETC2')
             time = ':'.join(time[0:3])
         else:
-            raise Exception(f'Invalid scene dir: {scene_dir}')
+            raise InternalServerError(f'Invalid scene dir: {scene_dir}')
 
     elif scene_dir_first.startswith('CBERS2B') or scene_dir_first.startswith('LANDSAT'):
         # examples: CBERS2B_CCD_20070925.145654
@@ -265,20 +266,20 @@ def decode_scene_dir(scene_dir):
 
         if len(date) != 8:
             # example: a time should be something like this: '20070925'
-            raise Exception(f'Invalid scene dir: {scene_dir}')
+            raise InternalServerError(f'Invalid scene dir: {scene_dir}')
 
         # I build the date string based on the old one (e.g. from '20070925' to '2007-09-25')
         date = f'{date[0:4]}-{date[4:6]}-{date[6:8]}'
 
         if len(time) != 6:
             # example: a time should be something like this: '145654'
-            raise Exception(f'Invalid scene dir: {scene_dir}')
+            raise InternalServerError(f'Invalid scene dir: {scene_dir}')
 
         # I build the time string based on the old one (e.g. from '145654' to '14:56:54')
         time = f'{time[0:2]}:{time[2:4]}:{time[4:6]}'
 
     else:
-        raise Exception(f'Invalid scene dir: {scene_dir}')
+        raise InternalServerError(f'Invalid scene dir: {scene_dir}')
 
     return satellite, sensor, date, time
 
@@ -343,7 +344,7 @@ class PublisherWalk:
                 # example: `151_B_141_5_0`
                 path, _, row, _, _ = splitted_path_row
             else:
-                raise Exception(f'Invalid path/row dir: {path_row_dir}')
+                raise InternalServerError(f'Invalid path/row dir: {path_row_dir}')
 
             if self.query['path'] is not None and self.query['path'] != int(path):
                 return False

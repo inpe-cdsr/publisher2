@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from pandas import read_csv, to_datetime
+from pandas import DataFrame, read_csv, to_datetime
 from pandas.testing import assert_frame_equal
 
 from publisher import create_app
@@ -32,7 +32,7 @@ class PublisherPublishTestCase(TestCase):
     def setUp(self):
         # clean table before testing
         self.db.delete_from_items()
-    '''
+
     def test_publish(self):
         response = self.api.get('/publish')
         self.assertEqual(200, response.status_code)
@@ -42,8 +42,8 @@ class PublisherPublishTestCase(TestCase):
         expected = read_item_from_csv('test_publish.csv')
 
         assert_frame_equal(expected, result)
-    '''
-    def test_publish__all_parameters__cbers4a_mux(self):
+
+    def test_publish__all_parameters__cbers4a_mux_geo_2(self):
         query = {
             'satellite': 'CBERS4A',
             'sensor': 'MUx',
@@ -61,7 +61,31 @@ class PublisherPublishTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__all_parameters__cbers4a_mux.csv')
+        expected = read_item_from_csv('test_publish__all_parameters__cbers4a_mux_geo_2.csv')
+
+        assert_frame_equal(expected, result)
+
+    def test_publish__all_parameters__cbers4a_mux_geo_4(self):
+        # There is not a result to the following query, hence I expect an empty result.
+        query = {
+            'satellite': 'CBERS4A',
+            'sensor': 'MUx',
+            'start_date': '2021-01-01',
+            'end_date': '2021-01-01',
+            'path': 209,
+            'row': 105,
+            'geo_processing': 4,
+            'radio_processing': 'DN'
+        }
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+
+        result = self.db.select_from_items()
+        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
+                                    'metadata','geom','min_convex_hull'])
 
         assert_frame_equal(expected, result)
 

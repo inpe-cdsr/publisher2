@@ -141,9 +141,11 @@ class Publisher:
 
         print_line()
 
-        logger.info('Inserting items into database...')
-        concanate_inserts = ' '.join(items_insert)
-        # logger.debug(f'concanate_inserts: \n{concanate_inserts}\n')
-        self.db.execute(concanate_inserts, is_transaction=True)
+        # if there are INSERT clauses, then insert them in the database
+        if items_insert:
+            concanate_inserts = ' '.join(items_insert)
+            # logger.debug(f'concanate_inserts: \n{concanate_inserts}\n')
+            logger.info('Inserting items into database...')
+            self.db.execute(concanate_inserts, is_transaction=True)
 
         # logger.debug(f'p_walk.errors: {p_walk.errors}\n')

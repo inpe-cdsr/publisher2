@@ -90,30 +90,6 @@ class PublisherPublishTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
-    # def test_publish__all_parameters__cbers4a_mux_l2_dn__next_to_5h(self):
-    #     # scene_dir with time between 0h and 5h, consider one day ago
-    #     # CBERS4A/2020_08/CBERS_4A_WPM_RAW_2020_08_17.03_52_45_ETC2/373_019_0/
-    #     query = {
-    #         'satellite': 'CBERS4A',
-    #         'sensor': 'MUX',
-    #         'start_date': '2020-08-16',
-    #         'end_date': '2020-08-16',
-    #         'path': '373',
-    #         'row': '019',
-    #         'geo_processing': '2',
-    #         'radio_processing': 'DN'
-    #     }
-
-    #     response = self.api.get('/publish', query_string=query)
-
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual('/publish has been executed', response.get_data(as_text=True))
-
-    #     result = self.db.select_from_items()
-    #     expected = read_item_from_csv('test_publish__all_parameters__cbers4a_mux_l2_dn__next_to_5h.csv')
-
-    #     assert_frame_equal(expected, result)
-
     def test_publish__all_parameters__cbers4a_mux__invalid_query(self):
         query = {
             'satellite': 'CBERS4A',
@@ -206,6 +182,30 @@ class PublisherPublishTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
+    def test_publish__all_parameters__cbers4a_wpm_l2_dn__next_to_5h(self):
+        # scene_dir with time between 0h and 5h, consider one day ago
+        # CBERS4A/2020_08/CBERS_4A_WPM_RAW_2020_08_17.03_52_45_ETC2/373_019_0/
+        query = {
+            'satellite': 'CBERS4A',
+            'sensor': 'WpM',
+            'start_date': '2020-08-16',
+            'end_date': '2020-08-16',
+            'path': '373',
+            'row': '019',
+            'geo_processing': '2',
+            'radio_processing': 'DN'
+        }
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+
+        result = self.db.select_from_items()
+        expected = read_item_from_csv('test_publish__all_parameters__cbers4a_mux_l2_dn__next_to_5h.csv')
+
+        assert_frame_equal(expected, result)
+
     def test_publish__all_parameters__cbers4a_wpm__invalid_query(self):
         query = {
             'satellite': 'CBERS4A',
@@ -237,7 +237,7 @@ class PublisherPublishTestCase(TestCase):
             'start_date': '2020-15-31',
             'end_date': '2020-05',
             'path': '0',
-            'row': 361,
+            'row': 1000,
             'geo_processing': '5',
             'radio_processing': 'Dz'
         }
@@ -257,7 +257,7 @@ class PublisherPublishTestCase(TestCase):
                     'must be of datetime type'
                 ],
                 'path': ['min value is 1'],
-                'row': ['max value is 360'],
+                'row': ['max value is 999'],
                 'geo_processing': ['max value is 4'],
                 'radio_processing': ['unallowed value DZ']
             }

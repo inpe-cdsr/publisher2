@@ -27,11 +27,11 @@ QUERY_SCHEMA = {
         'default': None, 'nullable': True
     },
     'path': {
-        'type': 'integer', 'coerce': int, 'min': 1, 'max': 360,
+        'type': 'integer', 'coerce': int, 'min': 1, 'max': 999,
         'default': None, 'nullable': True
     },
     'row': {
-        'type': 'integer', 'coerce': int, 'min': 1, 'max': 360,
+        'type': 'integer', 'coerce': int, 'min': 1, 'max': 999,
         'default': None, 'nullable': True
     },
     'geo_processing': {

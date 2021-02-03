@@ -65,8 +65,7 @@ class PublisherPublishTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
-    def test_publish__all_parameters__cbers4a_mux_geo_4(self):
-        # There is not a result to the following query, hence I expect an empty result.
+    def test_publish__all_parameters__cbers4a_mux__invalid_query(self):
         query = {
             'satellite': 'CBERS4A',
             'sensor': 'MUx',
@@ -74,7 +73,7 @@ class PublisherPublishTestCase(TestCase):
             'end_date': '2021-01-01',
             'path': 209,
             'row': 105,
-            'geo_processing': 4,
+            'geo_processing': 4, # <-- there is not this geometric processing
             'radio_processing': 'DN'
         }
 
@@ -85,7 +84,7 @@ class PublisherPublishTestCase(TestCase):
 
         result = self.db.select_from_items()
         expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                    'metadata','geom','min_convex_hull'])
+                                      'metadata','geom','min_convex_hull']) # empty dataframe
 
         assert_frame_equal(expected, result)
 
@@ -111,6 +110,29 @@ class PublisherPublishTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
+    def test_publish__all_parameters__cbers4a_wfi__invalid_query(self):
+        query = {
+            'satellite': 'CBERS4A',
+            'sensor': 'wfi',
+            'start_date': '2020-09-01',
+            'end_date': '2020-12-01',
+            'path': '207',
+            'row': '105', # <-- there is not this row
+            'geo_processing': '2',
+            'radio_processing': 'DN'
+        }
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+
+        result = self.db.select_from_items()
+        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
+                                      'metadata','geom','min_convex_hull'])  # empty dataframe
+
+        assert_frame_equal(expected, result)
+
     def test_publish__all_parameters__cbers4a_wpm(self):
         query = {
             'satellite': 'CBERS4A',
@@ -130,6 +152,29 @@ class PublisherPublishTestCase(TestCase):
 
         result = self.db.select_from_items()
         expected = read_item_from_csv('test_publish__all_parameters__cbers4a_wpm.csv')
+
+        assert_frame_equal(expected, result)
+
+    def test_publish__all_parameters__cbers4a_wpm__invalid_query(self):
+        query = {
+            'satellite': 'CBERS4A',
+            'sensor': 'wPm',
+            'start_date': '2020-05-01', # <-- there is not this range date
+            'end_date': '2020-05-30',
+            'path': '202',
+            'row': 112,
+            'geo_processing': '2',
+            'radio_processing': 'DN'
+        }
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+
+        result = self.db.select_from_items()
+        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
+                                      'metadata','geom','min_convex_hull']) # empty dataframe
 
         assert_frame_equal(expected, result)
 

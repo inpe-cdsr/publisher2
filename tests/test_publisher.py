@@ -179,7 +179,7 @@ class PublisherPublishTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
-    def test_publish__all_parameters__invalid_parameters_content(self):
+    def test_publish__all_parameters__invalid_values(self):
         query = {
             'satellite': 'CIBYRS4A',
             'sensor': 'wPm',
@@ -222,44 +222,11 @@ class PublisherPublishTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
-    def test_publish__invalid_parameters__invalid_date_satelliti_sensors_parameters(self):
+    def test_publish__unknown_fields(self):
         query = {
             'satelliti': 'CBERS4A',
             'sensors': 'wfi',
             'date': '2019-12-01',
-            'path': '215',
-            'row': '132',
-            'geo_processing': '4',
-            'radio_processing': 'DN'
-        }
-
-        response = self.api.get('/publish', query_string=query)
-        expected = {
-            'code': 400,
-            'name': 'Bad Request',
-            'description': {
-                'satelliti': ['unknown field'],
-                'sensors': ['unknown field'],
-                'date': ['unknown field']
-            }
-        }
-
-        self.assertEqual(400, response.status_code)
-        self.assertEqual(expected, loads(response.get_data(as_text=True)))
-
-        # check if the database if empty
-        result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull'])  # empty dataframe
-
-        assert_frame_equal(expected, result)
-
-    def test_publish__invalid_parameters__invalid_pathy_processing_rown_parameter(self):
-        query = {
-            'satellite': 'CBERS4A',
-            'sensor': 'wfi',
-            'start_date': '2019-12-01',
-            'end_date': '2020-06-30',
             'pathy': '215',
             'rown': '132',
             'processing': '4'
@@ -270,6 +237,9 @@ class PublisherPublishTestCase(TestCase):
             'code': 400,
             'name': 'Bad Request',
             'description': {
+                'satelliti': ['unknown field'],
+                'sensors': ['unknown field'],
+                'date': ['unknown field'],
                 'pathy': ['unknown field'],
                 'rown': ['unknown field'],
                 'processing': ['unknown field']

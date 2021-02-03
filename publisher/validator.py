@@ -46,6 +46,5 @@ QUERY_SCHEMA = {
 
 
 def validate(data, schema):
-    # `purge_unknown=True` removes unknow fields
-    v = Validator(schema, purge_unknown=True)
+    v = Validator(schema)
     return v.validate(data), v.document, v.errors

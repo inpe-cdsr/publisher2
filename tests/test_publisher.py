@@ -1,3 +1,4 @@
+from json import loads
 from unittest import TestCase
 
 from pandas import DataFrame, read_csv, to_datetime
@@ -178,7 +179,7 @@ class PublisherPublishTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
-    def test_publish__invalid_parameters__invalid_date_parameter(self):
+    def test_publish__invalid_parameters__invalid_date_satelliti_sensors_parameters(self):
         query = {
             'satelliti': 'CBERS4A',
             'sensors': 'wfi',
@@ -190,16 +191,24 @@ class PublisherPublishTestCase(TestCase):
         }
 
         response = self.api.get('/publish', query_string=query)
+        expected = {
+            'code': 400,
+            'name': 'Bad Request',
+            'description': ("Invalid query. Errors: {'date': ['unknown field'], "
+                            "'satelliti': ['unknown field'], 'sensors': ['unknown field']}")
+        }
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
+        # check if the database if empty
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__invalid_parameters__invalid_date_parameter.csv')
+        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
+                                      'metadata','geom','min_convex_hull'])  # empty dataframe
 
         assert_frame_equal(expected, result)
 
-    def test_publish__invalid_parameters__invalid_pathy_parameter(self):
+    def test_publish__invalid_parameters__invalid_pathy_processing_rown_parameter(self):
         query = {
             'satellite': 'CBERS4A',
             'sensor': 'wfi',
@@ -211,12 +220,20 @@ class PublisherPublishTestCase(TestCase):
         }
 
         response = self.api.get('/publish', query_string=query)
+        expected = {
+            'code': 400,
+            'name': 'Bad Request',
+            'description': ("Invalid query. Errors: {'pathy': ['unknown field'], "
+                            "'processing': ['unknown field'], 'rown': ['unknown field']}")
+        }
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
+        # check if the database if empty
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__invalid_parameters__invalid_pathy_parameter.csv')
+        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
+                                      'metadata','geom','min_convex_hull'])  # empty dataframe
 
         assert_frame_equal(expected, result)
 

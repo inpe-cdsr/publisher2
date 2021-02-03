@@ -2,6 +2,7 @@ from json import loads
 from os.path import join as os_path_join, dirname, abspath
 
 from pandas import read_csv
+from werkzeug.exceptions import BadRequest
 
 from publisher.common import print_line
 from publisher.environment import PR_FILES_PATH, PR_LOGGING_LEVEL
@@ -10,6 +11,8 @@ from publisher.util import create_assets_from_metadata, create_insert_clause, \
                            create_item_from_xml_as_dict, get_dict_from_xml_file, \
                            PublisherWalk
 from publisher.validator import validate, QUERY_SCHEMA
+
+
 
 
 # create logger object
@@ -79,17 +82,17 @@ class Publisher:
         logger.info('Publisher.main()')
 
         print_line()
-        logger.debug(f'BASE_DIR: {self.BASE_DIR}')
-        logger.debug(f'IS_TO_GET_DATA_FROM_DB: {self.IS_TO_GET_DATA_FROM_DB}')
+        logger.info(f'BASE_DIR: {self.BASE_DIR}')
+        logger.info(f'IS_TO_GET_DATA_FROM_DB: {self.IS_TO_GET_DATA_FROM_DB}')
         logger.debug(f'df_collections:\n{self.df_collections}')
 
         is_valid, self.query, errors = validate(self.query, QUERY_SCHEMA)
 
         # validate self.query
         if not is_valid:
-            raise Exception(f'Invalid query: {self.query}. Errors: {errors}')
+            raise BadRequest(f'Invalid query. Errors: {errors}')
 
-        logger.debug(f'query: {self.query}')
+        logger.info(f'query: {self.query}')
         print_line()
 
         # list to save the INSERT clauses based on item metadata

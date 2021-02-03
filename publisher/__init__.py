@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 
+from json import dumps
 from os import makedirs
 from os.path import join as os_path_join
 
 from flask import Flask, request
+from werkzeug.exceptions import HTTPException
 
 from publisher.environment import FLASK_SECRET_KEY, PR_BASE_DIR, PR_IS_TO_GET_DATA_FROM_DB
 from publisher.model import PostgreSQLConnection, PostgreSQLTestConnection
@@ -38,6 +40,8 @@ def create_app(test_config=None):
     else:
         # testing
         db_connection = PostgreSQLTestConnection()
+        # initialize database
+        db_connection.init_db()
 
     try:
         # ensure the instance folder exists
@@ -48,6 +52,21 @@ def create_app(test_config=None):
     ##################################################
     #                     ROUTES                     #
     ##################################################
+
+    @app.errorhandler(HTTPException)
+    def handle_exception(e):
+        """Return JSON instead of HTML for HTTP errors."""
+        # Source: https://flask.palletsprojects.com/en/1.1.x/errorhandling/#generic-exception-handlers
+        # start with the correct headers and status code from the error
+        response = e.get_response()
+        # replace the body with JSON
+        response.data = dumps({
+            "code": e.code,
+            "name": e.name,
+            "description": e.description,
+        })
+        response.content_type = "application/json"
+        return response
 
     @app.route('/')
     def index():

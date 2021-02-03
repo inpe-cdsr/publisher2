@@ -83,8 +83,6 @@ class PostgreSQLTestConnection(PostgreSQLConnection):
         self.PGPORT = int(getenv('PGPORT', 5432))
         self.PGDATABASE = getenv('PGDATABASE', 'cdsr_catalog_test')
 
-        self.__init_db()
-
         super().__init__()
 
     def __recreate_test_database(self):
@@ -104,7 +102,7 @@ class PostgreSQLTestConnection(PostgreSQLConnection):
 
         con.close()
 
-        logger.info(f'\nRecreated `{self.PGDATABASE}` database.')
+        logger.info(f'Recreated `{self.PGDATABASE}` database.')
 
     def __restore_test_database(self):
         # connect with test database
@@ -127,7 +125,7 @@ class PostgreSQLTestConnection(PostgreSQLConnection):
 
         logger.info(f'Restored `{self.PGDATABASE}` database.\n')
 
-    def __init_db(self):
+    def init_db(self):
         self.__recreate_test_database()
         self.__restore_test_database()
 

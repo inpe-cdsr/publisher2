@@ -25,7 +25,7 @@ class DBConnection(ABC):
         raise NotImplementedError
 
     def select_from_collections(self):
-        return self.execute('SELECT * FROM bdc.collections;')
+        return self.execute('SELECT * FROM bdc.collections ORDER BY name;')
 
 
 class PostgreSQLConnection(DBConnection):

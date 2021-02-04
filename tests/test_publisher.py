@@ -36,6 +36,7 @@ class PublisherPublishTestCase(TestCase):
 
     def test_publish(self):
         response = self.api.get('/publish')
+
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
@@ -133,6 +134,29 @@ class PublisherPublishTestCase(TestCase):
 
         result = self.db.select_from_items()
         expected = read_item_from_csv('test_publish__all_parameters__cbers4a_wfi_l4_dn.csv')
+
+        assert_frame_equal(expected, result)
+
+    def test_publish__all_parameters__cbers4a_wfi_l4_sr(self):
+        # CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84/
+        query = {
+            'satellite': 'cbers4a',
+            'sensor': 'wfi',
+            'start_date': '2020-12-07',
+            'end_date': '2020-12-07',
+            'path': '214',
+            'row': '108',
+            'geo_processing': '4',
+            'radio_processing': 'sr'
+        }
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+
+        result = self.db.select_from_items()
+        expected = read_item_from_csv('test_publish__all_parameters__cbers4a_wfi_l4_sr.csv')
 
         assert_frame_equal(expected, result)
 

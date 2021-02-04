@@ -1,8 +1,9 @@
+from copy import deepcopy
 from datetime import datetime, timedelta
 from glob import glob
 from json import dumps
 from os import walk
-from os.path import join, sep
+from os.path import join as os_path_join, sep as os_path_sep
 from re import search
 
 from werkzeug.exceptions import InternalServerError
@@ -11,7 +12,7 @@ from xmltodict import parse as xmltodict_parse
 from publisher.common import fill_string_with_left_zeros
 
 
-def get_dict_from_xml_file(xml_path):
+def convert_xml_to_dict(xml_path):
     '''Read an XML file, convert it to a dictionary and return it.'''
 
     with open(xml_path, 'r') as data:
@@ -68,7 +69,7 @@ def create_assets_from_metadata(assets_matadata, dir_path):
 
             # add TIFF file as an asset
             assets[band_name] = {
-                # 'href': join(shortened_dir_path, tiff_files[0]),
+                # 'href': os_path_join(shortened_dir_path, tiff_files[0]),
                 'href': tiff_files[0],
                 'type': 'image/tiff; application=geotiff',
                 'common_name': band,
@@ -77,7 +78,7 @@ def create_assets_from_metadata(assets_matadata, dir_path):
 
             # add XML file as an asset
             assets[band_name + '_xml'] = {
-                # 'href': join(shortened_dir_path, tiff_files[0].replace('.tif', '.xml')),
+                # 'href': os_path_join(shortened_dir_path, tiff_files[0].replace('.tif', '.xml')),
                 'href': tiff_files[0].replace('.tif', '.xml'),
                 'type': 'application/xml',
                 'roles': ['metadata']
@@ -88,7 +89,7 @@ def create_assets_from_metadata(assets_matadata, dir_path):
 
     if png_files:
         assets['thumbnail'] = {
-            # 'href': join(shortened_dir_path, png_files[0]),
+            # 'href': os_path_join(shortened_dir_path, png_files[0]),
             'href': png_files[0],
             'type': 'image/png',
             'roles': ['thumbnail']
@@ -204,27 +205,50 @@ def get_geometry_from_xml_as_dict(xml_as_dict, epsg=4326):
     }
 
 
-def get_dn_item_from_xml_as_dict(xml_as_dict, radio_processing='DN'):
-    '''Get Item from an XML file as dictionary.'''
+def create_items_from_xml_as_dict(xml_as_dict, radio_processing_list):
+    '''
+    Return a list of items based on an XML file as dictionary and the
+    radiometric processing information the user chose.
+    '''
 
-    item = {}
+    # if user chose `DN` and `SR` radiometric processings, then create both items
+    if 'DN' in radio_processing_list and 'SR' in radio_processing_list:
+        # create DN item
+        dn_item = {}
+        dn_item['collection'] = get_collection_from_xml_as_dict(xml_as_dict, 'DN')
+        dn_item['properties'] = get_properties_from_xml_as_dict(xml_as_dict, dn_item['collection'])
+        dn_item['bbox'] = get_bbox_from_xml_as_dict(xml_as_dict)
+        dn_item['geometry'] = get_geometry_from_xml_as_dict(xml_as_dict)
 
-    item['collection'] = get_collection_from_xml_as_dict(xml_as_dict, radio_processing)
+        # create SR item from DN item, because they have almost the same information
+        # the only different information they have is the radiometric processing
+        sr_item = deepcopy(dn_item)
+        sr_item['collection']['radio_processing'] = 'SR'
+        sr_item['collection']['name'] = sr_item['collection']['name'].replace('DN', 'SR')
+        sr_item['collection']['description'] = sr_item['collection']['description'].replace('DN', 'SR')
+
+        # return both `DN` and `SR` items
+        return [dn_item, sr_item]
+
+    # if user chose just `DN` radiometric processing, create a collection with it
+    if 'DN' in radio_processing_list:
+        item = {
+            'collection': get_collection_from_xml_as_dict(xml_as_dict, 'DN')
+        }
+
+    # if user chose just `SR` radiometric processing, create a collection with it
+    elif 'SR' in radio_processing_list:
+        item = {
+            'collection': get_collection_from_xml_as_dict(xml_as_dict, 'SR')
+        }
+
+    # extract other information to the item
     item['properties'] = get_properties_from_xml_as_dict(xml_as_dict, item['collection'])
     item['bbox'] = get_bbox_from_xml_as_dict(xml_as_dict)
     item['geometry'] = get_geometry_from_xml_as_dict(xml_as_dict)
 
-    return item
-
-
-def create_item_from_xml_as_dict(xml_as_dict):
-    '''Get Item from an XML file as dictionary.'''
-
-    # if there is `DN` information in the XML file
-    if 'prdf' in xml_as_dict:
-        return get_dn_item_from_xml_as_dict(xml_as_dict['prdf'], radio_processing='DN')
-
-    return None
+    # return either `DN` or `SR` item
+    return [item]
 
 
 ##################################################
@@ -284,6 +308,37 @@ def decode_scene_dir(scene_dir):
     return satellite, sensor, date, time
 
 
+def get_dn_files_as_dicts_from_files(files, dir_path):
+    # example: CBERS_4_AWFI_20201228_157_135_L4_RIGHT_BAND16.xml
+    dn_template = '^[a-zA-Z0-9_]+BAND\d+.xml'
+
+    # get just the DN XML files based on the radiometric processing regex
+    # for both DN or SR files, I extract information from a DN XML file
+    dn_xml_files = list(filter(lambda f: search(dn_template, f), files))
+
+    if dn_xml_files:
+        # `dn_xml_files[0]` gets the first DN XML file
+        # `os_path_join` creates a full path to the XML file
+        # `convert_xml_to_dict` converts XML file to dict object
+        xml_as_dict = convert_xml_to_dict(os_path_join(dir_path, dn_xml_files[0]))
+
+        # check if there is `DN` information in the XML file
+        if 'prdf' in xml_as_dict:
+            return xml_as_dict['prdf']
+
+    return None
+
+
+def get_sr_files_as_dicts_from_files(files):
+    # example: CBERS_4_AWFI_20201228_157_135_L4_BAND16_GRID_SURFACE.xml
+    sr_template = '^[a-zA-Z0-9_]+BAND\d+_GRID_SURFACE.xml'
+
+    # get just the SR XML files based on the radiometric processing regex
+    sr_xml_files = list(filter(lambda f: search(sr_template, f), files))
+
+    return sr_xml_files if sr_xml_files else None
+
+
 class PublisherWalk:
     '''This class is a Generator that encapsulates `os.walk()` generator to return just valid directories.
     A valid directory is a folder that contains XML files.'''
@@ -301,7 +356,7 @@ class PublisherWalk:
 
         # get dir path starting at `/TIFF`
         index = dir_path.find('TIFF')
-        splitted_dir_path = dir_path[index:].split(sep)
+        splitted_dir_path = dir_path[index:].split(os_path_sep)
 
         # a valid dir path must have at least five folders (+1 the base path (i.e. /TIFF))
         if len(splitted_dir_path) < 6:
@@ -359,43 +414,54 @@ class PublisherWalk:
 
         return True
 
-    def __get_xml_files(self, files, dir_path):
-        '''Return just XML files based on query.'''
+    def __get_dn_xml_file(self, files, dir_path):
+        '''Return just one DN XML file inside the directory as a dictionary.'''
 
-        # rp_template - radio_processing_template
-        rp_template = {
-            # example: CBERS_4_AWFI_20201228_157_135_L4_RIGHT_BAND16.xml
-            'DN': '^[a-zA-Z0-9_]+BAND\d+.xml',
-            # example: CBERS_4_AWFI_20201228_157_135_L4_BAND16_GRID_SURFACE.xml
-            'SR': '^[a-zA-Z0-9_]+BAND\d+_GRID_SURFACE.xml'
-        }
+        radio_processing = self.query['radio_processing']
 
-        # rp - radio_processing
-        rp = self.query['radio_processing']  # DN or SR
+        # if radio_processing is not DN, SR or None, then it is invalid
+        if radio_processing == 'DN':
+            # user chose to publish just `DN` files
+            return get_dn_files_as_dicts_from_files(files, dir_path), ['DN']
 
-        if rp is not None:
-            # get just the XML files based on the radiometric processing regex
-            xml_files = list(filter(lambda f: search(rp_template[rp], f), files))
-        else:
-            # if rp is None, then publisher searchs for both `DN` and `SR` XML files
-            xml_files = list(filter(
-                lambda f: search(rp_template['DN'], f) or search(rp_template['SR'], f), files
-            ))
+        elif radio_processing == 'SR':
+            # user chose to publish just `SR` files
+            sr_xml_files = get_sr_files_as_dicts_from_files(files)
 
-        # if there are NOT valid XML files, then I save the error
-        if not xml_files:
-            self.errors.append(
-                {
-                    'type': 'warning',
-                    'message': 'There are NOT band XML files in this folder.',
-                    'metadata': {
-                        'folder': dir_path
+            # if there are SR files, then I will extract the information from the DN file
+            if sr_xml_files:
+                return get_dn_files_as_dicts_from_files(files, dir_path), ['SR']
+
+        elif radio_processing is None:
+            # user chose to publish bothm `DN` and `SR` files
+            sr_xml_files = get_sr_files_as_dicts_from_files(files)
+            dn_xml_files = get_dn_files_as_dicts_from_files(files, dir_path)
+
+            # if there are both DN and SR files, then I will publish
+            # information from both radiometric processings
+            if dn_xml_files and sr_xml_files:
+                return dn_xml_files, ['DN', 'SR']
+
+            # if there are just DN files, then I will publish information
+            # from the DN radiometric processing
+            elif dn_xml_files and not sr_xml_files:
+                return dn_xml_files, ['DN']
+
+            elif (not dn_xml_files and sr_xml_files) or (not dn_xml_files and not sr_xml_files):
+                # if there is NOT DN XML files in the folder, then I save the error
+                self.errors.append(
+                    {
+                        'type': 'warning',
+                        'message': 'There is NOT a DN XML file in this folder.',
+                        'metadata': {
+                            'folder': dir_path
+                        }
                     }
-                }
-            )
-            return None
+                )
 
-        return xml_files
+                return None, []
+
+        raise InternalServerError(f'Invalid radiometric processing: {radio_processing}')
 
     def __generator(self):
         '''Generator that returns just directories with valid files.'''
@@ -410,12 +476,12 @@ class PublisherWalk:
                 continue
 
             # if a valid dir does not have files, then ignore it
-            xml_files = self.__get_xml_files(files, dir_path)
-            if not xml_files:
+            xml_as_dict, radio_processing_list = self.__get_dn_xml_file(files, dir_path)
+            if not xml_as_dict:
                 continue
 
             # yield just valid directories
-            yield dir_path, dirs, xml_files
+            yield dir_path, xml_as_dict, radio_processing_list
 
     def __iter__(self):
         # this method makes the class to be an iterable

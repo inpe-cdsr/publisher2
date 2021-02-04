@@ -8,8 +8,7 @@ from publisher.common import print_line
 from publisher.environment import PR_FILES_PATH, PR_LOGGING_LEVEL
 from publisher.logger import create_logger
 from publisher.util import create_assets_from_metadata, create_insert_clause, \
-                           create_item_from_xml_as_dict, get_dict_from_xml_file, \
-                           PublisherWalk
+                           create_items_from_xml_as_dict, PublisherWalk
 from publisher.validator import validate, QUERY_SCHEMA
 
 
@@ -25,7 +24,6 @@ class Publisher:
         self.BASE_DIR = BASE_DIR
         self.IS_TO_GET_DATA_FROM_DB = IS_TO_GET_DATA_FROM_DB
         self.query = query
-        # self.items = []
         self.SATELLITES = None
         self.db = db_connection
 
@@ -100,54 +98,45 @@ class Publisher:
 
         p_walk = PublisherWalk(self.BASE_DIR, self.query)
 
-        for dir_path, dirs, xml_files in p_walk:
+        for dir_path, xml_as_dict, radio_processing_list in p_walk:
             print_line()
 
             logger.info(f'dir_path: {dir_path}')
-            logger.info(f'xml_files: {xml_files}')
+            # logger.info(f'xml_as_dict: {xml_as_dict}')
+            logger.info(f'radio_processing_list: {radio_processing_list}\n')
 
-            # get the first XML asset just to get information, then get the XML asset path
-            xml_file = xml_files[0]
-            xml_file_path = os_path_join(dir_path, xml_file)
+            items = create_items_from_xml_as_dict(xml_as_dict, radio_processing_list)
 
-            logger.info(f'xml_file: {xml_file}')
-            logger.info(f'xml_file_path: {xml_file_path}\n')
+            for item in items:
+                logger.info(f'item: {item}\n')
 
-            # get XML file as dict and create a item with its information
-            xml_as_dict = get_dict_from_xml_file(xml_file_path)
-            item = create_item_from_xml_as_dict(xml_as_dict)
+                assets_matadata = self.__get_assets_metadata(**item['collection'])
+                logger.info(f'assets_matadata: {assets_matadata}\n')
 
-            logger.info(f'item: {item}\n')
+                item['assets'] = create_assets_from_metadata(assets_matadata, dir_path)
+                logger.info(f'item[assets]: {item["assets"]}\n')
 
-            assets_matadata = self.__get_assets_metadata(**item['collection'])
-            logger.info(f'assets_matadata: {assets_matadata}\n')
+                logger.info(f'item[collection][name]: {item["collection"]["name"]}')
 
-            item['assets'] = create_assets_from_metadata(assets_matadata, dir_path)
-            logger.info(f'item[assets]: {item["assets"]}\n')
+                # get collection id from dataframe
+                collection = self.df_collections.loc[
+                    self.df_collections['name'] == item['collection']['name']
+                ].reset_index(drop=True)
+                # logger.debug(f'collection:\n{collection}')
+                collection_id = collection.at[0, 'id']
+                logger.info(f'collection_id: {collection_id}')
 
-            logger.debug(f'item[collection][name]: {item["collection"]["name"]}')
-
-            # get collection id from dataframe
-            collection = self.df_collections.loc[
-                self.df_collections['name'] == item['collection']['name']
-            ].reset_index(drop=True)
-            # logger.debug(f'collection:\n{collection}')
-            collection_id = collection.at[0, 'id']
-            logger.debug(f'collection_id: {collection_id}')
-
-            # create INSERT clause based on item information
-            insert = create_insert_clause(item, collection_id)
-            # logger.debug(f'insert: {insert}')
-            items_insert.append(insert)
-
-            # self.items.append(item)
+                # create INSERT clause based on item information
+                insert = create_insert_clause(item, collection_id)
+                logger.info(f'insert: {insert}')
+                items_insert.append(insert)
 
         print_line()
 
         # if there are INSERT clauses, then insert them in the database
         if items_insert:
             concanate_inserts = ' '.join(items_insert)
-            # logger.debug(f'concanate_inserts: \n{concanate_inserts}\n')
+            # logger.info(f'concanate_inserts: \n{concanate_inserts}\n')
             logger.info('Inserting items into database...')
             self.db.execute(concanate_inserts, is_transaction=True)
 

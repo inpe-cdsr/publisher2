@@ -46,6 +46,18 @@ class PublisherPublishOkTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
+
+class PublisherPublishCbers4AOkTestCase(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.api = app.test_client()
+        cls.db = PostgreSQLTestConnection()
+
+    def setUp(self):
+        # clean table before testing
+        self.db.delete_from_items()
+
     def test_publish__ok__cbers4a_mux_l2_dn(self):
         query = {
             'satellite': 'CBERS4A',

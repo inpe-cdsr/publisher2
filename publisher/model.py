@@ -132,12 +132,15 @@ class PostgreSQLTestConnection(PostgreSQLConnection):
     def delete_from_items(self):
         self.execute('DELETE FROM bdc.items;', is_transaction=True)
 
-    def select_from_items(self):
+    def select_from_items(self, to_csv=None):
         result = self.execute('SELECT name, collection_id, start_date::timestamp, '
                               'end_date::timestamp, assets, metadata, geom, min_convex_hull '
                               'FROM bdc.items ORDER BY name;')
 
         result['assets'] = result['assets'].astype('str')
         result['metadata'] = result['metadata'].astype('str')
+
+        if to_csv is not None:
+            result.to_csv(f'tests/publisher/{to_csv}', index=False)
 
         return result

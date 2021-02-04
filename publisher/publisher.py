@@ -12,8 +12,6 @@ from publisher.util import create_assets_from_metadata, create_insert_clause, \
 from publisher.validator import validate, QUERY_SCHEMA
 
 
-
-
 # create logger object
 logger = create_logger(__name__, level=PR_LOGGING_LEVEL)
 
@@ -23,9 +21,10 @@ class Publisher:
         # base directory to search the files
         self.BASE_DIR = BASE_DIR
         self.IS_TO_GET_DATA_FROM_DB = IS_TO_GET_DATA_FROM_DB
-        self.query = query
         self.SATELLITES = None
         self.db = db_connection
+        self.errors = []
+        self.query = query
 
         # read satellites metadata file
         self.__read_metadata_file()
@@ -59,20 +58,16 @@ class Publisher:
             return None
 
         # if a satellite has been found, then get the unique value inside the list
-        satellite = satellite[0]
-
-        # get the sensor information
-        sensor = list(filter(lambda s: s['name'] == sensor, satellite['sensors']))
+        # and get the sensor information
+        sensor = list(filter(lambda s: s['name'] == sensor, satellite[0]['sensors']))
 
         # if a sensor has not been found, then return None
         if not sensor:
             return None
 
         # if a sensor has been found, then get the unique value inside the list
-        sensor = sensor[0]
-
-        # return assets metadata based on the radiometric processing (i.e. DN or SR)
-        return sensor['assets'][radio_processing]
+        # and return assets metadata based on the radiometric processing (i.e. DN or SR)
+        return  sensor[0]['assets'][radio_processing]
 
     def main(self):
         '''Main method.'''
@@ -123,7 +118,20 @@ class Publisher:
                 collection = self.df_collections.loc[
                     self.df_collections['name'] == item['collection']['name']
                 ].reset_index(drop=True)
-                # logger.debug(f'collection:\n{collection}')
+                logger.info(f'collection:\n{collection}')
+
+                # if `collection` is an empty dataframe, a collection was not found by its name,
+                # then save the warning and ignore it
+                if len(collection.index) == 0:
+                    self.errors.append({
+                        'type': 'warning',
+                        'message': (
+                            f'There is metadata to the `{item["collection"]["name"]}` collection, '
+                            f'however this collection does not exist in the database.'
+                        )
+                    })
+                    continue
+
                 collection_id = collection.at[0, 'id']
                 logger.info(f'collection_id: {collection_id}')
 

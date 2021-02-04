@@ -37,12 +37,119 @@ class PublisherPublishOkTestCase(TestCase):
 
     def test_publish__ok__empty_query(self):
         response = self.api.get('/publish')
+        expected = [
+            {
+                'message': 'There is metadata to the `CBERS2B_CCD_L2_DN` collection, however this collection does not exist in the database.',
+                'type': 'warning'
+            },
+            {
+                'message': 'There is metadata to the `CBERS2B_HRC_L2_DN` collection, however this collection does not exist in the database.',
+                'type': 'warning'
+            },
+            {
+                'message': 'There is metadata to the `CBERS2B_HRC_L2_DN` collection, however this collection does not exist in the database.',
+                'type': 'warning'
+            },
+            {
+                'message': 'There is metadata to the `CBERS2B_WFI_L2_DN` collection, however this collection does not exist in the database.',
+                'type': 'warning'
+            },
+            {
+                'message': 'There is metadata to the `CBERS2B_WFI_L2_DN` collection, however this collection does not exist in the database.',
+                'type': 'warning'
+            },
+            {
+                'message': 'There is metadata to the `CBERS2B_HRC_L2_DN` collection, however this collection does not exist in the database.',
+                'type': 'warning'
+            },
+            {
+                'message': 'There is metadata to the `CBERS2B_CCD_L2_DN` collection, however this collection does not exist in the database.',
+                'type': 'warning'
+            },
+            {
+                'message': 'There is metadata to the `CBERS2B_XYZ_L2_DN` collection, however this collection does not exist in the database.',
+                'type': 'warning'
+            },
+            {
+                'message': 'There is metadata to the `CBERS2B_CCD_L2_DN` collection, however this collection does not exist in the database.',
+                'type': 'warning'
+            },
+            {
+                'message': 'There is metadata to the `CBERS2B_CCD_L2_DN` collection, however this collection does not exist in the database.',
+                'type': 'warning'
+            }
+        ]
 
         self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        result = self.db.select_from_items()
+        result = self.db.select_from_items(to_csv='test_publish__ok__empty_query.csv')
         expected = read_item_from_csv('test_publish__ok__empty_query.csv')
+
+        assert_frame_equal(expected, result)
+
+
+class PublisherPublishCbers2BOkTestCase(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.api = app.test_client()
+        cls.db = PostgreSQLTestConnection()
+
+    def setUp(self):
+        # clean table before testing
+        self.db.delete_from_items()
+
+    # def test_publish__ok__cbers2b_hrc_l2_dn(self):
+    #     # CBERS2B/2007_09/CBERS2B_HRC_20070929.124300/145_C_111_3_0/2_BC_UTM_WGS84
+    #     query = {
+    #         'satellite': 'CBERS2b',
+    #         'sensor': 'HrC',
+    #         'start_date': '2007-09-01',
+    #         'end_date': '2007-09-30',
+    #         'path': 145,
+    #         'row': 111,
+    #         'geo_processing': 2,
+    #         'radio_processing': 'DN'
+    #     }
+
+    #     response = self.api.get('/publish', query_string=query)
+
+    #     self.assertEqual(200, response.status_code)
+    #     self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+
+    #     result = self.db.select_from_items(to_csv='test_publish__ok__cbers2b_hrc_l2_dn.csv')
+    #     expected = read_item_from_csv('test_publish__ok__cbers2b_hrc_l2_dn.csv')
+
+    #     assert_frame_equal(expected, result)
+
+    def test_publish__ok__cbers2b_xyz_l2_dn__collection_does_not_exist(self):
+        # CBERS2B/2007_09/CBERS2B_XYZ_20070925.145654/181_096_0/2_BC_UTM_WGS84
+        query = {
+            'satellite': 'CBERS2B',
+            'sensor': 'XYZ', # <-- sensor does not exist
+            'start_date': '2007-09-01',
+            'end_date': '2007-09-30',
+            'path': 181,
+            'row': 96,
+            'geo_processing': 2,
+            'radio_processing': 'DN'
+        }
+
+        response = self.api.get('/publish', query_string=query)
+        expected = [{
+            'type': 'warning',
+            'message': ('There is metadata to the `CBERS2B_XYZ_L2_DN` collection, however '
+                        'this collection does not exist in the database.')
+        }]
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(expected, loads(response.get_data(as_text=True)))
+
+        # check if the database if empty
+        result = self.db.select_from_items()
+        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
+                                      'metadata','geom','min_convex_hull'])  # empty dataframe
 
         assert_frame_equal(expected, result)
 

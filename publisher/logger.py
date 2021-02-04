@@ -1,10 +1,11 @@
 from logging import Formatter, getLogger, StreamHandler, \
-                    DEBUG, INFO, WARNING
+                    DEBUG, ERROR, INFO, WARNING
 
 AVAILABLE_LEVELS = {
     'DEBUG': DEBUG,
     'INFO': INFO,
-    'WARNING': WARNING
+    'WARNING': WARNING,
+    'ERROR': ERROR
 }
 
 def create_logger(name, level=INFO):

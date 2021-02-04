@@ -1,6 +1,79 @@
 {
 	"satellites": [
 		{
+			"name": "CBERS2B",
+			"sensors": [
+				{
+					"name": "CCD",
+					"resolution": 20,
+					"quicklook": [
+						"red",
+						"nir",
+						"green"
+					],
+					"assets": {
+						"DN": {
+							"blue":  "BAND1.tif",
+							"green": "BAND2.tif",
+							"red":   "BAND3.tif",
+							"nir":   "BAND4.tif",
+							"pan":   "BAND5.tif"
+						},
+						"SR": null
+					}
+				},
+				{
+					"name": "HRC",
+					"resolution": 2.7,
+					"quicklook": [
+						"pan"
+					],
+					"assets": {
+						"DN": {
+							"pan": "BAND1.tif"
+						},
+						"SR": null
+					}
+				},
+				{
+					"name": "WFI",
+					"resolution": 260,
+					"quicklook": [
+						"red",
+						"nir",
+						"nir"
+					],
+					"assets": {
+						"DN": {
+							"red":   "BAND1.tif",
+							"nir":   "BAND2.tif"
+						},
+						"SR": null
+					}
+				},
+				{
+					"name": "XYZ",
+					"comment": "This sensor does not exist, it was created just to execute the test cases.",
+					"resolution": 10,
+					"quicklook": [
+						"red",
+						"nir",
+						"green"
+					],
+					"assets": {
+						"DN": {
+							"blue":  "BAND1.tif",
+							"green": "BAND2.tif",
+							"red":   "BAND3.tif",
+							"nir":   "BAND4.tif",
+							"pan":   "BAND5.tif"
+						},
+						"SR": null
+					}
+				}
+			]
+		},
+		{
 			"name": "CBERS4A",
 			"sensors": [
 				{

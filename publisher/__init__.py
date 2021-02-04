@@ -5,12 +5,18 @@ from json import dumps
 from os import makedirs
 from os.path import join as os_path_join
 
-from flask import Flask, request
+from flask import Flask, jsonify, request
 from werkzeug.exceptions import HTTPException
 
-from publisher.environment import FLASK_SECRET_KEY, PR_BASE_DIR, PR_IS_TO_GET_DATA_FROM_DB
+from publisher.environment import FLASK_SECRET_KEY, PR_BASE_DIR, PR_IS_TO_GET_DATA_FROM_DB, \
+                                  PR_LOGGING_LEVEL
+from publisher.logger import create_logger
 from publisher.model import PostgreSQLConnection, PostgreSQLTestConnection
 from publisher.publisher import Publisher
+
+
+# create logger object
+logger = create_logger(__name__, level=PR_LOGGING_LEVEL)
 
 
 def create_app(test_config=None):
@@ -80,6 +86,10 @@ def create_app(test_config=None):
             db_connection, query=dict(request.args)
         )
         publisher_app.main()
+
+        if publisher_app.errors:
+            logger.warning(f'Found errors: \n{publisher_app.errors}\n')
+            return jsonify(publisher_app.errors)
 
         return '/publish has been executed'
 

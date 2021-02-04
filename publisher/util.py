@@ -146,7 +146,8 @@ def get_properties_from_xml_as_dict(xml_as_dict, collection):
     properties['name'] = (
         f"{collection['satellite']}_{collection['sensor']}_"
         f"{properties['path']}{properties['row']}_"
-        f"{properties['datetime'].split('T')[0].replace('-', '')}"
+        f"{properties['datetime'].split('T')[0].replace('-', '')}_"
+        f"L{collection['geo_processing']}_{collection['radio_processing']}"
     )
 
     # if there is sync loss in the XML file, then I get it and add it in properties
@@ -226,6 +227,7 @@ def create_items_from_xml_as_dict(xml_as_dict, radio_processing_list):
         sr_item['collection']['radio_processing'] = 'SR'
         sr_item['collection']['name'] = sr_item['collection']['name'].replace('DN', 'SR')
         sr_item['collection']['description'] = sr_item['collection']['description'].replace('DN', 'SR')
+        sr_item['properties']['name'] = sr_item['properties']['name'].replace('DN', 'SR')
 
         # return both `DN` and `SR` items
         return [dn_item, sr_item]

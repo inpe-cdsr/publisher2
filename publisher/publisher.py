@@ -100,14 +100,15 @@ class Publisher:
 
         for dir_path, xml_as_dict, radio_processing_list in p_walk:
             print_line()
-
             logger.info(f'dir_path: {dir_path}')
             # logger.info(f'xml_as_dict: {xml_as_dict}')
-            logger.info(f'radio_processing_list: {radio_processing_list}\n')
+            logger.info(f'radio_processing_list: {radio_processing_list}')
 
             items = create_items_from_xml_as_dict(xml_as_dict, radio_processing_list)
+            logger.info(f'items size: {len(items)}\n')
 
             for item in items:
+                print_line()
                 logger.info(f'item: {item}\n')
 
                 assets_matadata = self.__get_assets_metadata(**item['collection'])

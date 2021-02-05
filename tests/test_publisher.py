@@ -399,6 +399,40 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
+    def test_publish__ok__cbers4a_mux_l4_dn_or_sr__quicklook_does_not_exist(self):
+        # CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84
+        query = {
+            'satellite': 'cBERs4A',
+            'sensor': 'mux',
+            'start_date': '2019-12-28',
+            'end_date': '2019-12-28',
+            'path': 221,
+            'row': 108,
+            'geo_processing': 4
+        }
+
+        expected = [
+            {
+                'type': 'warning',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {
+                    'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'
+                }
+            }
+        ]
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(expected, loads(response.get_data(as_text=True)))
+
+        # check if the database if empty
+        result = self.db.select_from_items()
+        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
+                                      'metadata','geom','min_convex_hull'])  # empty dataframe
+
+        assert_frame_equal(expected, result)
+
     def test_publish__ok__cbers4a_wfi_l4_dn(self):
         query = {
             'satellite': 'CBERS4A',

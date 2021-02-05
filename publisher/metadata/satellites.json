@@ -74,6 +74,93 @@
 			]
 		},
 		{
+			"name": "CBERS4",
+			"sensors": [
+				{
+					"name": "AWFI",
+					"resolution": 64,
+					"quicklook": [
+						"red",
+						"nir",
+						"green"
+					],
+					"assets": {
+						"DN": {
+							"blue":  "BAND13.tif",
+							"green": "BAND14.tif",
+							"red":   "BAND15.tif",
+							"nir":   "BAND16.tif"
+						},
+						"SR": {
+							"blue":    "BAND13_GRID_SURFACE.tif",
+							"green":   "BAND14_GRID_SURFACE.tif",
+							"red":     "BAND15_GRID_SURFACE.tif",
+							"nir":     "BAND16_GRID_SURFACE.tif",
+							"quality": "CMASK_GRID_SURFACE.tif",
+							"evi":     "EVI.tif",
+							"ndvi":    "NDVI.tif"
+						}
+					}
+				},
+				{
+					"name": "MUX",
+					"resolution": 20,
+					"quicklook": [
+						"red",
+						"nir",
+						"green"
+					],
+					"assets": {
+						"DN": {
+							"blue":  "BAND5.tif",
+							"green": "BAND6.tif",
+							"red":   "BAND7.tif",
+							"nir":   "BAND8.tif"
+						},
+						"SR": {
+							"blue":    "BAND5_GRID_SURFACE.tif",
+							"green":   "BAND6_GRID_SURFACE.tif",
+							"red":     "BAND7_GRID_SURFACE.tif",
+							"nir":     "BAND8_GRID_SURFACE.tif",
+							"quality": "CMASK_GRID_SURFACE.tif",
+							"evi":     "EVI.tif",
+							"ndvi":    "NDVI.tif"
+						}
+					}
+				},
+				{
+					"name": "PAN5M",
+					"resolution": 5,
+					"quicklook": [
+						"pan"
+					],
+					"assets": {
+						"DN": {
+							"pan": "BAND1.tif"
+						},
+						"SR": null
+					}
+				},
+				{
+					"name": "PAN10M",
+					"resolution": 10,
+					"quicklook": [
+						"red",
+						"nir",
+						"green"
+					],
+					"assets": {
+						"DN": {
+							"green": "BAND2.tif",
+							"red":   "BAND3.tif",
+							"nir":   "BAND4.tif"
+						},
+						"SR": null
+					}
+				}
+			]
+		},
+		{
 			"name": "CBERS4A",
 			"sensors": [
 				{
@@ -166,6 +253,105 @@
 							"green": "BAND5.tif",
 							"red":   "BAND6.tif",
 							"nir":   "BAND7.tif"
+						},
+						"SR": null
+					}
+				}
+			]
+		},
+		{
+			"name": "LANDSAT2",
+			"sensors": [
+				{
+					"name": "MSS",
+					"resolution": 58,
+					"quicklook": [
+						"red",
+						"nir",
+						"green"
+					],
+					"assets": {
+						"DN": {
+							"blue":  "BAND4.tif",
+							"green": "BAND5.tif",
+							"red":   "BAND6.tif",
+							"nir":   "BAND7.tif"
+						},
+						"SR": null
+					}
+				}
+			]
+		},
+		{
+			"name": "LANDSAT3",
+			"sensors": [
+				{
+					"name": "MSS",
+					"resolution": 58,
+					"quicklook": [
+						"red",
+						"nir",
+						"green"
+					],
+					"assets": {
+						"DN": {
+							"blue":  "BAND4.tif",
+							"green": "BAND5.tif",
+							"red":   "BAND6.tif",
+							"nir":   "BAND7.tif"
+						},
+						"SR": null
+					}
+				}
+			]
+		},
+		{
+			"name": "LANDSAT5",
+			"sensors": [
+				{
+					"name": "TM",
+					"resolution": 30,
+					"quicklook": [
+						"red",
+						"nir",
+						"green"
+					],
+					"assets": {
+						"DN": {
+							"blue":  "BAND1.tif",
+							"green": "BAND2.tif",
+							"red":   "BAND3.tif",
+							"nir":   "BAND4.tif",
+							"swir1": "BAND5.tif",
+							"thermal": "BAND6.tif",
+							"swir2": "BAND7.tif"
+						},
+						"SR": null
+					}
+				}
+			]
+		},
+		{
+			"name": "LANDSAT7",
+			"sensors": [
+				{
+					"name": "ETM",
+					"resolution": 30,
+					"quicklook": [
+						"red",
+						"nir",
+						"green"
+					],
+					"assets": {
+						"DN": {
+							"blue":  "BAND1.tif",
+							"green": "BAND2.tif",
+							"red":   "BAND3.tif",
+							"nir":   "BAND4.tif",
+							"swir1": "BAND5.tif",
+							"thermal": "BAND6.tif",
+							"swir2": "BAND7.tif",
+							"pan": "BAND8.tif"
 						},
 						"SR": null
 					}

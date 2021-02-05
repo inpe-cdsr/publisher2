@@ -66,6 +66,11 @@ class PublisherPublishOkTestCase(TestCase):
             {
                 'type': 'warning',
                 'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/LANDSAT2/1975_07/LANDSAT2_MSS_19750724.123000/230_070_0/2_BC_UTM_WGS84'}
+            },
+            {
+                'type': 'warning',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'}
             }
         ]
@@ -780,6 +785,66 @@ class PublisherPublishLandsatOkTestCase(TestCase):
                 'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {
                     'folder': '/TIFF/LANDSAT1/1976_10/LANDSAT1_MSS_19761002.120000/010_057_0/2_BC_UTM_WGS84'
+                }
+            }
+        ]
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(expected, loads(response.get_data(as_text=True)))
+
+        # check if the database if empty
+        result = self.db.select_from_items()
+        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
+                                      'metadata','geom','min_convex_hull'])  # empty dataframe
+
+        assert_frame_equal(expected, result)
+
+    # LANDSAT2 MSS
+
+    def test_publish__ok__landsat2_mss_l2_dn(self):
+        # LANDSAT2/1982_02/LANDSAT2_MSS_19820201.120000/005_055_0/2_BC_UTM_WGS84
+        query = {
+            'satellite': 'LANDSAT2',
+            'sensor': 'MSS',
+            'start_date': '1982-02-01',
+            'end_date': '1982-02-01',
+            'path': 5,
+            'row': 55,
+            'geo_processing': 2,
+            'radio_processing': 'DN'
+        }
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+
+        result = self.db.select_from_items('landsat/test_publish__ok__landsat2_mss_l2_dn.csv')
+        expected = read_item_from_csv('landsat/test_publish__ok__landsat2_mss_l2_dn.csv')
+
+        assert_frame_equal(expected, result)
+
+    def test_publish__ok__landsat2_mss_l2_dn__quicklook_does_not_exist(self):
+        # LANDSAT2/1975_07/LANDSAT2_MSS_19750724.123000/230_070_0/2_BC_UTM_WGS84
+        query = {
+            'satellite': 'LANDSAT2',
+            'sensor': 'MSS',
+            'start_date': '1975-07-24',
+            'end_date': '1975-07-25',
+            'path': 230,
+            'row': '070',
+            'geo_processing': 2,
+            'radio_processing': 'DN'
+        }
+
+        expected = [
+            {
+                'type': 'warning',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {
+                    'folder': '/TIFF/LANDSAT2/1975_07/LANDSAT2_MSS_19750724.123000/230_070_0/2_BC_UTM_WGS84'
                 }
             }
         ]

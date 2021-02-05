@@ -52,6 +52,11 @@ class PublisherPublishOkTestCase(TestCase):
             {
                 'type': 'warning',
                 'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/LANDSAT5/1984_04/LANDSAT5_TM_19840406.124930/223_062_0/2_BC_UTM_WGS84'}
+            },
+            {
+                'type': 'warning',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_WFI_20070928.131338/154_124_0/2_BC_LCC_WGS84'}
             },
             {
@@ -911,6 +916,66 @@ class PublisherPublishLandsatOkTestCase(TestCase):
                 'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {
                     'folder': '/TIFF/LANDSAT3/1982_08/LANDSAT3_MSS_19820802.120000/231_072_0/2_BC_UTM_WGS84'
+                }
+            }
+        ]
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(expected, loads(response.get_data(as_text=True)))
+
+        # check if the database if empty
+        result = self.db.select_from_items()
+        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
+                                      'metadata','geom','min_convex_hull'])  # empty dataframe
+
+        assert_frame_equal(expected, result)
+
+    # LANDSAT5 MSS
+
+    def test_publish__ok__landsat5_tm_l2_dn(self):
+        # LANDSAT5/2011_11/LANDSAT5_TM_20111101.140950/233_054_0/2_BC_UTM_WGS84
+        query = {
+            'satellite': 'LAndSAT5',
+            'sensor': 'TM',
+            'start_date': '2011-11-01',
+            'end_date': '2011-11-02',
+            'path': 233,
+            'row': 54,
+            'geo_processing': 2,
+            'radio_processing': 'DN'
+        }
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+
+        result = self.db.select_from_items()
+        expected = read_item_from_csv('landsat/test_publish__ok__landsat5_tm_l2_dn.csv')
+
+        assert_frame_equal(expected, result)
+
+    def test_publish__ok__landsat5_tm_l2_dn__quicklook_does_not_exist(self):
+        # LANDSAT5/1984_04/LANDSAT5_TM_19840406.124930/223_062_0/2_BC_UTM_WGS84
+        query = {
+            'satellite': 'laNDSAT5',
+            'sensor': 'tm',
+            'start_date': '1984-04-05',
+            'end_date': '1984-04-06',
+            'path': 223,
+            'row': '062',
+            'geo_processing': 2,
+            'radio_processing': 'DN'
+        }
+
+        expected = [
+            {
+                'type': 'warning',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {
+                    'folder': '/TIFF/LANDSAT5/1984_04/LANDSAT5_TM_19840406.124930/223_062_0/2_BC_UTM_WGS84'
                 }
             }
         ]

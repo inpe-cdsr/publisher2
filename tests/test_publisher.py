@@ -120,6 +120,41 @@ class PublisherPublishCbers2BOkTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
+    def test_publish__ok__cbers2b_ccd_l2_dn__quicklook_does_not_exist(self):
+        # CBERS2B/2007_09/CBERS2B_CCD_20070925.145654/181_096_0/2_BC_UTM_WGS84
+        query = {
+            'satellite': 'CBeRS2B',
+            'sensor': 'CCd',
+            'start_date': '2007-09-25',
+            'end_date': '2007-09-25',
+            'path': 181,
+            'row': '096',
+            'geo_processing': 2,
+            'radio_processing': 'DN'
+        }
+
+        expected = [
+            {
+                'type': 'warning',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {
+                    'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_CCD_20070925.145654/181_096_0/2_BC_UTM_WGS84'
+                }
+            }
+        ]
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(expected, loads(response.get_data(as_text=True)))
+
+        # check if the database if empty
+        result = self.db.select_from_items()
+        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
+                                      'metadata','geom','min_convex_hull'])  # empty dataframe
+
+        assert_frame_equal(expected, result)
+
     def test_publish__ok__cbers2b_hrc_l2_dn__path_151_row_141(self):
         # CBERS2B/2010_03/CBERS2B_HRC_20100301.130915/151_B_141_5_0/2_BC_UTM_WGS84
         query = {

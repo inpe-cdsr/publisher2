@@ -130,7 +130,7 @@ class Publisher:
                             'type': 'warning',
                             'message': (
                                 f'There is metadata to the `{item["collection"]["name"]}` collection, '
-                                f'however this collection does not exist in the database.'
+                                'however this collection does not exist in the database.'
                             ),
                             'metadata': {
                                 'collection': item['collection']['name']

@@ -114,6 +114,31 @@ class PublisherPublishCbers2BOkTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
+    def test_publish__ok__cbers2b_wfi_l2_dn(self):
+        # CBERS2B/2010_03/CBERS2B_WFI_20100301.144734/177_092_0/2_BC_LCC_WGS84
+        query = {
+            'satellite': 'CBERS2b',
+            'sensor': 'wFI',
+            'start_date': '2010-02-28',
+            'end_date': '2010-03-01',
+            'path': 177,
+            'row': '092',
+            'geo_processing': 2,
+            'radio_processing': 'DN'
+        }
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+
+        result = self.db.select_from_items()
+        expected = read_item_from_csv('test_publish__ok__cbers2b_wfi_l2_dn.csv')
+
+        assert_frame_equal(expected, result)
+
+    # TODO: CBERS2B/2007_09/CBERS2B_WFI_20070928.131338/154_124_0/2_BC_LCC_WGS84 (thumbnail does not exist)
+
     def test_publish__ok__cbers2b_xyz_l2_dn__collection_does_not_exist(self):
         # CBERS2B/2007_09/CBERS2B_XYZ_20070925.145654/181_096_0/2_BC_UTM_WGS84
         query = {

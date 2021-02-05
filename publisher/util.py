@@ -9,6 +9,8 @@ from re import search
 from werkzeug.exceptions import InternalServerError
 from xmltodict import parse as xmltodict_parse
 
+from publisher.common import fill_string_with_left_zeros
+
 
 def convert_xml_to_dict(xml_path):
     '''Read an XML file, convert it to a dictionary and return it.'''
@@ -131,8 +133,9 @@ def get_properties_from_xml_as_dict(xml_as_dict, collection):
     properties = {
         # get just the date and time of the string
         'datetime': xml_as_dict['viewing']['center'][0:19],
-        'path': int(xml_as_dict['image']['path']),
-        'row': int(xml_as_dict['image']['row']),
+        # fill path and row with left zeros in order to create the item name
+        'path': fill_string_with_left_zeros(xml_as_dict['image']['path']),
+        'row': fill_string_with_left_zeros(xml_as_dict['image']['row']),
         # CQ fills it
         # 'cloud_cover': '',
         'satellite': collection['satellite'],
@@ -147,6 +150,10 @@ def get_properties_from_xml_as_dict(xml_as_dict, collection):
         f"{properties['datetime'].split('T')[0].replace('-', '')}_"
         f"L{collection['geo_processing']}_{collection['radio_processing']}"
     )
+
+    # convert path and row to integer
+    properties['path'] = int(properties['path'])
+    properties['row'] = int(properties['row'])
 
     # if there is sync loss in the XML file, then I get it and add it in properties
     if 'syncLoss' in xml_as_dict['image']:

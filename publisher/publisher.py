@@ -128,13 +128,13 @@ class Publisher:
                               for e in self.errors):
                         self.errors.append({
                             'type': 'warning',
-                            'metadata': {
-                                'collection': item['collection']['name']
-                            },
                             'message': (
                                 f'There is metadata to the `{item["collection"]["name"]}` collection, '
                                 f'however this collection does not exist in the database.'
-                            )
+                            ),
+                            'metadata': {
+                                'collection': item['collection']['name']
+                            }
                         })
                     continue
 
@@ -155,4 +155,5 @@ class Publisher:
             logger.info('Inserting items into database...')
             self.db.execute(concanate_inserts, is_transaction=True)
 
-        # logger.debug(f'p_walk.errors: {p_walk.errors}\n')
+        # add the walk errors in the publisher errors list
+        self.errors += p_walk.errors

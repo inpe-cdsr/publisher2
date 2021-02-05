@@ -40,10 +40,39 @@ class PublisherPublishOkTestCase(TestCase):
         expected = [
             {
                 'type': 'warning',
-                'metadata': {
-                    'collection': 'CBERS2B_XYZ_L2_DN'
-                },
-                'message': 'There is metadata to the `CBERS2B_XYZ_L2_DN` collection, however this collection does not exist in the database.'
+                'message': ('There is metadata to the `CBERS2B_XYZ_L2_DN` collection, however this '
+                            'collection does not exist in the database.'),
+                'metadata': {'collection': 'CBERS2B_XYZ_L2_DN'}
+            },
+            {
+                'type': 'warning',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_WFI_20070928.131338/154_124_0/2_BC_LCC_WGS84'}
+            },
+            {
+                'type': 'warning',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_HRC_20070929.124300/145_C_111_3_0/2_BC_UTM_WGS84'}
+            },
+            {
+                'type': 'warning',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_CCD_20070926.142204/172_097_0/2_BC_UTM_WGS84'}
+            },
+            {
+                'type': 'warning',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_CCD_20070925.145654/181_096_0/2_BC_UTM_WGS84'}
+            },
+            {
+                'type': 'warning',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_CCD_20070925.145654/181_106_0/2_BC_UTM_WGS84'}
+            },
+            {
+                'type': 'warning',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'}
             }
         ]
 
@@ -51,7 +80,7 @@ class PublisherPublishOkTestCase(TestCase):
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
         # check if the items have been added in the database
-        result = self.db.select_from_items()
+        result = self.db.select_from_items(to_csv='test_publish__ok__empty_query.csv')
         expected = read_item_from_csv('test_publish__ok__empty_query.csv')
 
         assert_frame_equal(expected, result)
@@ -91,7 +120,7 @@ class PublisherPublishCbers2BOkTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
-    def test_publish__ok__cbers2b_hrc_l2_dn(self):
+    def test_publish__ok__cbers2b_hrc_l2_dn__thumbnail_does_not_exist(self):
         # CBERS2B/2007_09/CBERS2B_HRC_20070929.124300/145_C_111_3_0/2_BC_UTM_WGS84
         query = {
             'satellite': 'CBERS2b',
@@ -104,13 +133,25 @@ class PublisherPublishCbers2BOkTestCase(TestCase):
             'radio_processing': 'DN'
         }
 
+        expected = [
+            {
+                'type': 'warning',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {
+                    'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_HRC_20070929.124300/145_C_111_3_0/2_BC_UTM_WGS84'
+                }
+            }
+        ]
+
         response = self.api.get('/publish', query_string=query)
 
         self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
+        # check if the database if empty
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__ok__cbers2b_hrc_l2_dn.csv')
+        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
+                                      'metadata','geom','min_convex_hull'])  # empty dataframe
 
         assert_frame_equal(expected, result)
 
@@ -137,7 +178,40 @@ class PublisherPublishCbers2BOkTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
-    # TODO: CBERS2B/2007_09/CBERS2B_WFI_20070928.131338/154_124_0/2_BC_LCC_WGS84 (thumbnail does not exist)
+    def test_publish__ok__cbers2b_wfi_l2_dn__thumbnail_does_not_exist(self):
+        # CBERS2B/2007_09/CBERS2B_WFI_20070928.131338/154_124_0/2_BC_LCC_WGS84
+        query = {
+            'satellite': 'CBERS2b',
+            'sensor': 'wFI',
+            'start_date': '2007-09-28',
+            'end_date': '2007-09-28',
+            'path': '154',
+            'row': 124,
+            'geo_processing': 2,
+            'radio_processing': 'DN'
+        }
+
+        expected = [
+            {
+                'type': 'warning',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {
+                    'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_WFI_20070928.131338/154_124_0/2_BC_LCC_WGS84'
+                }
+            }
+        ]
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(expected, loads(response.get_data(as_text=True)))
+
+        # check if the database if empty
+        result = self.db.select_from_items()
+        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
+                                      'metadata','geom','min_convex_hull'])  # empty dataframe
+
+        assert_frame_equal(expected, result)
 
     def test_publish__ok__cbers2b_xyz_l2_dn__collection_does_not_exist(self):
         # CBERS2B/2007_09/CBERS2B_XYZ_20070925.145654/181_096_0/2_BC_UTM_WGS84

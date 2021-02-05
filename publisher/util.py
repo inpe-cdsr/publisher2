@@ -317,7 +317,7 @@ def decode_scene_dir(scene_dir):
 
 def get_dn_files_as_dicts_from_files(files, dir_path):
     # example: CBERS_4_AWFI_20201228_157_135_L4_RIGHT_BAND16.xml
-    dn_template = '^[a-zA-Z0-9_]+BAND\d+.xml'
+    dn_template = '^[a-zA-Z0-9_]+BAND\d+.xml$'
 
     # get just the DN XML files based on the radiometric processing regex
     # for both DN or SR files, I extract information from a DN XML file
@@ -338,7 +338,7 @@ def get_dn_files_as_dicts_from_files(files, dir_path):
 
 def get_sr_files_as_dicts_from_files(files):
     # example: CBERS_4_AWFI_20201228_157_135_L4_BAND16_GRID_SURFACE.xml
-    sr_template = '^[a-zA-Z0-9_]+BAND\d+_GRID_SURFACE.xml'
+    sr_template = '^[a-zA-Z0-9_]+BAND\d+_GRID_SURFACE.xml$'
 
     # get just the SR XML files based on the radiometric processing regex
     sr_xml_files = list(filter(lambda f: search(sr_template, f), files))
@@ -470,6 +470,28 @@ class PublisherWalk:
 
         raise InternalServerError(f'Invalid radiometric processing: {radio_processing}')
 
+    def __does_quicklook_exist_in_path(self, files, dir_path):
+        # example: `CBERS_2B_WFI_20100301_177_092.png` or `CBERS_4A_MUX_20210110_201_109.png`
+        quicklook_template = '^[a-zA-Z0-9_]+.png$'
+
+        # get all quicklook files that are inside the folder (normally is just one file)
+        quicklook_files = list(filter(lambda f: search(quicklook_template, f), files))
+
+        if quicklook_files:
+            return True
+
+        self.errors.append(
+            {
+                'type': 'warning',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {
+                    'folder': dir_path
+                }
+            }
+        )
+
+        return False
+
     def __generator(self):
         '''Generator that returns just directories with valid files.'''
 
@@ -480,6 +502,10 @@ class PublisherWalk:
 
             # if dir is not valid based on query, then ignore it
             if not self.__is_dir_path_valid(dir_path):
+                continue
+
+            # if quicklook does not exist in the dir path, then ignore it
+            if not self.__does_quicklook_exist_in_path(files, dir_path):
                 continue
 
             # if a valid dir does not have files, then ignore it

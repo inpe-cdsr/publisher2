@@ -57,17 +57,7 @@ class PublisherPublishOkTestCase(TestCase):
             {
                 'type': 'warning',
                 'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_CCD_20070926.142204/172_097_0/2_BC_UTM_WGS84'}
-            },
-            {
-                'type': 'warning',
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_CCD_20070925.145654/181_096_0/2_BC_UTM_WGS84'}
-            },
-            {
-                'type': 'warning',
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_CCD_20070925.145654/181_106_0/2_BC_UTM_WGS84'}
             },
             {
                 'type': 'warning',

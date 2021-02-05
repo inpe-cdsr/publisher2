@@ -9,8 +9,6 @@ from re import search
 from werkzeug.exceptions import InternalServerError
 from xmltodict import parse as xmltodict_parse
 
-from publisher.common import fill_string_with_left_zeros
-
 
 def convert_xml_to_dict(xml_path):
     '''Read an XML file, convert it to a dictionary and return it.'''
@@ -133,8 +131,8 @@ def get_properties_from_xml_as_dict(xml_as_dict, collection):
     properties = {
         # get just the date and time of the string
         'datetime': xml_as_dict['viewing']['center'][0:19],
-        'path': fill_string_with_left_zeros(xml_as_dict['image']['path']),
-        'row': fill_string_with_left_zeros(xml_as_dict['image']['row']),
+        'path': int(xml_as_dict['image']['path']),
+        'row': int(xml_as_dict['image']['row']),
         # CQ fills it
         # 'cloud_cover': '',
         'satellite': collection['satellite'],
@@ -449,7 +447,7 @@ class PublisherWalk:
             elif dn_xml_files and not sr_xml_files:
                 return dn_xml_files, ['DN']
 
-            elif (not dn_xml_files and sr_xml_files) or (not dn_xml_files and not sr_xml_files):
+            else: # elif (not dn_xml_files and sr_xml_files) or (not dn_xml_files and not sr_xml_files):
                 # if there is NOT DN XML files in the folder, then I save the error
                 self.errors.append(
                     {

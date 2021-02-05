@@ -91,28 +91,28 @@ class PublisherPublishCbers2BOkTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
-    # def test_publish__ok__cbers2b_hrc_l2_dn(self):
-    #     # CBERS2B/2007_09/CBERS2B_HRC_20070929.124300/145_C_111_3_0/2_BC_UTM_WGS84
-    #     query = {
-    #         'satellite': 'CBERS2b',
-    #         'sensor': 'HrC',
-    #         'start_date': '2007-09-01',
-    #         'end_date': '2007-09-30',
-    #         'path': 145,
-    #         'row': 111,
-    #         'geo_processing': 2,
-    #         'radio_processing': 'DN'
-    #     }
+    def test_publish__ok__cbers2b_hrc_l2_dn(self):
+        # CBERS2B/2007_09/CBERS2B_HRC_20070929.124300/145_C_111_3_0/2_BC_UTM_WGS84
+        query = {
+            'satellite': 'CBERS2b',
+            'sensor': 'HrC',
+            'start_date': '2007-09-01',
+            'end_date': '2007-09-30',
+            'path': 145,
+            'row': 111,
+            'geo_processing': 2,
+            'radio_processing': 'DN'
+        }
 
-    #     response = self.api.get('/publish', query_string=query)
+        response = self.api.get('/publish', query_string=query)
 
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-    #     result = self.db.select_from_items(to_csv='test_publish__ok__cbers2b_hrc_l2_dn.csv')
-    #     expected = read_item_from_csv('test_publish__ok__cbers2b_hrc_l2_dn.csv')
+        result = self.db.select_from_items()
+        expected = read_item_from_csv('test_publish__ok__cbers2b_hrc_l2_dn.csv')
 
-    #     assert_frame_equal(expected, result)
+        assert_frame_equal(expected, result)
 
     def test_publish__ok__cbers2b_xyz_l2_dn__collection_does_not_exist(self):
         # CBERS2B/2007_09/CBERS2B_XYZ_20070925.145654/181_096_0/2_BC_UTM_WGS84

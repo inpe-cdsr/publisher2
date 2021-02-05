@@ -39,51 +39,40 @@ class PublisherPublishOkTestCase(TestCase):
         response = self.api.get('/publish')
         expected = [
             {
-                'message': 'There is metadata to the `CBERS2B_CCD_L2_DN` collection, however this collection does not exist in the database.',
-                'type': 'warning'
+                'type': 'warning',
+                'metadata': {
+                    'collection': 'CBERS2B_CCD_L2_DN'
+                },
+                'message': 'There is metadata to the `CBERS2B_CCD_L2_DN` collection, however this collection does not exist in the database.'
             },
             {
-                'message': 'There is metadata to the `CBERS2B_HRC_L2_DN` collection, however this collection does not exist in the database.',
-                'type': 'warning'
+                'type': 'warning',
+                'metadata': {
+                    'collection': 'CBERS2B_HRC_L2_DN'
+                },
+                'message': 'There is metadata to the `CBERS2B_HRC_L2_DN` collection, however this collection does not exist in the database.'
             },
             {
-                'message': 'There is metadata to the `CBERS2B_HRC_L2_DN` collection, however this collection does not exist in the database.',
-                'type': 'warning'
+                'type': 'warning',
+                'metadata': {
+                    'collection': 'CBERS2B_WFI_L2_DN'
+                },
+                'message': 'There is metadata to the `CBERS2B_WFI_L2_DN` collection, however this collection does not exist in the database.'
             },
             {
-                'message': 'There is metadata to the `CBERS2B_WFI_L2_DN` collection, however this collection does not exist in the database.',
-                'type': 'warning'
-            },
-            {
-                'message': 'There is metadata to the `CBERS2B_WFI_L2_DN` collection, however this collection does not exist in the database.',
-                'type': 'warning'
-            },
-            {
-                'message': 'There is metadata to the `CBERS2B_HRC_L2_DN` collection, however this collection does not exist in the database.',
-                'type': 'warning'
-            },
-            {
-                'message': 'There is metadata to the `CBERS2B_CCD_L2_DN` collection, however this collection does not exist in the database.',
-                'type': 'warning'
-            },
-            {
-                'message': 'There is metadata to the `CBERS2B_XYZ_L2_DN` collection, however this collection does not exist in the database.',
-                'type': 'warning'
-            },
-            {
-                'message': 'There is metadata to the `CBERS2B_CCD_L2_DN` collection, however this collection does not exist in the database.',
-                'type': 'warning'
-            },
-            {
-                'message': 'There is metadata to the `CBERS2B_CCD_L2_DN` collection, however this collection does not exist in the database.',
-                'type': 'warning'
+                'type': 'warning',
+                'metadata': {
+                    'collection': 'CBERS2B_XYZ_L2_DN'
+                },
+                'message': 'There is metadata to the `CBERS2B_XYZ_L2_DN` collection, however this collection does not exist in the database.'
             }
         ]
 
         self.assertEqual(200, response.status_code)
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        result = self.db.select_from_items(to_csv='test_publish__ok__empty_query.csv')
+        # check if the items have been added in the database
+        result = self.db.select_from_items()
         expected = read_item_from_csv('test_publish__ok__empty_query.csv')
 
         assert_frame_equal(expected, result)
@@ -99,6 +88,29 @@ class PublisherPublishCbers2BOkTestCase(TestCase):
     def setUp(self):
         # clean table before testing
         self.db.delete_from_items()
+
+    # def test_publish__ok__cbers2b_hrc_l2_dn(self):
+    #     # CBERS2B/2010_03/CBERS2B_CCD_20100301.130915/151_098_0/2_BC_UTM_WGS84
+    #     query = {
+    #         'satellite': 'CBERS2b',
+    #         'sensor': 'CcD',
+    #         'start_date': '2010-03-01',
+    #         'end_date': '2010-03-15',
+    #         'path': 151,
+    #         'row': 98,
+    #         'geo_processing': 2,
+    #         'radio_processing': 'DN'
+    #     }
+
+    #     response = self.api.get('/publish', query_string=query)
+
+    #     self.assertEqual(200, response.status_code)
+    #     self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+
+    #     result = self.db.select_from_items(to_csv='test_publish__ok__cbers2b_hrc_l2_dn.csv')
+    #     expected = read_item_from_csv('test_publish__ok__cbers2b_hrc_l2_dn.csv')
+
+    #     assert_frame_equal(expected, result)
 
     # def test_publish__ok__cbers2b_hrc_l2_dn(self):
     #     # CBERS2B/2007_09/CBERS2B_HRC_20070929.124300/145_C_111_3_0/2_BC_UTM_WGS84
@@ -139,6 +151,9 @@ class PublisherPublishCbers2BOkTestCase(TestCase):
         response = self.api.get('/publish', query_string=query)
         expected = [{
             'type': 'warning',
+            'metadata': {
+                'collection': 'CBERS2B_XYZ_L2_DN'
+            },
             'message': ('There is metadata to the `CBERS2B_XYZ_L2_DN` collection, however '
                         'this collection does not exist in the database.')
         }]

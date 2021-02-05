@@ -123,13 +123,19 @@ class Publisher:
                 # if `collection` is an empty dataframe, a collection was not found by its name,
                 # then save the warning and ignore it
                 if len(collection.index) == 0:
-                    self.errors.append({
-                        'type': 'warning',
-                        'message': (
-                            f'There is metadata to the `{item["collection"]["name"]}` collection, '
-                            f'however this collection does not exist in the database.'
-                        )
-                    })
+                    # check if the collection has not already been added to the errors list
+                    if not any(e['metadata']['collection'] == item['collection']['name'] \
+                              for e in self.errors):
+                        self.errors.append({
+                            'type': 'warning',
+                            'metadata': {
+                                'collection': item['collection']['name']
+                            },
+                            'message': (
+                                f'There is metadata to the `{item["collection"]["name"]}` collection, '
+                                f'however this collection does not exist in the database.'
+                            )
+                        })
                     continue
 
                 collection_id = collection.at[0, 'id']

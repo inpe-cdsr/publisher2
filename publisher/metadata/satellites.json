@@ -148,6 +148,29 @@
 					}
 				}
 			]
+		},
+		{
+			"name": "LANDSAT1",
+			"sensors": [
+				{
+					"name": "MSS",
+					"resolution": 58,
+					"quicklook": [
+						"red",
+						"nir",
+						"green"
+					],
+					"assets": {
+						"DN": {
+							"blue":  "BAND4.tif",
+							"green": "BAND5.tif",
+							"red":   "BAND6.tif",
+							"nir":   "BAND7.tif"
+						},
+						"SR": null
+					}
+				}
+			]
 		}
 	]
 }

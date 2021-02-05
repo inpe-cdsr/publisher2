@@ -457,11 +457,12 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
         assert_frame_equal(expected, result)
 
     def test_publish__ok__cbers4a_wfi_l4_dn(self):
+        # CBERS4A/2019_12/CBERS_4A_WFI_RAW_2019_12_27.13_53_00_ETC2/215_132_0/4_BC_UTM_WGS84
         query = {
             'satellite': 'CBERS4A',
             'sensor': 'wfi',
-            'start_date': '2019-12-01',
-            'end_date': '2020-06-30',
+            'start_date': '2019-12-20',
+            'end_date': '2019-12-30',
             'path': '215',
             'row': '132',
             'geo_processing': '4',
@@ -524,12 +525,37 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
+    def test_publish__ok__cbers4a_wfi_l2_and_l4_sr(self):
+        # 2020_12/CBERS_4A_WFI_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84/
+        query = {
+            'satellite': 'cbers4a',
+            'sensor': 'wfi',
+            'start_date': '2020-12-07',
+            'end_date': '2020-12-07',
+            'path': '214',
+            'row': '108',
+            # 'geo_processing' is empty in order to publish both `L2` and `L4` files, if they exist
+            'radio_processing': 'SR'
+        }
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+
+        result = self.db.select_from_items()
+        expected = read_item_from_csv('test_publish__ok__cbers4a_wfi_l2_and_l4_sr.csv')
+
+        assert_frame_equal(expected, result)
+
     def test_publish__ok__cbers4a_wfi__empty_result(self):
+        # CBERS4A/2020_11/CBERS_4A_WFI_RAW_2020_11_10.13_41_00_ETC2/207_?_0/2_BC_UTM_WGS84
+        # `207_148_0` exist, but `207_105_0` does not exist
         query = {
             'satellite': 'CBERS4A',
             'sensor': 'wfi',
-            'start_date': '2020-09-01',
-            'end_date': '2020-12-01',
+            'start_date': '2020-11-10',
+            'end_date': '2020-11-10',
             'path': '207',
             'row': '105', # <-- there is not this row
             'geo_processing': '2',

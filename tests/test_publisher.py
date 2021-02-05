@@ -375,7 +375,30 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
-    def test_publish__ok__cbers4a_mux__empty_result(self):
+    def test_publish__ok__cbers4a_mux_l4_dn(self):
+        # CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_27.13_53_00_ETC2/215_150_0/4_BC_UTM_WGS84
+        query = {
+            'satellite': 'CBERS4A',
+            'sensor': 'MUx',
+            'start_date': '2019-12-27',
+            'end_date': '2019-12-27',
+            'path': 215,
+            'row': 150,
+            'geo_processing': 4,
+            'radio_processing': 'DN'
+        }
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+
+        result = self.db.select_from_items('test_publish__ok__cbers4a_mux_l4_dn.csv')
+        expected = read_item_from_csv('test_publish__ok__cbers4a_mux_l4_dn.csv')
+
+        assert_frame_equal(expected, result)
+
+    def test_publish__ok__cbers4a_mux_l4_dn__geo_processing_does_not_exist(self):
         query = {
             'satellite': 'CBERS4A',
             'sensor': 'MUx',

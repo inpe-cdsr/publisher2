@@ -44,7 +44,7 @@ $ export PR_LOGGING_LEVEL=WARNING &&
 Or, run the test cases and get coverage report:
 
 ```
-$ export PR_LOGGING_LEVEL=WARNING &&
+$ export PR_LOGGING_LEVEL=ERROR &&
     coverage run -m unittest discover tests "test_*.py" -v &&
     coverage report -m &&
     coverage html

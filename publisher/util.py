@@ -421,55 +421,6 @@ class PublisherWalk:
 
         return True
 
-    def __get_dn_xml_file(self, files, dir_path):
-        '''Return just one DN XML file inside the directory as a dictionary.'''
-
-        radio_processing = self.query['radio_processing']
-
-        # if radio_processing is not DN, SR or None, then it is invalid
-        if radio_processing == 'DN':
-            # user chose to publish just `DN` files
-            return get_dn_files_as_dicts_from_files(files, dir_path), ['DN']
-
-        elif radio_processing == 'SR':
-            # user chose to publish just `SR` files
-            sr_xml_files = get_sr_files_as_dicts_from_files(files)
-
-            # if there are SR files, then I will extract the information from the DN file
-            if sr_xml_files:
-                return get_dn_files_as_dicts_from_files(files, dir_path), ['SR']
-
-        elif radio_processing is None:
-            # user chose to publish bothm `DN` and `SR` files
-            sr_xml_files = get_sr_files_as_dicts_from_files(files)
-            dn_xml_files = get_dn_files_as_dicts_from_files(files, dir_path)
-
-            # if there are both DN and SR files, then I will publish
-            # information from both radiometric processings
-            if dn_xml_files and sr_xml_files:
-                return dn_xml_files, ['DN', 'SR']
-
-            # if there are just DN files, then I will publish information
-            # from the DN radiometric processing
-            elif dn_xml_files and not sr_xml_files:
-                return dn_xml_files, ['DN']
-
-            else: # elif (not dn_xml_files and sr_xml_files) or (not dn_xml_files and not sr_xml_files):
-                # if there is NOT DN XML files in the folder, then I save the error
-                self.errors.append(
-                    {
-                        'type': 'warning',
-                        'message': 'There is NOT a DN XML file in this folder.',
-                        'metadata': {
-                            'folder': dir_path
-                        }
-                    }
-                )
-
-                return None, []
-
-        raise InternalServerError(f'Invalid radiometric processing: {radio_processing}')
-
     def __does_quicklook_exist_in_path(self, files, dir_path):
         # example: `CBERS_2B_WFI_20100301_177_092.png` or `CBERS_4A_MUX_20210110_201_109.png`
         quicklook_template = '^[a-zA-Z0-9_]+.png$'
@@ -508,13 +459,8 @@ class PublisherWalk:
             if not self.__does_quicklook_exist_in_path(files, dir_path):
                 continue
 
-            # if a valid dir does not have files, then ignore it
-            xml_as_dict, radio_processing_list = self.__get_dn_xml_file(files, dir_path)
-            if not xml_as_dict:
-                continue
-
             # yield just valid directories
-            yield dir_path, xml_as_dict, radio_processing_list
+            yield dir_path, files
 
     def __iter__(self):
         # this method makes the class to be an iterable

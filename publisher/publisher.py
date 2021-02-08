@@ -8,7 +8,8 @@ from publisher.common import print_line
 from publisher.environment import PR_FILES_PATH, PR_LOGGING_LEVEL
 from publisher.logger import create_logger
 from publisher.util import create_assets_from_metadata, create_insert_clause, \
-                           create_items_from_xml_as_dict, PublisherWalk
+                           create_items_from_xml_as_dict, get_dn_files_as_dicts_from_files, \
+                           get_sr_files_as_dicts_from_files, PublisherWalk
 from publisher.validator import validate, QUERY_SCHEMA
 
 
@@ -69,6 +70,55 @@ class Publisher:
         # and return assets metadata based on the radiometric processing (i.e. DN or SR)
         return  sensor[0]['assets'][radio_processing]
 
+    def __get_dn_xml_file(self, files, dir_path):
+        '''Return just one DN XML file inside the directory as a dictionary.'''
+
+        radio_processing = self.query['radio_processing']
+
+        # if radio_processing is not DN, SR or None, then it is invalid
+        if radio_processing == 'DN':
+            # user chose to publish just `DN` files
+            return get_dn_files_as_dicts_from_files(files, dir_path), ['DN']
+
+        elif radio_processing == 'SR':
+            # user chose to publish just `SR` files
+            sr_xml_files = get_sr_files_as_dicts_from_files(files)
+
+            # if there are SR files, then I will extract the information from the DN file
+            if sr_xml_files:
+                return get_dn_files_as_dicts_from_files(files, dir_path), ['SR']
+
+        elif radio_processing is None:
+            # user chose to publish bothm `DN` and `SR` files
+            sr_xml_files = get_sr_files_as_dicts_from_files(files)
+            dn_xml_files = get_dn_files_as_dicts_from_files(files, dir_path)
+
+            # if there are both DN and SR files, then I will publish
+            # information from both radiometric processings
+            if dn_xml_files and sr_xml_files:
+                return dn_xml_files, ['DN', 'SR']
+
+            # if there are just DN files, then I will publish information
+            # from the DN radiometric processing
+            elif dn_xml_files and not sr_xml_files:
+                return dn_xml_files, ['DN']
+
+            else: # elif (not dn_xml_files and sr_xml_files) or (not dn_xml_files and not sr_xml_files):
+                # if there is NOT DN XML files in the folder, then I save the error
+                self.errors.append(
+                    {
+                        'type': 'warning',
+                        'message': 'There is NOT a DN XML file in this folder.',
+                        'metadata': {
+                            'folder': dir_path
+                        }
+                    }
+                )
+
+                return None, []
+
+        raise InternalServerError(f'Invalid radiometric processing: {radio_processing}')
+
     def main(self):
         '''Main method.'''
 
@@ -90,12 +140,18 @@ class Publisher:
 
         # list to save the INSERT clauses based on item metadata
         items_insert = []
-
+        # p_walk is a generator that returns just valid directories
         p_walk = PublisherWalk(self.BASE_DIR, self.query)
 
-        for dir_path, xml_as_dict, radio_processing_list in p_walk:
+        for dir_path, files in p_walk:
             print_line()
             logger.info(f'dir_path: {dir_path}')
+
+            # if a valid dir does not have files, then ignore it
+            xml_as_dict, radio_processing_list = self.__get_dn_xml_file(files, dir_path)
+            if not xml_as_dict:
+                continue
+
             # logger.info(f'xml_as_dict: {xml_as_dict}')
             logger.info(f'radio_processing_list: {radio_processing_list}')
 

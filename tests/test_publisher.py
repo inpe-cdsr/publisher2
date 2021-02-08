@@ -83,6 +83,16 @@ class PublisherPublishOkTestCase(TestCase):
                 'type': 'warning',
                 'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'}
+            },
+            {
+                'type': 'warning',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/LANDSAT7/2003_06/LANDSAT7_ETM_20030601.125322/220_061_0/2_BC_UTM_WGS84'}
+            },
+            {
+                'type': 'warning',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/LANDSAT7/1999_07/LANDSAT7_ETM_19990719.124008/217_064_0/2_BC_UTM_WGS84'}
             }
         ]
 
@@ -932,7 +942,7 @@ class PublisherPublishLandsatOkTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
-    # LANDSAT5 MSS
+    # LANDSAT5 TM
 
     def test_publish__ok__landsat5_tm_l2_dn(self):
         # LANDSAT5/2011_11/LANDSAT5_TM_20111101.140950/233_054_0/2_BC_UTM_WGS84
@@ -976,6 +986,66 @@ class PublisherPublishLandsatOkTestCase(TestCase):
                 'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {
                     'folder': '/TIFF/LANDSAT5/1984_04/LANDSAT5_TM_19840406.124930/223_062_0/2_BC_UTM_WGS84'
+                }
+            }
+        ]
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(expected, loads(response.get_data(as_text=True)))
+
+        # check if the database if empty
+        result = self.db.select_from_items()
+        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
+                                      'metadata','geom','min_convex_hull'])  # empty dataframe
+
+        assert_frame_equal(expected, result)
+
+    # LANDSAT7 ETM
+
+    def test_publish__ok__landsat7_etm_l2_dn(self):
+        # LANDSAT7/1999_07/LANDSAT7_ETM_19990731.144148/004_072_0/2_BC_UTM_WGS84
+        query = {
+            'satellite': 'LAndSAT7',
+            'sensor': 'EtM',
+            'start_date': '1999-07-31',
+            'end_date': '1999-07-31',
+            'path': 4,
+            'row': 72,
+            'geo_processing': 2,
+            'radio_processing': 'DN'
+        }
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+
+        result = self.db.select_from_items()
+        expected = read_item_from_csv('landsat/test_publish__ok__landsat7_etm_l2_dn.csv')
+
+        assert_frame_equal(expected, result)
+
+    def test_publish__ok__landsat7_etm_l2_dn__quicklook_does_not_exist(self):
+        # LANDSAT7/1999_07/LANDSAT7_ETM_19990719.124008/217_064_0/2_BC_UTM_WGS84
+        query = {
+            'satellite': 'laNDSAT7',
+            'sensor': 'ETm',
+            'start_date': '1999-07-19',
+            'end_date': '1999-07-19',
+            'path': '217',
+            'row': '064',
+            'geo_processing': 2,
+            'radio_processing': 'DN'
+        }
+
+        expected = [
+            {
+                'type': 'warning',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {
+                    'folder': '/TIFF/LANDSAT7/1999_07/LANDSAT7_ETM_19990719.124008/217_064_0/2_BC_UTM_WGS84'
                 }
             }
         ]

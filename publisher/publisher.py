@@ -99,6 +99,7 @@ class Publisher:
             # logger.info(f'xml_as_dict: {xml_as_dict}')
             logger.info(f'radio_processing_list: {radio_processing_list}')
 
+            # list of items (e.g. [dn_item, sr_item])
             items = create_items_from_xml_as_dict(xml_as_dict, radio_processing_list)
             logger.info(f'items size: {len(items)}\n')
 
@@ -106,10 +107,10 @@ class Publisher:
                 print_line()
                 logger.info(f'item: {item}\n')
 
-                assets_matadata = self.__get_assets_metadata(**item['collection'])
-                logger.info(f'assets_matadata: {assets_matadata}\n')
+                assets_metadata = self.__get_assets_metadata(**item['collection'])
+                logger.info(f'assets_metadata: {assets_metadata}\n')
 
-                item['assets'] = create_assets_from_metadata(assets_matadata, dir_path)
+                item['assets'] = create_assets_from_metadata(assets_metadata, dir_path)
                 logger.info(f'item[assets]: {item["assets"]}\n')
 
                 logger.info(f'item[collection][name]: {item["collection"]["name"]}')

@@ -119,6 +119,67 @@ class Publisher:
 
         raise InternalServerError(f'Invalid radiometric processing: {radio_processing}')
 
+    def _create_item_and_get_insert_clauses(self, files, dir_path):
+        items_insert = []
+
+        # if a valid dir does not have files, then ignore it
+        xml_as_dict, radio_processing_list = self.__get_dn_xml_file(files, dir_path)
+        if not xml_as_dict:
+            return None
+
+        # logger.info(f'xml_as_dict: {xml_as_dict}')
+        logger.info(f'radio_processing_list: {radio_processing_list}')
+
+        # list of items (e.g. [dn_item, sr_item])
+        items = create_items_from_xml_as_dict(xml_as_dict, radio_processing_list)
+        logger.info(f'items size: {len(items)}\n')
+
+        for item in items:
+            print_line()
+            logger.info(f'item: {item}\n')
+
+            assets_metadata = self.__get_assets_metadata(**item['collection'])
+            logger.info(f'assets_metadata: {assets_metadata}\n')
+
+            item['assets'] = create_assets_from_metadata(assets_metadata, dir_path)
+            logger.info(f'item[assets]: {item["assets"]}\n')
+
+            logger.info(f'item[collection][name]: {item["collection"]["name"]}')
+
+            # get collection id from dataframe
+            collection = self.df_collections.loc[
+                self.df_collections['name'] == item['collection']['name']
+            ].reset_index(drop=True)
+            logger.info(f'collection:\n{collection}')
+
+            # if `collection` is an empty dataframe, a collection was not found by its name,
+            # then save the warning and ignore it
+            if len(collection.index) == 0:
+                # check if the collection has not already been added to the errors list
+                if not any(e['metadata']['collection'] == item['collection']['name'] \
+                            for e in self.errors):
+                    self.errors.append({
+                        'type': 'warning',
+                        'message': (
+                            f'There is metadata to the `{item["collection"]["name"]}` collection, '
+                            'however this collection does not exist in the database.'
+                        ),
+                        'metadata': {
+                            'collection': item['collection']['name']
+                        }
+                    })
+                continue
+
+            collection_id = collection.at[0, 'id']
+            logger.info(f'collection_id: {collection_id}')
+
+            # create INSERT clause based on item information
+            insert = create_insert_clause(item, collection_id)
+            logger.info(f'insert: {insert}')
+            items_insert.append(insert)
+
+        return items_insert
+
     def main(self):
         '''Main method.'''
 
@@ -147,61 +208,13 @@ class Publisher:
             print_line()
             logger.info(f'dir_path: {dir_path}')
 
-            # if a valid dir does not have files, then ignore it
-            xml_as_dict, radio_processing_list = self.__get_dn_xml_file(files, dir_path)
-            if not xml_as_dict:
-                continue
+            # create INSERT clause based on item information
+            _items_insert = self._create_item_and_get_insert_clauses(files, dir_path)
+            logger.info(f'_items_insert: {_items_insert}')
 
-            # logger.info(f'xml_as_dict: {xml_as_dict}')
-            logger.info(f'radio_processing_list: {radio_processing_list}')
-
-            # list of items (e.g. [dn_item, sr_item])
-            items = create_items_from_xml_as_dict(xml_as_dict, radio_processing_list)
-            logger.info(f'items size: {len(items)}\n')
-
-            for item in items:
-                print_line()
-                logger.info(f'item: {item}\n')
-
-                assets_metadata = self.__get_assets_metadata(**item['collection'])
-                logger.info(f'assets_metadata: {assets_metadata}\n')
-
-                item['assets'] = create_assets_from_metadata(assets_metadata, dir_path)
-                logger.info(f'item[assets]: {item["assets"]}\n')
-
-                logger.info(f'item[collection][name]: {item["collection"]["name"]}')
-
-                # get collection id from dataframe
-                collection = self.df_collections.loc[
-                    self.df_collections['name'] == item['collection']['name']
-                ].reset_index(drop=True)
-                logger.info(f'collection:\n{collection}')
-
-                # if `collection` is an empty dataframe, a collection was not found by its name,
-                # then save the warning and ignore it
-                if len(collection.index) == 0:
-                    # check if the collection has not already been added to the errors list
-                    if not any(e['metadata']['collection'] == item['collection']['name'] \
-                              for e in self.errors):
-                        self.errors.append({
-                            'type': 'warning',
-                            'message': (
-                                f'There is metadata to the `{item["collection"]["name"]}` collection, '
-                                'however this collection does not exist in the database.'
-                            ),
-                            'metadata': {
-                                'collection': item['collection']['name']
-                            }
-                        })
-                    continue
-
-                collection_id = collection.at[0, 'id']
-                logger.info(f'collection_id: {collection_id}')
-
-                # create INSERT clause based on item information
-                insert = create_insert_clause(item, collection_id)
-                logger.info(f'insert: {insert}')
-                items_insert.append(insert)
+            # if INSERT clauses have been returned, then add them to the list
+            if _items_insert:
+                items_insert += _items_insert
 
         print_line()
 

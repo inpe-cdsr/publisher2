@@ -91,8 +91,23 @@ class PublisherPublishOkTestCase(TestCase):
             },
             {
                 'type': 'warning',
+                'message': 'There is NOT a TIFF file in this folder that ends with the `EVI.tif` template, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS4/2018_01/CBERS_4_MUX_DRD_2018_01_01.13_14_00_CB11/156_103_0/4_BC_UTM_WGS84'}
+            },
+            {
+                'type': 'warning',
                 'message': 'There is NOT a TIFF file in this folder that ends with the `BAND13.tif` template, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84'}
+            },
+            {
+                'type': 'warning',
+                'message': 'There is NOT a TIFF file in this folder that ends with the `EVI.tif` template, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS4/2021_02/CBERS_4_AWFI_DRD_2021_02_01.13_07_00_CB11/154_117_0/4_BC_UTM_WGS84'}
+            },
+            {
+                'type': 'warning',
+                'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS4/2016_01/CBERS_4_MUX_DRD_2016_01_01.13_28_32_CB11/157_101_0/2_BC_UTM_WGS84'}
             },
             {
                 'type': 'warning',
@@ -495,7 +510,67 @@ class PublisherPublishCbers4OkTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
+    def test_publish__ok__cbers4_awfi__path_row_folder_is_empty(self):
+        # CBERS4/2015_01/CBERS_4_AWFI_DRD_2015_01_16.13_39_12_CB11/161_093_0/
+        query = {
+            'satellite': 'CBErS4',
+            'sensor': 'AwFi',
+            'start_date': '2015-01-16',
+            'end_date': '2015-01-16',
+            'path': '161',
+            'row': '093'
+        }
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+
+        # check if the database if empty
+        result = self.db.select_from_items()
+        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
+                                      'metadata','geom','min_convex_hull'])  # empty dataframe
+
+        assert_frame_equal(expected, result)
+
+    # TODO: CBERS4/2021_02/CBERS_4_AWFI_DRD_2021_02_01.13_07_00_CB11/154_117_0/4_BC_UTM_WGS84
+
     # CBERS4 MUX (DN and SR)
+
+    def test_publish__ok__cbers4_mux_l2_dn_and_sr__dn_xml_file_does_not_exist(self):
+        # CBERS4/2016_01/CBERS_4_MUX_DRD_2016_01_01.13_28_32_CB11/157_101_0/2_BC_UTM_WGS84
+        query = {
+            'satellite': 'cBERs4',
+            'sensor': 'MUX',
+            'start_date': '2016-01-01',
+            'end_date': '2016-01-01',
+            'path': '157',
+            'row': 101,
+            'geo_processing': 2,
+            # ommit `radio_processing` to return both `DN` and `SR`
+        }
+
+        expected = [
+            {
+                'type': 'warning',
+                'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
+                'metadata': {
+                    'folder': '/TIFF/CBERS4/2016_01/CBERS_4_MUX_DRD_2016_01_01.13_28_32_CB11/157_101_0/2_BC_UTM_WGS84'
+                }
+            }
+        ]
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(expected, loads(response.get_data(as_text=True)))
+
+        # check if the database if empty
+        result = self.db.select_from_items()
+        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
+                                      'metadata','geom','min_convex_hull'])  # empty dataframe
+
+        assert_frame_equal(expected, result)
 
     def test_publish__ok__cbers4_mux_l4_dn__dn_xml_file_does_not_exist(self):
         # CBERS4/2020_07/CBERS_4_MUX_DRD_2020_07_31.13_07_00_CB11/155_103_0/4_BC_UTM_WGS84
@@ -529,6 +604,99 @@ class PublisherPublishCbers4OkTestCase(TestCase):
         result = self.db.select_from_items()
         expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
                                       'metadata','geom','min_convex_hull'])  # empty dataframe
+
+        assert_frame_equal(expected, result)
+
+    def test_publish__ok__cbers4_mux_l4_dn(self):
+        # CBERS4/2018_01/CBERS_4_MUX_DRD_2018_01_01.13_14_00_CB11/156_103_0/4_BC_UTM_WGS84
+        query = {
+            'satellite': 'CBERS4',
+            'sensor': 'mux',
+            'start_date': '2018-01-01',
+            'end_date': '2018-01-01',
+            'path': 156,
+            'row': '103',
+            'geo_processing': 4,
+            'radio_processing': 'dn'
+        }
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+
+        result = self.db.select_from_items()
+        expected = read_item_from_csv('cbers4/test_publish__ok__cbers4_mux_l4_dn.csv')
+
+        assert_frame_equal(expected, result)
+
+    def test_publish__ok__cbers4_mux_l4_sr__evi_tiff_file_does_not_exist(self):
+        # CBERS4/2018_01/CBERS_4_MUX_DRD_2018_01_01.13_14_00_CB11/156_103_0/4_BC_UTM_WGS84
+        query = {
+            'satellite': 'CBERS4',
+            'sensor': 'mux',
+            'start_date': '2018-01-01',
+            'end_date': '2018-01-01',
+            'path': 156,
+            'row': '103',
+            'geo_processing': 4,
+            'radio_processing': 'sr'
+        }
+
+        expected = [
+            {
+                'type': 'warning',
+                'message': ('There is NOT a TIFF file in this folder that ends with the '
+                            '`EVI.tif` template, then it will be ignored.'),
+                'metadata': {
+                    'folder': '/TIFF/CBERS4/2018_01/CBERS_4_MUX_DRD_2018_01_01.13_14_00_CB11/156_103_0/4_BC_UTM_WGS84'
+                }
+            }
+        ]
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(expected, loads(response.get_data(as_text=True)))
+
+        # check if the database if empty
+        result = self.db.select_from_items()
+        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
+                                      'metadata','geom','min_convex_hull'])  # empty dataframe
+
+        assert_frame_equal(expected, result)
+
+    def test_publish__ok__cbers4_mux_l4_dn_and_sr__evi_tiff_file_does_not_exist(self):
+        # CBERS4/2018_01/CBERS_4_MUX_DRD_2018_01_01.13_14_00_CB11/156_103_0/4_BC_UTM_WGS84
+        query = {
+            'satellite': 'CBERS4',
+            'sensor': 'mux',
+            'start_date': '2018-01-01',
+            'end_date': '2018-01-01',
+            'path': 156,
+            'row': '103',
+            'geo_processing': 4,
+            # ommit 'radio_processing' to get both `DN` and `SR`
+        }
+
+        expected = [
+            {
+                'type': 'warning',
+                'message': ('There is NOT a TIFF file in this folder that ends with the '
+                            '`EVI.tif` template, then it will be ignored.'),
+                'metadata': {
+                    'folder': '/TIFF/CBERS4/2018_01/CBERS_4_MUX_DRD_2018_01_01.13_14_00_CB11/156_103_0/4_BC_UTM_WGS84'
+                }
+            }
+        ]
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(expected, loads(response.get_data(as_text=True)))
+
+        result = self.db.select_from_items()
+        expected = read_item_from_csv('cbers4/test_publish__ok__cbers4_mux_l4_dn_and_sr.csv')
 
         assert_frame_equal(expected, result)
 

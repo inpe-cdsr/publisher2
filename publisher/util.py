@@ -168,6 +168,9 @@ def create_items_from_xml_as_dict(xml_as_dict, assets):
     radiometric processing information the user chose.
     '''
 
+    if 'leftCamera' in xml_as_dict:
+        xml_as_dict = xml_as_dict['leftCamera']
+
     # if user chose `DN` and `SR` radiometric processings, then create both items
     if 'DN' in assets and 'SR' in assets:
         # create DN item

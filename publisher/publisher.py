@@ -7,9 +7,8 @@ from werkzeug.exceptions import BadRequest
 from publisher.common import print_line
 from publisher.environment import PR_FILES_PATH, PR_LOGGING_LEVEL
 from publisher.logger import create_logger
-from publisher.util import create_assets_from_metadata, create_insert_clause, \
-                           create_items_from_xml_as_dict, get_dn_files_as_dicts_from_files, \
-                           get_sr_files_as_dicts_from_files, PublisherWalk
+from publisher.util import convert_xml_to_dict, create_insert_clause, \
+                           create_items_from_xml_as_dict, PublisherWalk
 from publisher.validator import validate, QUERY_SCHEMA
 
 
@@ -64,7 +63,6 @@ class Publisher:
         # base directory to search the files
         self.BASE_DIR = BASE_DIR
         self.IS_TO_GET_DATA_FROM_DB = IS_TO_GET_DATA_FROM_DB
-        self.satellite_metadata = SatelliteMetadata()
         self.db = db_connection
         self.errors = []
         self.query = query
@@ -77,81 +75,32 @@ class Publisher:
             # get all available collections from CSV file
             self.df_collections = read_csv(f'{PR_FILES_PATH}/collections.csv')
 
-    def __get_dn_xml_file(self, files, dir_path):
-        '''Return just one DN XML file inside the directory as a dictionary.'''
+    def _create_item_and_get_insert_clauses(self, dir_path, dn_xml_file_path, assets):
+        print_line()
 
-        radio_processing = self.query['radio_processing']
-
-        # if radio_processing is not DN, SR or None, then it is invalid
-        if radio_processing == 'DN':
-            # user chose to publish just `DN` files
-            return get_dn_files_as_dicts_from_files(files, dir_path), ['DN']
-
-        elif radio_processing == 'SR':
-            # user chose to publish just `SR` files
-            sr_xml_files = get_sr_files_as_dicts_from_files(files)
-
-            # if there are SR files, then I will extract the information from the DN file
-            if sr_xml_files:
-                return get_dn_files_as_dicts_from_files(files, dir_path), ['SR']
-
-        elif radio_processing is None:
-            # user chose to publish bothm `DN` and `SR` files
-            sr_xml_files = get_sr_files_as_dicts_from_files(files)
-            dn_xml_files = get_dn_files_as_dicts_from_files(files, dir_path)
-
-            # if there are both DN and SR files, then I will publish
-            # information from both radiometric processings
-            if dn_xml_files and sr_xml_files:
-                return dn_xml_files, ['DN', 'SR']
-
-            # if there are just DN files, then I will publish information
-            # from the DN radiometric processing
-            elif dn_xml_files and not sr_xml_files:
-                return dn_xml_files, ['DN']
-
-            else: # elif (not dn_xml_files and sr_xml_files) or (not dn_xml_files and not sr_xml_files):
-                # if there is NOT DN XML files in the folder, then I save the error
-                self.errors.append(
-                    {
-                        'type': 'warning',
-                        'message': 'There is NOT a DN XML file in this folder.',
-                        'metadata': {
-                            'folder': dir_path
-                        }
-                    }
-                )
-
-                return None, []
-
-        raise InternalServerError(f'Invalid radiometric processing: {radio_processing}')
-
-    def _create_item_and_get_insert_clauses(self, files, dir_path):
         items_insert = []
 
-        # if a valid dir does not have files, then ignore it
-        xml_as_dict, radio_processing_list = self.__get_dn_xml_file(files, dir_path)
-        if not xml_as_dict:
+        logger.info(f'dn_xml_file_path: {dn_xml_file_path}')
+        logger.info(f'assets: {assets}')
+
+        # convert DN XML file in a dictionary
+        xml_as_dict = convert_xml_to_dict(dn_xml_file_path)
+
+        # if there is NOT `DN` information in the XML file, then the method returns None
+        if 'prdf' not in xml_as_dict:
             return None
 
+        xml_as_dict = xml_as_dict['prdf']
         # logger.info(f'xml_as_dict: {xml_as_dict}')
-        logger.info(f'radio_processing_list: {radio_processing_list}')
 
         # list of items (e.g. [dn_item, sr_item])
-        items = create_items_from_xml_as_dict(xml_as_dict, radio_processing_list)
+        items = create_items_from_xml_as_dict(xml_as_dict, assets)
         logger.info(f'items size: {len(items)}\n')
 
         for item in items:
             print_line()
             logger.info(f'item: {item}\n')
-
-            assets_metadata = self.satellite_metadata.get_assets_metadata(**item['collection'])
-            logger.info(f'assets_metadata: {assets_metadata}\n')
-
-            item['assets'] = create_assets_from_metadata(assets_metadata, dir_path)
-            logger.info(f'item[assets]: {item["assets"]}\n')
-
-            logger.info(f'item[collection][name]: {item["collection"]["name"]}')
+            logger.info(f"item[collection][name]: {item['collection']['name']}")
 
             # get collection id from dataframe
             collection = self.df_collections.loc[
@@ -209,14 +158,11 @@ class Publisher:
         # list to save the INSERT clauses based on item metadata
         items_insert = []
         # p_walk is a generator that returns just valid directories
-        p_walk = PublisherWalk(self.BASE_DIR, self.query)
+        p_walk = PublisherWalk(self.BASE_DIR, self.query, SatelliteMetadata())
 
-        for dir_path, files in p_walk:
-            print_line()
-            logger.info(f'dir_path: {dir_path}')
-
+        for dir_path, dn_xml_file_path, assets in p_walk:
             # create INSERT clause based on item information
-            _items_insert = self._create_item_and_get_insert_clauses(files, dir_path)
+            _items_insert = self._create_item_and_get_insert_clauses(dir_path, dn_xml_file_path, assets)
             logger.info(f'_items_insert: {_items_insert}')
 
             # if INSERT clauses have been returned, then add them to the list

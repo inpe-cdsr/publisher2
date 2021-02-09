@@ -49,55 +49,6 @@ def create_insert_clause(item, collection_id, srid=4326):
     )
 
 
-def create_assets_from_metadata(assets_matadata, dir_path):
-    '''Create assets object based on assets metadata.'''
-
-    assets = {}
-
-    # create a shortened path starting on `/TIFF`
-    # index = dir_path.find('/TIFF')
-    # shortened_dir_path = dir_path[index:]
-
-    for band, band_template in assets_matadata.items():
-        # search for all TIFF files based on a template with `band_template`
-        # for example: search all TIFF files that matched with '/folder/*BAND6.tif'
-        tiff_files = glob(f'{dir_path}/*{band_template}')
-
-        if tiff_files:
-            # get just the band name from the template (e.g. `BAND6`)
-            band_name = band_template.replace('.tif', '')
-
-            # add TIFF file as an asset
-            assets[band_name] = {
-                # 'href': os_path_join(shortened_dir_path, tiff_files[0]),
-                'href': tiff_files[0],
-                'type': 'image/tiff; application=geotiff',
-                'common_name': band,
-                'roles': ['data']
-            }
-
-            # add XML file as an asset
-            assets[band_name + '_xml'] = {
-                # 'href': os_path_join(shortened_dir_path, tiff_files[0].replace('.tif', '.xml')),
-                'href': tiff_files[0].replace('.tif', '.xml'),
-                'type': 'application/xml',
-                'roles': ['metadata']
-            }
-
-    # search for all files that end with `.png`
-    png_files = glob(f'{dir_path}/*.png')
-
-    if png_files:
-        assets['thumbnail'] = {
-            # 'href': os_path_join(shortened_dir_path, png_files[0]),
-            'href': png_files[0],
-            'type': 'image/png',
-            'roles': ['thumbnail']
-        }
-
-    return assets
-
-
 def get_collection_from_xml_as_dict(xml_as_dict, radio_processing):
     '''Get collection information from XML file as dictionary.'''
 
@@ -211,20 +162,21 @@ def get_geometry_from_xml_as_dict(xml_as_dict, epsg=4326):
     }
 
 
-def create_items_from_xml_as_dict(xml_as_dict, radio_processing_list):
+def create_items_from_xml_as_dict(xml_as_dict, assets):
     '''
     Return a list of items based on an XML file as dictionary and the
     radiometric processing information the user chose.
     '''
 
     # if user chose `DN` and `SR` radiometric processings, then create both items
-    if 'DN' in radio_processing_list and 'SR' in radio_processing_list:
+    if 'DN' in assets and 'SR' in assets:
         # create DN item
         dn_item = {}
         dn_item['collection'] = get_collection_from_xml_as_dict(xml_as_dict, 'DN')
         dn_item['properties'] = get_properties_from_xml_as_dict(xml_as_dict, dn_item['collection'])
         dn_item['bbox'] = get_bbox_from_xml_as_dict(xml_as_dict)
         dn_item['geometry'] = get_geometry_from_xml_as_dict(xml_as_dict)
+        dn_item['assets'] = assets['DN']
 
         # create SR item from DN item, because they have almost the same information
         # the only different information they have is the radiometric processing
@@ -233,20 +185,23 @@ def create_items_from_xml_as_dict(xml_as_dict, radio_processing_list):
         sr_item['collection']['name'] = sr_item['collection']['name'].replace('DN', 'SR')
         sr_item['collection']['description'] = sr_item['collection']['description'].replace('DN', 'SR')
         sr_item['properties']['name'] = sr_item['properties']['name'].replace('DN', 'SR')
+        sr_item['assets'] = assets['SR']
 
         # return both `DN` and `SR` items
         return [dn_item, sr_item]
 
     # if user chose just `DN` radiometric processing, create a collection with it
-    if 'DN' in radio_processing_list:
+    if 'DN' in assets:
         item = {
-            'collection': get_collection_from_xml_as_dict(xml_as_dict, 'DN')
+            'collection': get_collection_from_xml_as_dict(xml_as_dict, 'DN'),
+            'assets': assets['DN']
         }
 
     # if user chose just `SR` radiometric processing, create a collection with it
-    elif 'SR' in radio_processing_list:
+    elif 'SR' in assets:
         item = {
-            'collection': get_collection_from_xml_as_dict(xml_as_dict, 'SR')
+            'collection': get_collection_from_xml_as_dict(xml_as_dict, 'SR'),
+            'assets': assets['SR']
         }
 
     # extract other information to the item
@@ -315,44 +270,24 @@ def decode_scene_dir(scene_dir):
     return satellite, sensor, date, time
 
 
-def get_dn_files_as_dicts_from_files(files, dir_path):
-    # example: CBERS_4_AWFI_20201228_157_135_L4_RIGHT_BAND16.xml
-    dn_template = '^[a-zA-Z0-9_]+BAND\d+.xml$'
-
-    # get just the DN XML files based on the radiometric processing regex
-    # for both DN or SR files, I extract information from a DN XML file
-    dn_xml_files = list(filter(lambda f: search(dn_template, f), files))
-
-    if dn_xml_files:
-        # `dn_xml_files[0]` gets the first DN XML file
-        # `os_path_join` creates a full path to the XML file
-        # `convert_xml_to_dict` converts XML file to dict object
-        xml_as_dict = convert_xml_to_dict(os_path_join(dir_path, dn_xml_files[0]))
-
-        # check if there is `DN` information in the XML file
-        if 'prdf' in xml_as_dict:
-            return xml_as_dict['prdf']
-
-    return None
-
-
-def get_sr_files_as_dicts_from_files(files):
+def is_there_sr_files_in_the_list_of_files(files):
     # example: CBERS_4_AWFI_20201228_157_135_L4_BAND16_GRID_SURFACE.xml
     sr_template = '^[a-zA-Z0-9_]+BAND\d+_GRID_SURFACE.xml$'
 
     # get just the SR XML files based on the radiometric processing regex
     sr_xml_files = list(filter(lambda f: search(sr_template, f), files))
 
-    return sr_xml_files if sr_xml_files else None
+    return True if sr_xml_files else False
 
 
 class PublisherWalk:
     '''This class is a Generator that encapsulates `os.walk()` generator to return just valid directories.
     A valid directory is a folder that contains XML files.'''
 
-    def __init__(self, BASE_DIR, query=None):
+    def __init__(self, BASE_DIR, query, satellite_metadata):
         self.BASE_DIR = BASE_DIR
         self.query = query
+        self.satellite_metadata = satellite_metadata
         self.errors = []
 
         # create an iterator from generator method
@@ -367,33 +302,33 @@ class PublisherWalk:
 
         # a valid dir path must have at least five folders (+1 the base path (i.e. /TIFF))
         if len(splitted_dir_path) < 6:
-            return False
+            return False, None, None
 
         _, satellite_dir, year_month_dir, scene_dir, path_row_dir, level_dir = splitted_dir_path
 
         # if the informed satellite is not equal to the dir, then the folder is invalid
         if self.query['satellite'] is not None and self.query['satellite'] != satellite_dir:
-            return False
+            return False, None, None
 
-        _, sensor, date, time = decode_scene_dir(scene_dir)
+        _, sensor_dir, date_dir, time_dir = decode_scene_dir(scene_dir)
 
         # if the informed sensor is not equal to the dir, then the folder is invalid
-        if self.query['sensor'] is not None and self.query['sensor'] != sensor:
-            return False
+        if self.query['sensor'] is not None and self.query['sensor'] != sensor_dir:
+            return False, None, None
 
         # if the actual dir is not inside the date range, then the folder is invalid
         if self.query['start_date'] is not None and self.query['end_date'] is not None:
             # convert date from str to datetime
-            date = datetime.strptime(date, '%Y-%m-%d')
+            date = datetime.strptime(date_dir, '%Y-%m-%d')
 
             # if time dir is between 0h and 5h, then consider it one day ago,
             # because date is reception date and not viewing date
-            if time >= '00:00:00' and time <= '05:00:00':
+            if time_dir >= '00:00:00' and time_dir <= '05:00:00':
                 # subtract one day from the date
                 date -= timedelta(days=1)
 
             if not (date >= self.query['start_date'] and date <= self.query['end_date']):
-                return False
+                return False, None, None
 
         # if the informed path/row is not inside the dir, then the folder is invalid
         if self.query['path'] is not None or self.query['row'] is not None:
@@ -409,39 +344,156 @@ class PublisherWalk:
                 raise InternalServerError(f'Invalid path/row dir: {path_row_dir}')
 
             if self.query['path'] is not None and self.query['path'] != int(path):
-                return False
+                return False, None, None
 
             if self.query['row'] is not None and self.query['row'] != int(row):
-                return False
+                return False, None, None
 
         # if the level_dir does not start with the informed geo_processing, then the folder is invalid
         if self.query['geo_processing'] is not None and not level_dir.startswith(str(self.query['geo_processing'])):
             # example: `2_BC_UTM_WGS84`
-            return False
+            return False, None, None
 
-        return True
+        return True, satellite_dir, sensor_dir
 
-    def __does_quicklook_exist_in_path(self, files, dir_path):
-        # example: `CBERS_2B_WFI_20100301_177_092.png` or `CBERS_4A_MUX_20210110_201_109.png`
-        quicklook_template = '^[a-zA-Z0-9_]+.png$'
+    def __get_dn_xml_file_path(self, files, dir_path):
+        # example: CBERS_4_AWFI_20201228_157_135_L4_RIGHT_BAND16.xml
+        dn_template = '^[a-zA-Z0-9_]+BAND\d+.xml$'
 
-        # get all quicklook files that are inside the folder (normally is just one file)
-        quicklook_files = list(filter(lambda f: search(quicklook_template, f), files))
+        # get just the DN XML files based on the radiometric processing regex
+        # for both DN or SR files, I extract information from a DN XML file
+        dn_xml_files = list(filter(lambda f: search(dn_template, f), files))
 
-        if quicklook_files:
-            return True
+        if dn_xml_files:
+            # `dn_xml_files[0]` gets the first DN XML file
+            # `os_path_join` creates a full path to the XML file
+            return os_path_join(dir_path, dn_xml_files[0])
 
         self.errors.append(
             {
                 'type': 'warning',
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'message': 'There is NOT a DN file in this folder, then it will be ignored.',
                 'metadata': {
                     'folder': dir_path
                 }
             }
         )
+        return None
 
-        return False
+    def __create_assets_from_metadata(self, assets_matadata, dir_path):
+        '''Create assets object based on assets metadata.'''
+
+        # search for all files that end with `.png`
+        png_files = glob(f'{dir_path}/*.png')
+
+        if not png_files:
+            self.errors.append(
+                {
+                    'type': 'warning',
+                    'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                    'metadata': {
+                        'folder': dir_path
+                    }
+                }
+            )
+            return None
+
+        # initialize `assets` object with the `thumbnail` key
+        assets = {
+            'thumbnail': {
+                'href': png_files[0],
+                'type': 'image/png',
+                'roles': ['thumbnail']
+            }
+        }
+
+        for band, band_template in assets_matadata.items():
+            # search for all TIFF files based on a template with `band_template`
+            # for example: search all TIFF files that matches with '/folder/*BAND6.tif'
+            tiff_files = sorted(glob(f'{dir_path}/*{band_template}'))
+
+            if not tiff_files:
+                self.errors.append(
+                    {
+                        'type': 'warning',
+                        'message': ('There is NOT a TIFF file in this folder that ends with the '
+                                    f'`{band_template}` template, then it will be ignored.'),
+                        'metadata': {
+                            'folder': dir_path
+                        }
+                    }
+                )
+                return None
+
+            # get just the band name from the template (e.g. `BAND6`)
+            band_name = band_template.replace('.tif', '')
+
+            # add TIFF file as an asset
+            assets[band_name] = {
+                'href': tiff_files[0],
+                'type': 'image/tiff; application=geotiff',
+                'common_name': band,
+                'roles': ['data']
+            }
+
+            # quality, evi and ndvi TIFF files have not XML files
+            if band == 'quality' or band == 'evi' or band == 'ndvi':
+
+                # `quality` band contains a JSON file
+                if band == 'quality':
+                    # search for all JSON files based on a template with `band_template`
+                    # for example: search all JSON files that matches with '/folder/*BAND6.json'
+                    json_files = sorted(glob(f"{dir_path}/*{band_template.replace('.tif', '.json')}"))
+
+                    if not json_files:
+                        self.errors.append(
+                            {
+                                'type': 'warning',
+                                'message': ('There is NOT a JSON file in this folder that ends with the '
+                                            f"`{band_template.replace('.tif', '.json')}` template, "
+                                            'then it will be ignored.'),
+                                'metadata': {
+                                    'folder': dir_path
+                                }
+                            }
+                        )
+                        return None
+
+                    # add XML file as an asset
+                    assets[band_name + '_json'] = {
+                        'href': json_files[0],
+                        'type': 'application/json',
+                        'roles': ['metadata']
+                    }
+
+                continue
+
+            # search for all TIFF files based on a template with `band_template`
+            # for example: search all TIFF files that matches with '/folder/*BAND6.xml'
+            xml_files = sorted(glob(f"{dir_path}/*{band_template.replace('.tif', '.xml')}"))
+
+            if not xml_files:
+                self.errors.append(
+                    {
+                        'type': 'warning',
+                        'message': ('There is NOT a XML file in this folder that ends with the '
+                                    f"`{band_template.replace('.tif', '.xml')}` template, "
+                                    'then it will be ignored.'),
+                        'metadata': {
+                            'folder': dir_path
+                        }
+                    }
+                )
+                return None
+
+            # add XML file as an asset
+            assets[band_name + '_xml'] = {
+                'href': xml_files[0],
+                'type': 'application/xml',
+                'roles': ['metadata']
+            }
+
+        return assets
 
     def __generator(self):
         '''Generator that returns just directories with valid files.'''
@@ -452,15 +504,39 @@ class PublisherWalk:
                 continue
 
             # if dir is not valid based on query, then ignore it
-            if not self.__is_dir_path_valid(dir_path):
+            is_dir_path_valid, satellite, sensor = self.__is_dir_path_valid(dir_path)
+            if not is_dir_path_valid:
                 continue
 
-            # if quicklook does not exist in the dir path, then ignore it
-            if not self.__does_quicklook_exist_in_path(files, dir_path):
+            # if there is not DN XML file, then ignore it
+            dn_xml_file_path = self.__get_dn_xml_file_path(files, dir_path)
+            if not dn_xml_file_path:
+                continue
+
+            assets = {}
+            for radio_processing in self.query['radio_processing']:
+                # if user is publishing `SR` files, but there is not any
+                # `SR` files in this folder, then ignore it
+                if radio_processing == 'SR' and not is_there_sr_files_in_the_list_of_files(files):
+                    continue
+
+                assets_metadata = self.satellite_metadata.get_assets_metadata(
+                    satellite, sensor, radio_processing
+                )
+
+                # if there is not a valid asset, then ignore it
+                __assets = self.__create_assets_from_metadata(assets_metadata, dir_path)
+                if not __assets:
+                    continue
+
+                assets[radio_processing] = __assets
+
+            # if there is not one asset at least, then ignore it
+            if not assets:
                 continue
 
             # yield just valid directories
-            yield dir_path, files
+            yield dir_path, dn_xml_file_path, assets
 
     def __iter__(self):
         # this method makes the class to be an iterable

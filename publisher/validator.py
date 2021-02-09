@@ -47,4 +47,16 @@ QUERY_SCHEMA = {
 
 def validate(data, schema):
     v = Validator(schema)
-    return v.validate(data), v.document, v.errors
+    is_valid = v.validate(data)
+
+    if is_valid:
+        radio_processing = v.document['radio_processing']
+
+        if radio_processing == 'DN':
+            v.document['radio_processing'] = ['DN']
+        elif radio_processing == 'SR':
+            v.document['radio_processing'] = ['SR']
+        else: # elif radio_processing is None
+            v.document['radio_processing'] = ['DN', 'SR']
+
+    return is_valid, v.document, v.errors

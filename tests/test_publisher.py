@@ -36,7 +36,7 @@ class PublisherPublishOkTestCase(TestCase):
         self.db.delete_from_items()
 
     def test_publish__ok__empty_query(self):
-        # self.maxDiff=None
+        self.maxDiff=None
         expected = [
             {
                 'type': 'warning',
@@ -81,7 +81,7 @@ class PublisherPublishOkTestCase(TestCase):
             },
             {
                 'type': 'warning',
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'message': 'There is NOT a DN file in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'}
             },
             {
@@ -433,7 +433,7 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items('test_publish__ok__cbers4a_mux_l4_dn.csv')
+        result = self.db.select_from_items()
         expected = read_item_from_csv('test_publish__ok__cbers4a_mux_l4_dn.csv')
 
         assert_frame_equal(expected, result)
@@ -462,7 +462,7 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
-    def test_publish__ok__cbers4a_mux_l4_dn_or_sr__quicklook_does_not_exist(self):
+    def test_publish__ok__cbers4a_mux_l4_dn_or_sr__dn_file_does_not_exist(self):
         # CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84
         query = {
             'satellite': 'cBERs4A',
@@ -477,7 +477,7 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
         expected = [
             {
                 'type': 'warning',
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'message': 'There is NOT a DN file in this folder, then it will be ignored.',
                 'metadata': {
                     'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'
                 }
@@ -545,7 +545,7 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
         assert_frame_equal(expected, result)
 
     def test_publish__ok__cbers4a_wfi_l4_dn_and_sr(self):
-        # 2020_12/CBERS_4A_WFI_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84/
+        # CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84/
         query = {
             'satellite': 'cbers4a',
             'sensor': 'wfi',
@@ -568,7 +568,7 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
         assert_frame_equal(expected, result)
 
     def test_publish__ok__cbers4a_wfi_l2_and_l4_sr(self):
-        # 2020_12/CBERS_4A_WFI_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84/
+        # CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84/
         query = {
             'satellite': 'cbers4a',
             'sensor': 'wfi',
@@ -617,6 +617,7 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
         assert_frame_equal(expected, result)
 
     def test_publish__ok__cbers4a_wfi__missing_geo_and_radio_processings(self):
+        # CBERS4A/2019_12/CBERS_4A_WFI_RAW_2019_12_27.13_53_00_ETC2/215_132_0/4_BC_UTM_WGS84
         query = {
             'satellite': 'CBERS4A',
             'sensor': 'wfi',
@@ -637,6 +638,7 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
         assert_frame_equal(expected, result)
 
     def test_publish__ok__cbers4a_wfi__missing_path_and_row(self):
+        # CBERS4A/2019_12/CBERS_4A_WFI_RAW_2019_12_27.13_53_00_ETC2/215_132_0/4_BC_UTM_WGS84/
         query = {
             'satellite': 'CBERS4A',
             'sensor': 'wfi',
@@ -731,6 +733,7 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
     # OTHER
 
     def test_publish__ok__l4_dn__missing_satellite_and_sensor(self):
+        # CBERS4A/2019_12/CBERS_4A_WFI_RAW_2019_12_27.13_53_00_ETC2/215_132_0/4_BC_UTM_WGS84
         query = {
             'start_date': '2019-12-01',
             'end_date': '2020-06-30',

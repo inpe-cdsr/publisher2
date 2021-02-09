@@ -277,7 +277,8 @@ def is_there_sr_files_in_the_list_of_files(files):
     # get just the SR XML files based on the radiometric processing regex
     sr_xml_files = list(filter(lambda f: search(sr_template, f), files))
 
-    return True if sr_xml_files else False
+    # True if sr_xml_files else False
+    return bool(sr_xml_files)
 
 
 class PublisherWalk:

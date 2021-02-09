@@ -162,7 +162,9 @@ class Publisher:
 
         for dir_path, dn_xml_file_path, assets in p_walk:
             # create INSERT clause based on item information
-            _items_insert = self._create_item_and_get_insert_clauses(dir_path, dn_xml_file_path, assets)
+            _items_insert = self._create_item_and_get_insert_clauses(
+                dir_path, dn_xml_file_path, assets
+            )
             logger.info(f'_items_insert: {_items_insert}')
 
             # if INSERT clauses have been returned, then add them to the list

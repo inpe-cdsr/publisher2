@@ -107,6 +107,27 @@ class PublisherPublishOkTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
+    def test_publish__ok__l4_dn__missing_satellite_and_sensor(self):
+        # CBERS4A/2019_12/CBERS_4A_WFI_RAW_2019_12_27.13_53_00_ETC2/215_132_0/4_BC_UTM_WGS84
+        query = {
+            'start_date': '2019-12-01',
+            'end_date': '2020-06-30',
+            'path': '215',
+            'row': '132',
+            'geo_processing': '4',
+            'radio_processing': 'DN'
+        }
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+
+        result = self.db.select_from_items()
+        expected = read_item_from_csv('test_publish__ok__l4_dn__missing_satellite_and_sensor.csv')
+
+        assert_frame_equal(expected, result)
+
 
 class PublisherPublishCbers2BOkTestCase(TestCase):
 
@@ -140,7 +161,7 @@ class PublisherPublishCbers2BOkTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__ok__cbers2b_ccd_l2_dn.csv')
+        expected = read_item_from_csv('cbers2b/test_publish__ok__cbers2b_ccd_l2_dn.csv')
 
         assert_frame_equal(expected, result)
 
@@ -200,7 +221,7 @@ class PublisherPublishCbers2BOkTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__ok__cbers2b_hrc_l2_dn__path_151_row_141.csv')
+        expected = read_item_from_csv('cbers2b/test_publish__ok__cbers2b_hrc_l2_dn__path_151_row_141.csv')
 
         assert_frame_equal(expected, result)
 
@@ -223,7 +244,7 @@ class PublisherPublishCbers2BOkTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__ok__cbers2b_hrc_l2_dn__path_151_row_142.csv')
+        expected = read_item_from_csv('cbers2b/test_publish__ok__cbers2b_hrc_l2_dn__path_151_row_142.csv')
 
         assert_frame_equal(expected, result)
 
@@ -283,7 +304,7 @@ class PublisherPublishCbers2BOkTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__ok__cbers2b_wfi_l2_dn.csv')
+        expected = read_item_from_csv('cbers2b/test_publish__ok__cbers2b_wfi_l2_dn.csv')
 
         assert_frame_equal(expected, result)
 
@@ -321,6 +342,8 @@ class PublisherPublishCbers2BOkTestCase(TestCase):
                                       'metadata','geom','min_convex_hull'])  # empty dataframe
 
         assert_frame_equal(expected, result)
+
+    # CBERS2B XYZ
 
     def test_publish__ok__cbers2b_xyz_l2_dn__collection_does_not_exist(self):
         # CBERS2B/2007_09/CBERS2B_XYZ_20070925.145654/181_096_0/2_BC_UTM_WGS84
@@ -387,7 +410,7 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__ok__cbers4a_mux_l2_dn.csv')
+        expected = read_item_from_csv('cbers4a/test_publish__ok__cbers4a_mux_l2_dn.csv')
 
         assert_frame_equal(expected, result)
 
@@ -411,7 +434,7 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__ok__cbers4a_mux_l2_dn__next_to_0h.csv')
+        expected = read_item_from_csv('cbers4a/test_publish__ok__cbers4a_mux_l2_dn__next_to_0h.csv')
 
         assert_frame_equal(expected, result)
 
@@ -434,7 +457,7 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__ok__cbers4a_mux_l4_dn.csv')
+        expected = read_item_from_csv('cbers4a/test_publish__ok__cbers4a_mux_l4_dn.csv')
 
         assert_frame_equal(expected, result)
 
@@ -498,6 +521,29 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
 
     # CBERS4A WFI
 
+    def test_publish__ok__cbers4a_wfi_l2_and_l4_sr(self):
+        # CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84/
+        query = {
+            'satellite': 'cbers4a',
+            'sensor': 'wfi',
+            'start_date': '2020-12-07',
+            'end_date': '2020-12-07',
+            'path': '214',
+            'row': '108',
+            # 'geo_processing' is empty in order to publish both `L2` and `L4` files, if they exist
+            'radio_processing': 'SR'
+        }
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+
+        result = self.db.select_from_items()
+        expected = read_item_from_csv('cbers4a/test_publish__ok__cbers4a_wfi_l2_and_l4_sr.csv')
+
+        assert_frame_equal(expected, result)
+
     def test_publish__ok__cbers4a_wfi_l4_dn(self):
         # CBERS4A/2019_12/CBERS_4A_WFI_RAW_2019_12_27.13_53_00_ETC2/215_132_0/4_BC_UTM_WGS84
         query = {
@@ -517,7 +563,7 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__ok__cbers4a_wfi_l4_dn.csv')
+        expected = read_item_from_csv('cbers4a/test_publish__ok__cbers4a_wfi_l4_dn.csv')
 
         assert_frame_equal(expected, result)
 
@@ -540,7 +586,7 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__ok__cbers4a_wfi_l4_sr.csv')
+        expected = read_item_from_csv('cbers4a/test_publish__ok__cbers4a_wfi_l4_sr.csv')
 
         assert_frame_equal(expected, result)
 
@@ -563,30 +609,7 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__ok__cbers4a_wfi_l4_dn_and_sr.csv')
-
-        assert_frame_equal(expected, result)
-
-    def test_publish__ok__cbers4a_wfi_l2_and_l4_sr(self):
-        # CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84/
-        query = {
-            'satellite': 'cbers4a',
-            'sensor': 'wfi',
-            'start_date': '2020-12-07',
-            'end_date': '2020-12-07',
-            'path': '214',
-            'row': '108',
-            # 'geo_processing' is empty in order to publish both `L2` and `L4` files, if they exist
-            'radio_processing': 'SR'
-        }
-
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
-
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__ok__cbers4a_wfi_l2_and_l4_sr.csv')
+        expected = read_item_from_csv('cbers4a/test_publish__ok__cbers4a_wfi_l4_dn_and_sr.csv')
 
         assert_frame_equal(expected, result)
 
@@ -633,7 +656,7 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__ok__cbers4a_wfi__missing_geo_and_radio_processings.csv')
+        expected = read_item_from_csv('cbers4a/test_publish__ok__cbers4a_wfi__missing_geo_and_radio_processings.csv')
 
         assert_frame_equal(expected, result)
 
@@ -654,7 +677,7 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__ok__cbers4a_wfi__missing_path_and_row.csv')
+        expected = read_item_from_csv('cbers4a/test_publish__ok__cbers4a_wfi__missing_path_and_row.csv')
 
         assert_frame_equal(expected, result)
 
@@ -678,7 +701,7 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__ok__cbers4a_wpm_l2_dn.csv')
+        expected = read_item_from_csv('cbers4a/test_publish__ok__cbers4a_wpm_l2_dn.csv')
 
         assert_frame_equal(expected, result)
 
@@ -702,7 +725,7 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__ok__cbers4a_wpm_l2_dn__next_to_5h.csv')
+        expected = read_item_from_csv('cbers4a/test_publish__ok__cbers4a_wpm_l2_dn__next_to_5h.csv')
 
         assert_frame_equal(expected, result)
 
@@ -727,29 +750,6 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
         result = self.db.select_from_items()
         expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
                                       'metadata','geom','min_convex_hull']) # empty dataframe
-
-        assert_frame_equal(expected, result)
-
-    # OTHER
-
-    def test_publish__ok__l4_dn__missing_satellite_and_sensor(self):
-        # CBERS4A/2019_12/CBERS_4A_WFI_RAW_2019_12_27.13_53_00_ETC2/215_132_0/4_BC_UTM_WGS84
-        query = {
-            'start_date': '2019-12-01',
-            'end_date': '2020-06-30',
-            'path': '215',
-            'row': '132',
-            'geo_processing': '4',
-            'radio_processing': 'DN'
-        }
-
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
-
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__ok__l4_dn__missing_satellite_and_sensor.csv')
 
         assert_frame_equal(expected, result)
 

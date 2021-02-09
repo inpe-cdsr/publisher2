@@ -373,7 +373,7 @@ class PublisherWalk:
         self.errors.append(
             {
                 'type': 'warning',
-                'message': 'There is NOT a DN file in this folder, then it will be ignored.',
+                'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
                 'metadata': {
                     'folder': dir_path
                 }

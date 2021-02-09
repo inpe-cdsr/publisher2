@@ -536,28 +536,28 @@ class PublisherPublishCbers4OkTestCase(TestCase):
 
     # CBERS4 PAN10M (DN)
 
-    # def test_publish__ok__cbers4_pan10m_l2_sr(self):
-    #     # CBERS4/2021_02/CBERS_4_PAN10M_DRD_2021_02_02.01_32_45_CB11/073_113_0/2_BC_UTM_WGS84
-    #     query = {
-    #         'satellite': 'CBErS4',
-    #         'sensor': 'Pan10m',
-    #         'start_date': '2021-02-02',
-    #         'end_date': '2021-02-02',
-    #         'path': 73,
-    #         'row': 113,
-    #         'geo_processing': 2,
-    #         'radio_processing': 'DN'
-    #     }
+    def test_publish__ok__cbers4_pan10m_l2_sr__next_to_0h(self):
+        # CBERS4/2021_02/CBERS_4_PAN10M_DRD_2021_02_02.01_32_45_CB11/073_113_0/2_BC_UTM_WGS84
+        query = {
+            'satellite': 'CBErS4',
+            'sensor': 'Pan10m',
+            'start_date': '2021-02-01',
+            'end_date': '2021-02-01',
+            'path': 73,
+            'row': 113,
+            'geo_processing': 2,
+            'radio_processing': 'DN'
+        }
 
-    #     response = self.api.get('/publish', query_string=query)
+        response = self.api.get('/publish', query_string=query)
 
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-    #     result = self.db.select_from_items()
-    #     expected = read_item_from_csv('cbers4/test_publish__ok__cbers4_pan10m_l2_sr.csv')
+        result = self.db.select_from_items()
+        expected = read_item_from_csv('cbers4/test_publish__ok__cbers4_pan10m_l2_sr__next_to_0h.csv')
 
-    #     assert_frame_equal(expected, result)
+        assert_frame_equal(expected, result)
 
 
 class PublisherPublishCbers4AOkTestCase(TestCase):

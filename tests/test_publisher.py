@@ -533,7 +533,39 @@ class PublisherPublishCbers4OkTestCase(TestCase):
 
         assert_frame_equal(expected, result)
 
-    # TODO: CBERS4/2021_02/CBERS_4_AWFI_DRD_2021_02_01.13_07_00_CB11/154_117_0/4_BC_UTM_WGS84
+    def test_publish__ok__cbers4_awfi_l4_dn_and_sr__evi_tiff_file_does_not_exist(self):
+        # CBERS4/2021_02/CBERS_4_AWFI_DRD_2021_02_01.13_07_00_CB11/154_117_0/4_BC_UTM_WGS84
+        query = {
+            'satellite': 'CBERS4',
+            'sensor': 'aWfI',
+            'start_date': '2021-02-01',
+            'end_date': '2021-02-01',
+            'path': '154',
+            'row': 117,
+            'geo_processing': 4,
+            # 'radio_processing': 'sR'
+        }
+
+        expected = [
+            {
+                'type': 'warning',
+                'message': ('There is NOT a TIFF file in this folder that ends with the '
+                            '`EVI.tif` template, then it will be ignored.'),
+                'metadata': {
+                    'folder': '/TIFF/CBERS4/2021_02/CBERS_4_AWFI_DRD_2021_02_01.13_07_00_CB11/154_117_0/4_BC_UTM_WGS84'
+                }
+            }
+        ]
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(expected, loads(response.get_data(as_text=True)))
+
+        result = self.db.select_from_items()
+        expected = read_item_from_csv('cbers4/test_publish__ok__cbers4_awfi_l4_dn_and_sr__evi_tiff_file_does_not_exist.csv')
+
+        assert_frame_equal(expected, result)
 
     # CBERS4 MUX (DN and SR)
 

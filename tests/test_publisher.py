@@ -40,8 +40,7 @@ class PublisherPublishOkTestCase(TestCase):
         expected = [
             {
                 'type': 'warning',
-                'message': ('There is metadata to the `CBERS2B_XYZ_L2_DN` collection, however this '
-                            'collection does not exist in the database.'),
+                'message': 'There is metadata to the `CBERS2B_XYZ_L2_DN` collection, however this collection does not exist in the database.',
                 'metadata': {'collection': 'CBERS2B_XYZ_L2_DN'}
             },
             {
@@ -142,6 +141,16 @@ class PublisherPublishOkTestCase(TestCase):
             {
                 'message': 'There is NOT a TIFF file in this folder that ends with the `BAND13.tif` template, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_136_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'There is NOT a TIFF file in this folder that ends with the `BAND13.tif` template, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_137_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'There is NOT a TIFF file in this folder that ends with the `CMASK_GRID_SURFACE.tif` template, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_137_0/4_BC_UTM_WGS84'},
                 'type': 'warning'
             },
             {
@@ -623,6 +632,43 @@ class PublisherPublishCbers4OkTestCase(TestCase):
 
         result = self.db.select_from_items()
         expected = read_item_from_csv('cbers4/test_publish__ok__cbers4_awfi_l4_sr__ndvi_tiff_file_does_not_exist.csv')
+
+        assert_frame_equal(expected, result)
+
+    def test_publish__ok__cbers4_awfi_l4_sr__quality_tiff_file_does_not_exist(self):
+        # CMASK (quality) file does not exist, then it is not added to assets
+        # CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84
+        query = {
+            'satellite': 'CBERS4',
+            'sensor': 'aWfI',
+            'start_date': '2020-12-28',
+            'end_date': '2020-12-28',
+            'path': '157',
+            'row': 137,
+            'geo_processing': 4,
+            'radio_processing': 'sR'
+        }
+
+        expected = [
+            {
+                'message': ('There is NOT a TIFF file in this folder that ends with the '
+                            '`CMASK_GRID_SURFACE.tif` template, then it will be ignored.'),
+                'metadata': {
+                    'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_137_0/4_BC_UTM_WGS84'
+                },
+                'type': 'warning'
+            }
+        ]
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(expected, loads(response.get_data(as_text=True)))
+
+        # check if the database if empty
+        result = self.db.select_from_items()
+        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
+                                      'metadata','geom','min_convex_hull'])  # empty dataframe
 
         assert_frame_equal(expected, result)
 

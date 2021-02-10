@@ -417,6 +417,10 @@ class PublisherWalk:
             tiff_files = sorted(glob(f'{dir_path}/*{band_template}'))
 
             if not tiff_files:
+                # EVI and NDVI files are optional, then if they do not exist, do not report them
+                if band == 'evi' or band == 'ndvi':
+                    continue
+
                 self.errors.append(
                     {
                         'type': 'warning',

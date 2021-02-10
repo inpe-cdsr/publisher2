@@ -91,18 +91,8 @@ class PublisherPublishOkTestCase(TestCase):
             },
             {
                 'type': 'warning',
-                'message': 'There is NOT a TIFF file in this folder that ends with the `EVI.tif` template, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/CBERS4/2018_01/CBERS_4_MUX_DRD_2018_01_01.13_14_00_CB11/156_103_0/4_BC_UTM_WGS84'}
-            },
-            {
-                'type': 'warning',
                 'message': 'There is NOT a TIFF file in this folder that ends with the `BAND13.tif` template, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84'}
-            },
-            {
-                'type': 'warning',
-                'message': 'There is NOT a TIFF file in this folder that ends with the `EVI.tif` template, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/CBERS4/2021_02/CBERS_4_AWFI_DRD_2021_02_01.13_07_00_CB11/154_117_0/4_BC_UTM_WGS84'}
             },
             {
                 'type': 'warning',
@@ -543,24 +533,13 @@ class PublisherPublishCbers4OkTestCase(TestCase):
             'path': '154',
             'row': 117,
             'geo_processing': 4,
-            # 'radio_processing': 'sR'
+            # omit 'radio_processing' to get both `DN` and `SR` scenes
         }
-
-        expected = [
-            {
-                'type': 'warning',
-                'message': ('There is NOT a TIFF file in this folder that ends with the '
-                            '`EVI.tif` template, then it will be ignored.'),
-                'metadata': {
-                    'folder': '/TIFF/CBERS4/2021_02/CBERS_4_AWFI_DRD_2021_02_01.13_07_00_CB11/154_117_0/4_BC_UTM_WGS84'
-                }
-            }
-        ]
 
         response = self.api.get('/publish', query_string=query)
 
         self.assertEqual(200, response.status_code)
-        self.assertEqual(expected, loads(response.get_data(as_text=True)))
+        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
         expected = read_item_from_csv('cbers4/test_publish__ok__cbers4_awfi_l4_dn_and_sr__evi_tiff_file_does_not_exist.csv')
@@ -675,26 +654,13 @@ class PublisherPublishCbers4OkTestCase(TestCase):
             'radio_processing': 'sr'
         }
 
-        expected = [
-            {
-                'type': 'warning',
-                'message': ('There is NOT a TIFF file in this folder that ends with the '
-                            '`EVI.tif` template, then it will be ignored.'),
-                'metadata': {
-                    'folder': '/TIFF/CBERS4/2018_01/CBERS_4_MUX_DRD_2018_01_01.13_14_00_CB11/156_103_0/4_BC_UTM_WGS84'
-                }
-            }
-        ]
-
         response = self.api.get('/publish', query_string=query)
 
         self.assertEqual(200, response.status_code)
-        self.assertEqual(expected, loads(response.get_data(as_text=True)))
+        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        # check if the database if empty
         result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull'])  # empty dataframe
+        expected = read_item_from_csv('cbers4/test_publish__ok__cbers4_mux_l4_sr__evi_tiff_file_does_not_exist.csv')
 
         assert_frame_equal(expected, result)
 
@@ -708,27 +674,16 @@ class PublisherPublishCbers4OkTestCase(TestCase):
             'path': 156,
             'row': '103',
             'geo_processing': 4,
-            # ommit 'radio_processing' to get both `DN` and `SR`
+            # omit 'radio_processing' to get both `DN` and `SR` scenes
         }
-
-        expected = [
-            {
-                'type': 'warning',
-                'message': ('There is NOT a TIFF file in this folder that ends with the '
-                            '`EVI.tif` template, then it will be ignored.'),
-                'metadata': {
-                    'folder': '/TIFF/CBERS4/2018_01/CBERS_4_MUX_DRD_2018_01_01.13_14_00_CB11/156_103_0/4_BC_UTM_WGS84'
-                }
-            }
-        ]
 
         response = self.api.get('/publish', query_string=query)
 
         self.assertEqual(200, response.status_code)
-        self.assertEqual(expected, loads(response.get_data(as_text=True)))
+        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
         result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers4/test_publish__ok__cbers4_mux_l4_dn_and_sr.csv')
+        expected = read_item_from_csv('cbers4/test_publish__ok__cbers4_mux_l4_dn_and_sr__evi_tiff_file_does_not_exist.csv')
 
         assert_frame_equal(expected, result)
 

@@ -24,16 +24,20 @@ def read_item_from_csv(file_name):
     return expected
 
 
-class PublisherPublishOkTestCase(TestCase):
+class BaseTestCases:
+    class BaseTestCase(TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        cls.api = app.test_client()
-        cls.db = PostgreSQLTestConnection()
+        @classmethod
+        def setUpClass(cls):
+            cls.api = app.test_client()
+            cls.db = PostgreSQLTestConnection()
 
-    def setUp(self):
-        # clean table before testing
-        self.db.delete_from_items()
+        def setUp(self):
+            # clean `items` table before each test case
+            self.db.delete_from_items()
+
+
+class PublisherPublishOkTestCase(BaseTestCases.BaseTestCase):
 
     def test_publish__ok__empty_query(self):
         self.maxDiff=None
@@ -208,16 +212,7 @@ class PublisherPublishOkTestCase(TestCase):
         assert_frame_equal(expected, result)
 
 
-class PublisherPublishCbers2BOkTestCase(TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        cls.api = app.test_client()
-        cls.db = PostgreSQLTestConnection()
-
-    def setUp(self):
-        # clean table before testing
-        self.db.delete_from_items()
+class PublisherPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
 
     # CBERS2B CCD
 
@@ -458,16 +453,7 @@ class PublisherPublishCbers2BOkTestCase(TestCase):
         assert_frame_equal(expected, result)
 
 
-class PublisherPublishCbers4OkTestCase(TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        cls.api = app.test_client()
-        cls.db = PostgreSQLTestConnection()
-
-    def setUp(self):
-        # clean table before testing
-        self.db.delete_from_items()
+class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
 
     # CBERS4 AWFI (DN and SR)
 
@@ -636,7 +622,6 @@ class PublisherPublishCbers4OkTestCase(TestCase):
         assert_frame_equal(expected, result)
 
     def test_publish__ok__cbers4_awfi_l4_sr__quality_tiff_file_does_not_exist(self):
-        # CMASK (quality) file does not exist, then it is not added to assets
         # CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84
         query = {
             'satellite': 'CBERS4',
@@ -841,16 +826,7 @@ class PublisherPublishCbers4OkTestCase(TestCase):
         assert_frame_equal(expected, result)
 
 
-class PublisherPublishCbers4AOkTestCase(TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        cls.api = app.test_client()
-        cls.db = PostgreSQLTestConnection()
-
-    def setUp(self):
-        # clean table before testing
-        self.db.delete_from_items()
+class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
 
     # CBERS4A MUX
 
@@ -1226,16 +1202,7 @@ class PublisherPublishCbers4AOkTestCase(TestCase):
         assert_frame_equal(expected, result)
 
 
-class PublisherPublishLandsatOkTestCase(TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        cls.api = app.test_client()
-        cls.db = PostgreSQLTestConnection()
-
-    def setUp(self):
-        # clean table before testing
-        self.db.delete_from_items()
+class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
 
     # LANDSAT1 MSS
 
@@ -1538,16 +1505,7 @@ class PublisherPublishLandsatOkTestCase(TestCase):
         assert_frame_equal(expected, result)
 
 
-class PublisherPublishErrorTestCase(TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        cls.api = app.test_client()
-        cls.db = PostgreSQLTestConnection()
-
-    def setUp(self):
-        # clean table before testing
-        self.db.delete_from_items()
+class PublisherPublishErrorTestCase(BaseTestCases.BaseTestCase):
 
     def test_publish__error__invalid_values(self):
         query = {

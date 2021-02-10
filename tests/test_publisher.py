@@ -1,7 +1,7 @@
 from json import loads
 from unittest import TestCase
 
-from pandas import DataFrame, read_csv, to_datetime
+from pandas import read_csv, to_datetime
 from pandas.testing import assert_frame_equal
 
 from publisher import create_app
@@ -35,6 +35,10 @@ class BaseTestCases:
         def setUp(self):
             # clean `items` table before each test case
             self.db.delete_from_items()
+
+        def check_if_the_database_is_empty(self):
+            # check if the result size is equals to 0
+            self.assertEqual(0, len(self.db.select_from_items().index))
 
 
 class PublisherPublishOkTestCase(BaseTestCases.BaseTestCase):
@@ -267,12 +271,7 @@ class PublisherPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        # check if the database if empty
-        result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull'])  # empty dataframe
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_database_is_empty()
 
     # CBERS2B HRC
 
@@ -350,12 +349,7 @@ class PublisherPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        # check if the database if empty
-        result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull'])  # empty dataframe
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_database_is_empty()
 
     # CBERS2B WFI
 
@@ -410,12 +404,7 @@ class PublisherPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        # check if the database if empty
-        result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull'])  # empty dataframe
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_database_is_empty()
 
     # CBERS2B XYZ
 
@@ -445,12 +434,7 @@ class PublisherPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        # check if the database if empty
-        result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull'])  # empty dataframe
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_database_is_empty()
 
 
 class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
@@ -486,12 +470,7 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        # check if the database if empty
-        result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull'])  # empty dataframe
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_database_is_empty()
 
     def test_publish__ok__cbers4_awfi_l4_sr(self):
         # CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84
@@ -566,12 +545,7 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        # check if the database if empty
-        result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull'])  # empty dataframe
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_database_is_empty()
 
     def test_publish__ok__cbers4_awfi_l4_dn_and_sr__evi_tiff_file_does_not_exist(self):
         # EVI file does not exist, then it is not added to assets
@@ -650,12 +624,7 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        # check if the database if empty
-        result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull'])  # empty dataframe
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_database_is_empty()
 
     # CBERS4 MUX (DN and SR)
 
@@ -687,12 +656,7 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        # check if the database if empty
-        result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull'])  # empty dataframe
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_database_is_empty()
 
     def test_publish__ok__cbers4_mux_l4_dn__dn_xml_file_does_not_exist(self):
         # CBERS4/2020_07/CBERS_4_MUX_DRD_2020_07_31.13_07_00_CB11/155_103_0/4_BC_UTM_WGS84
@@ -722,12 +686,7 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        # check if the database if empty
-        result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull'])  # empty dataframe
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_database_is_empty()
 
     def test_publish__ok__cbers4_mux_l4_dn(self):
         # CBERS4/2018_01/CBERS_4_MUX_DRD_2018_01_01.13_14_00_CB11/156_103_0/4_BC_UTM_WGS84
@@ -926,12 +885,7 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        # check if the database if empty
-        result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull']) # empty dataframe
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_database_is_empty()
 
     def test_publish__ok__cbers4a_mux_l4_dn_or_sr__dn_file_does_not_exist(self):
         # CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84
@@ -960,12 +914,7 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        # check if the database if empty
-        result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull'])  # empty dataframe
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_database_is_empty()
 
     # CBERS4A WFI
 
@@ -1080,12 +1029,7 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        # check if the database if empty
-        result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull'])  # empty dataframe
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_database_is_empty()
 
     def test_publish__ok__cbers4a_wfi__missing_geo_and_radio_processings(self):
         # CBERS4A/2019_12/CBERS_4A_WFI_RAW_2019_12_27.13_53_00_ETC2/215_132_0/4_BC_UTM_WGS84
@@ -1194,12 +1138,7 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        # check if the database if empty
-        result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull']) # empty dataframe
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_database_is_empty()
 
 
 class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
@@ -1257,12 +1196,7 @@ class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        # check if the database if empty
-        result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull'])  # empty dataframe
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_database_is_empty()
 
     # LANDSAT2 MSS
 
@@ -1317,12 +1251,7 @@ class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        # check if the database if empty
-        result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull'])  # empty dataframe
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_database_is_empty()
 
     # LANDSAT3 MSS
 
@@ -1377,12 +1306,7 @@ class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        # check if the database if empty
-        result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull'])  # empty dataframe
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_database_is_empty()
 
     # LANDSAT5 TM
 
@@ -1437,12 +1361,7 @@ class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        # check if the database if empty
-        result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull'])  # empty dataframe
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_database_is_empty()
 
     # LANDSAT7 ETM
 
@@ -1497,12 +1416,7 @@ class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        # check if the database if empty
-        result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull'])  # empty dataframe
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_database_is_empty()
 
 
 class PublisherPublishErrorTestCase(BaseTestCases.BaseTestCase):
@@ -1543,12 +1457,7 @@ class PublisherPublishErrorTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        # check if the database if empty
-        result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull'])  # empty dataframe
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_database_is_empty()
 
     def test_publish__error__unknown_fields(self):
         query = {
@@ -1577,9 +1486,4 @@ class PublisherPublishErrorTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        # check if the database if empty
-        result = self.db.select_from_items()
-        expected = DataFrame(columns=['name','collection_id','start_date','end_date','assets',
-                                      'metadata','geom','min_convex_hull'])  # empty dataframe
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_database_is_empty()

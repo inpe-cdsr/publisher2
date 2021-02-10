@@ -146,9 +146,8 @@ class Publisher:
         logger.info(f'IS_TO_GET_DATA_FROM_DB: {self.IS_TO_GET_DATA_FROM_DB}')
         logger.debug(f'df_collections:\n{self.df_collections}')
 
-        is_valid, self.query, errors = validate(self.query, QUERY_SCHEMA)
-
         # validate self.query
+        is_valid, self.query, errors = validate(self.query, QUERY_SCHEMA)
         if not is_valid:
             raise BadRequest(errors)
 

@@ -36,6 +36,14 @@ class BaseTestCases:
             # clean `items` table before each test case
             self.db.delete_from_items()
 
+        def check_if_the_items_have_been_added_in_the_database(self, expected_file_path):
+            # get the result from database
+            result = self.db.select_from_items()
+            # get the expected result
+            expected = read_item_from_csv(expected_file_path)
+
+            assert_frame_equal(expected, result)
+
         def check_if_the_database_is_empty(self):
             # check if the result size is equals to 0
             self.assertEqual(0, len(self.db.select_from_items().index))
@@ -188,11 +196,7 @@ class PublisherPublishOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        # check if the items have been added in the database
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__ok__empty_query.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database('test_publish__ok__empty_query.csv')
 
     def test_publish__ok__l4_dn__missing_satellite_and_sensor(self):
         # CBERS4A/2019_12/CBERS_4A_WFI_RAW_2019_12_27.13_53_00_ETC2/215_132_0/4_BC_UTM_WGS84
@@ -210,10 +214,9 @@ class PublisherPublishOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('test_publish__ok__l4_dn__missing_satellite_and_sensor.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'test_publish__ok__l4_dn__missing_satellite_and_sensor.csv'
+        )
 
 
 class PublisherPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
@@ -238,10 +241,9 @@ class PublisherPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers2b/test_publish__ok__cbers2b_ccd_l2_dn.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers2b/test_publish__ok__cbers2b_ccd_l2_dn.csv'
+        )
 
     def test_publish__ok__cbers2b_ccd_l2_dn__quicklook_does_not_exist(self):
         # CBERS2B/2007_09/CBERS2B_CCD_20070925.145654/181_096_0/2_BC_UTM_WGS84
@@ -293,10 +295,9 @@ class PublisherPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers2b/test_publish__ok__cbers2b_hrc_l2_dn__path_151_row_141.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers2b/test_publish__ok__cbers2b_hrc_l2_dn__path_151_row_141.csv'
+        )
 
     def test_publish__ok__cbers2b_hrc_l2_dn__path_151_row_142(self):
         # CBERS2B/2010_03/CBERS2B_HRC_20100301.130915/151_A_142_1_0/2_BC_UTM_WGS84
@@ -316,10 +317,9 @@ class PublisherPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers2b/test_publish__ok__cbers2b_hrc_l2_dn__path_151_row_142.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers2b/test_publish__ok__cbers2b_hrc_l2_dn__path_151_row_142.csv'
+        )
 
     def test_publish__ok__cbers2b_hrc_l2_dn__quicklook_does_not_exist(self):
         # CBERS2B/2007_09/CBERS2B_HRC_20070929.124300/145_C_111_3_0/2_BC_UTM_WGS84
@@ -371,10 +371,9 @@ class PublisherPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers2b/test_publish__ok__cbers2b_wfi_l2_dn.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers2b/test_publish__ok__cbers2b_wfi_l2_dn.csv'
+        )
 
     def test_publish__ok__cbers2b_wfi_l2_dn__quicklook_does_not_exist(self):
         # CBERS2B/2007_09/CBERS2B_WFI_20070928.131338/154_124_0/2_BC_LCC_WGS84
@@ -490,10 +489,9 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers4/test_publish__ok__cbers4_awfi_l4_sr.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4/test_publish__ok__cbers4_awfi_l4_sr.csv'
+        )
 
     def test_publish__ok__cbers4_awfi_l4_dn_and_sr__dn_tiff_file_does_not_exist(self):
         # CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84
@@ -524,10 +522,9 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers4/test_publish__ok__cbers4_awfi_l4_dn_and_sr__dn_tiff_file_does_not_exist.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4/test_publish__ok__cbers4_awfi_l4_dn_and_sr__dn_tiff_file_does_not_exist.csv'
+        )
 
     def test_publish__ok__cbers4_awfi__path_row_folder_is_empty(self):
         # CBERS4/2015_01/CBERS_4_AWFI_DRD_2015_01_16.13_39_12_CB11/161_093_0/
@@ -566,10 +563,9 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers4/test_publish__ok__cbers4_awfi_l4_dn_and_sr__evi_tiff_file_does_not_exist.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4/test_publish__ok__cbers4_awfi_l4_dn_and_sr__evi_tiff_file_does_not_exist.csv'
+        )
 
     def test_publish__ok__cbers4_awfi_l4_sr__ndvi_tiff_file_does_not_exist(self):
         # NDVI file does not exist, then it is not added to assets
@@ -590,10 +586,9 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers4/test_publish__ok__cbers4_awfi_l4_sr__ndvi_tiff_file_does_not_exist.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4/test_publish__ok__cbers4_awfi_l4_sr__ndvi_tiff_file_does_not_exist.csv'
+        )
 
     def test_publish__ok__cbers4_awfi_l4_sr__quality_tiff_file_does_not_exist(self):
         # CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84
@@ -706,10 +701,9 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers4/test_publish__ok__cbers4_mux_l4_dn.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4/test_publish__ok__cbers4_mux_l4_dn.csv'
+        )
 
     def test_publish__ok__cbers4_mux_l4_sr__evi_tiff_file_does_not_exist(self):
         # CBERS4/2018_01/CBERS_4_MUX_DRD_2018_01_01.13_14_00_CB11/156_103_0/4_BC_UTM_WGS84
@@ -729,10 +723,9 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers4/test_publish__ok__cbers4_mux_l4_sr__evi_tiff_file_does_not_exist.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4/test_publish__ok__cbers4_mux_l4_sr__evi_tiff_file_does_not_exist.csv'
+        )
 
     def test_publish__ok__cbers4_mux_l4_dn_and_sr__evi_tiff_file_does_not_exist(self):
         # CBERS4/2018_01/CBERS_4_MUX_DRD_2018_01_01.13_14_00_CB11/156_103_0/4_BC_UTM_WGS84
@@ -752,10 +745,9 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers4/test_publish__ok__cbers4_mux_l4_dn_and_sr__evi_tiff_file_does_not_exist.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4/test_publish__ok__cbers4_mux_l4_dn_and_sr__evi_tiff_file_does_not_exist.csv'
+        )
 
     # CBERS4 PAN5M (DN)
 
@@ -779,10 +771,9 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers4/test_publish__ok__cbers4_pan10m_l2_sr__next_to_0h.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4/test_publish__ok__cbers4_pan10m_l2_sr__next_to_0h.csv'
+        )
 
 
 class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
@@ -806,10 +797,9 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers4a/test_publish__ok__cbers4a_mux_l2_dn.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test_publish__ok__cbers4a_mux_l2_dn.csv'
+        )
 
     def test_publish__ok__cbers4a_mux_l2_dn__next_to_0h(self):
         # scene_dir with time between 0h and 5h, consider one day ago
@@ -830,10 +820,9 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers4a/test_publish__ok__cbers4a_mux_l2_dn__next_to_0h.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test_publish__ok__cbers4a_mux_l2_dn__next_to_0h.csv'
+        )
 
     def test_publish__ok__cbers4a_mux_l4_dn(self):
         # CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_27.13_53_00_ETC2/215_150_0/4_BC_UTM_WGS84
@@ -853,10 +842,9 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers4a/test_publish__ok__cbers4a_mux_l4_dn.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test_publish__ok__cbers4a_mux_l4_dn.csv'
+        )
 
     def test_publish__ok__cbers4a_mux_l4_dn__empty_folder(self):
         query = {
@@ -936,10 +924,9 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers4a/test_publish__ok__cbers4a_wfi_l2_and_l4_sr.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test_publish__ok__cbers4a_wfi_l2_and_l4_sr.csv'
+        )
 
     def test_publish__ok__cbers4a_wfi_l4_dn(self):
         # CBERS4A/2019_12/CBERS_4A_WFI_RAW_2019_12_27.13_53_00_ETC2/215_132_0/4_BC_UTM_WGS84
@@ -959,10 +946,9 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers4a/test_publish__ok__cbers4a_wfi_l4_dn.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test_publish__ok__cbers4a_wfi_l4_dn.csv'
+        )
 
     def test_publish__ok__cbers4a_wfi_l4_sr(self):
         # CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84/
@@ -982,10 +968,9 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers4a/test_publish__ok__cbers4a_wfi_l4_sr.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test_publish__ok__cbers4a_wfi_l4_sr.csv'
+        )
 
     def test_publish__ok__cbers4a_wfi_l4_dn_and_sr(self):
         # CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84/
@@ -1005,10 +990,9 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers4a/test_publish__ok__cbers4a_wfi_l4_dn_and_sr.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test_publish__ok__cbers4a_wfi_l4_dn_and_sr.csv'
+        )
 
     def test_publish__ok__cbers4a_wfi__empty_result(self):
         # CBERS4A/2020_11/CBERS_4A_WFI_RAW_2020_11_10.13_41_00_ETC2/207_?_0/2_BC_UTM_WGS84
@@ -1047,10 +1031,9 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers4a/test_publish__ok__cbers4a_wfi__missing_geo_and_radio_processings.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test_publish__ok__cbers4a_wfi__missing_geo_and_radio_processings.csv'
+        )
 
     def test_publish__ok__cbers4a_wfi__missing_path_and_row(self):
         # CBERS4A/2019_12/CBERS_4A_WFI_RAW_2019_12_27.13_53_00_ETC2/215_132_0/4_BC_UTM_WGS84/
@@ -1068,10 +1051,9 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers4a/test_publish__ok__cbers4a_wfi__missing_path_and_row.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test_publish__ok__cbers4a_wfi__missing_path_and_row.csv'
+        )
 
     # CBERS4A WPM
 
@@ -1092,10 +1074,9 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers4a/test_publish__ok__cbers4a_wpm_l2_dn.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test_publish__ok__cbers4a_wpm_l2_dn.csv'
+        )
 
     def test_publish__ok__cbers4a_wpm_l2_dn__next_to_5h(self):
         # scene_dir with time between 0h and 5h, consider one day ago
@@ -1116,10 +1097,9 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('cbers4a/test_publish__ok__cbers4a_wpm_l2_dn__next_to_5h.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test_publish__ok__cbers4a_wpm_l2_dn__next_to_5h.csv'
+        )
 
     def test_publish__ok__cbers4a_wpm__empty_result(self):
         query = {
@@ -1163,10 +1143,9 @@ class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('landsat/test_publish__ok__landsat1_mss_l2_dn.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'landsat/test_publish__ok__landsat1_mss_l2_dn.csv'
+        )
 
     def test_publish__ok__landsat1_mss_l2_dn__quicklook_does_not_exist(self):
         # LANDSAT1/1976_10/LANDSAT1_MSS_19761002.120000/010_057_0/2_BC_UTM_WGS84
@@ -1218,10 +1197,9 @@ class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('landsat/test_publish__ok__landsat2_mss_l2_dn.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'landsat/test_publish__ok__landsat2_mss_l2_dn.csv'
+        )
 
     def test_publish__ok__landsat2_mss_l2_dn__quicklook_does_not_exist(self):
         # LANDSAT2/1975_07/LANDSAT2_MSS_19750724.123000/230_070_0/2_BC_UTM_WGS84
@@ -1273,10 +1251,9 @@ class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('landsat/test_publish__ok__landsat3_mss_l2_dn.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'landsat/test_publish__ok__landsat3_mss_l2_dn.csv'
+        )
 
     def test_publish__ok__landsat3_mss_l2_dn__quicklook_does_not_exist(self):
         # LANDSAT3/1982_08/LANDSAT3_MSS_19820802.120000/231_072_0/2_BC_UTM_WGS84
@@ -1328,10 +1305,9 @@ class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('landsat/test_publish__ok__landsat5_tm_l2_dn.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'landsat/test_publish__ok__landsat5_tm_l2_dn.csv'
+        )
 
     def test_publish__ok__landsat5_tm_l2_dn__quicklook_does_not_exist(self):
         # LANDSAT5/1984_04/LANDSAT5_TM_19840406.124930/223_062_0/2_BC_UTM_WGS84
@@ -1383,10 +1359,9 @@ class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('/publish has been executed', response.get_data(as_text=True))
 
-        result = self.db.select_from_items()
-        expected = read_item_from_csv('landsat/test_publish__ok__landsat7_etm_l2_dn.csv')
-
-        assert_frame_equal(expected, result)
+        self.check_if_the_items_have_been_added_in_the_database(
+            'landsat/test_publish__ok__landsat7_etm_l2_dn.csv'
+        )
 
     def test_publish__ok__landsat7_etm_l2_dn__quicklook_does_not_exist(self):
         # LANDSAT7/1999_07/LANDSAT7_ETM_19990719.124008/217_064_0/2_BC_UTM_WGS84

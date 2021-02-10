@@ -302,10 +302,12 @@ class PublisherWalk:
 
         # get dir path starting at `/TIFF`
         index = dir_path.find('TIFF')
+        # `splitted_dir_path` example:
+        # ['TIFF', 'CBERS4A', '2020_11', 'CBERS_4A_WFI_RAW_2020_11_10.13_41_00_ETC2', '207_148_0', '2_BC_UTM_WGS84']
         splitted_dir_path = dir_path[index:].split(os_path_sep)
 
         # a valid dir path must have at least five folders (+1 the base path (i.e. /TIFF))
-        if len(splitted_dir_path) < 6:
+        if len(splitted_dir_path) != 6:
             return False, None, None
 
         _, satellite_dir, year_month_dir, scene_dir, path_row_dir, level_dir = splitted_dir_path
@@ -507,13 +509,22 @@ class PublisherWalk:
         '''Generator that returns just directories with valid files.'''
 
         for dir_path, dirs, files in walk(self.BASE_DIR):
-            # if the dir does not have any file, then ignore it
-            if not files:
-                continue
-
             # if dir is not valid based on query, then ignore it
             is_dir_path_valid, satellite, sensor = self.__is_dir_path_valid(dir_path)
             if not is_dir_path_valid:
+                continue
+
+            # if the dir does not have any file, then report and ignore it
+            if not files:
+                self.errors.append(
+                    {
+                        'type': 'warning',
+                        'message': 'This folder is valid, but it is empty.',
+                        'metadata': {
+                            'folder': dir_path
+                        }
+                    }
+                )
                 continue
 
             # if there is not DN XML file, then ignore it

@@ -11,7 +11,6 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
 
 COPY requirements.txt /app
 
-# https://pypi.org/project/spatialite/
 RUN apt-get update && \
     # install it to avoid unnecessaries warnings
     apt-get install -y --no-install-recommends apt-utils && \

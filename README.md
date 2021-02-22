@@ -56,7 +56,7 @@ $ export PR_LOGGING_LEVEL=ERROR &&
 Build the Docker image (development or production):
 
 ```
-$ docker build -t inpe-cdsr-publisher2:0.0.2 -f Dockerfile . --no-cache
+$ docker build -t inpe-cdsr-publisher2 -f Dockerfile . --no-cache
 $ docker build -t registry.dpi.inpe.br/cdsr/publisher2:0.0.1 -f Dockerfile . --no-cache
 ```
 

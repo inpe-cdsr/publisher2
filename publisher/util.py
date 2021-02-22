@@ -9,7 +9,13 @@ from re import search
 from werkzeug.exceptions import InternalServerError
 from xmltodict import parse as xmltodict_parse
 
-from publisher.common import fill_string_with_left_zeros
+from publisher.common import fill_string_with_left_zeros, print_line
+from publisher.environment import PR_LOGGING_LEVEL
+from publisher.logger import create_logger
+
+
+# create logger object
+logger = create_logger(__name__, level=PR_LOGGING_LEVEL)
 
 
 def convert_xml_to_dict(xml_path):
@@ -214,6 +220,74 @@ def create_items_from_xml_as_dict(xml_as_dict, assets):
 
     # return either `DN` or `SR` item
     return [item]
+
+
+def create_item_and_get_insert_clauses(dir_path, dn_xml_file_path, assets, df_collections):
+    print_line()
+
+    items_insert = []
+    errors = []
+
+    logger.info(f'dn_xml_file_path: {dn_xml_file_path}')
+    logger.info(f'assets: {assets}')
+
+    # convert DN XML file in a dictionary
+    xml_as_dict = convert_xml_to_dict(dn_xml_file_path)
+
+    # if there is NOT `DN` information in the XML file, then the method returns None
+    if 'prdf' not in xml_as_dict:
+        return None
+
+    xml_as_dict = xml_as_dict['prdf']
+    # logger.info(f'xml_as_dict: {xml_as_dict}')
+
+    # list of items (e.g. [dn_item, sr_item])
+    items = create_items_from_xml_as_dict(xml_as_dict, assets)
+    logger.info(f'items size: {len(items)}\n')
+
+    for item in items:
+        print_line()
+        logger.info(f'item: {item}\n')
+        logger.info(f"item[collection][name]: {item['collection']['name']}")
+
+        # get collection id from dataframe
+        collection = df_collections.loc[
+            df_collections['name'] == item['collection']['name']
+        ].reset_index(drop=True)
+        logger.info(f'collection:\n{collection}')
+
+        # if `collection` is an empty dataframe, a collection was not found by its name,
+        # then save the warning and ignore it
+        if len(collection.index) == 0:
+            # check if the collection has not already been added to the errors list
+            if not any(e['metadata']['collection'] == item['collection']['name'] \
+                        for e in errors):
+                errors.append({
+                    'type': 'warning',
+                    'message': (
+                        f'There is metadata to the `{item["collection"]["name"]}` collection, '
+                        'however this collection does not exist in the database.'
+                    ),
+                    'metadata': {
+                        'collection': item['collection']['name']
+                    }
+                })
+            continue
+
+        collection_id = collection.at[0, 'id']
+        logger.info(f'collection_id: {collection_id}')
+
+        # create INSERT clause based on item information
+        insert = create_insert_clause(item, collection_id)
+        logger.info(f'insert: {insert}')
+        items_insert.append(insert)
+
+    result = {
+        "items_insert": items_insert,
+        "errors": errors
+    }
+
+    return result
 
 
 ##################################################

@@ -7,9 +7,9 @@ from werkzeug.exceptions import BadRequest
 from publisher.common import print_line
 from publisher.environment import PR_FILES_PATH, PR_LOGGING_LEVEL
 from publisher.logger import create_logger
-from publisher.util import convert_xml_to_dict, create_insert_clause, \
-                           create_items_from_xml_as_dict, PublisherWalk
+from publisher.util import create_item_and_get_insert_clauses, PublisherWalk
 from publisher.validator import validate, QUERY_SCHEMA
+from publisher.workers import add_nums
 
 
 # create logger object
@@ -75,67 +75,6 @@ class Publisher:
             # get all available collections from CSV file
             self.df_collections = read_csv(f'{PR_FILES_PATH}/collections.csv')
 
-    def _create_item_and_get_insert_clauses(self, dir_path, dn_xml_file_path, assets):
-        print_line()
-
-        items_insert = []
-
-        logger.info(f'dn_xml_file_path: {dn_xml_file_path}')
-        logger.info(f'assets: {assets}')
-
-        # convert DN XML file in a dictionary
-        xml_as_dict = convert_xml_to_dict(dn_xml_file_path)
-
-        # if there is NOT `DN` information in the XML file, then the method returns None
-        if 'prdf' not in xml_as_dict:
-            return None
-
-        xml_as_dict = xml_as_dict['prdf']
-        # logger.info(f'xml_as_dict: {xml_as_dict}')
-
-        # list of items (e.g. [dn_item, sr_item])
-        items = create_items_from_xml_as_dict(xml_as_dict, assets)
-        logger.info(f'items size: {len(items)}\n')
-
-        for item in items:
-            print_line()
-            logger.info(f'item: {item}\n')
-            logger.info(f"item[collection][name]: {item['collection']['name']}")
-
-            # get collection id from dataframe
-            collection = self.df_collections.loc[
-                self.df_collections['name'] == item['collection']['name']
-            ].reset_index(drop=True)
-            logger.info(f'collection:\n{collection}')
-
-            # if `collection` is an empty dataframe, a collection was not found by its name,
-            # then save the warning and ignore it
-            if len(collection.index) == 0:
-                # check if the collection has not already been added to the errors list
-                if not any(e['metadata']['collection'] == item['collection']['name'] \
-                            for e in self.errors):
-                    self.errors.append({
-                        'type': 'warning',
-                        'message': (
-                            f'There is metadata to the `{item["collection"]["name"]}` collection, '
-                            'however this collection does not exist in the database.'
-                        ),
-                        'metadata': {
-                            'collection': item['collection']['name']
-                        }
-                    })
-                continue
-
-            collection_id = collection.at[0, 'id']
-            logger.info(f'collection_id: {collection_id}')
-
-            # create INSERT clause based on item information
-            insert = create_insert_clause(item, collection_id)
-            logger.info(f'insert: {insert}')
-            items_insert.append(insert)
-
-        return items_insert
-
     def main(self):
         '''Main method.'''
 
@@ -161,14 +100,18 @@ class Publisher:
 
         for dir_path, dn_xml_file_path, assets in p_walk:
             # create INSERT clause based on item information
-            _items_insert = self._create_item_and_get_insert_clauses(
-                dir_path, dn_xml_file_path, assets
+            result = create_item_and_get_insert_clauses(
+                dir_path, dn_xml_file_path, assets, self.df_collections
             )
-            logger.info(f'_items_insert: {_items_insert}')
+
+            logger.info(f'result: {result}')
 
             # if INSERT clauses have been returned, then add them to the list
-            if _items_insert:
-                items_insert += _items_insert
+            if result['items_insert']:
+                items_insert += result['items_insert']
+
+            if result['errors']:
+                self.errors += result['errors']
 
         print_line()
 

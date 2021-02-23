@@ -32,13 +32,23 @@ class DBConnection(ABC):
 class PostgreSQLConnection(DBConnection):
 
     def __init__(self):
+        self.PGUSER = getenv('PGUSER', 'postgres')
+        self.PGPASSWORD = getenv('PGPASSWORD', 'postgres')
+        self.PGHOST = getenv('PGHOST', 'inpe_cdsr_postgis')
+        self.PGPORT = int(getenv('PGPORT', 5432))
+        self.PGDATABASE = getenv('PGDATABASE', 'cdsr_catalog')
+
         self._create_engine()
 
     def _create_engine(self):
+        # the elements for connection are got by environment variables
+        # engine_connection = 'postgresql+psycopg2://'
+        engine_connection = (f'postgresql+psycopg2://{self.PGUSER}:{self.PGPASSWORD}'
+                             f'@{self.PGHOST}:{self.PGPORT}/{self.PGDATABASE}')
+
         try:
             # `NullPool prevents the Engine from using any connection more than once`
-            # the elements for connection are got by environment variables
-            self.engine = create_engine('postgresql+psycopg2://', poolclass=NullPool)
+            self.engine = create_engine(engine_connection, poolclass=NullPool)
 
         except SQLAlchemyError as error:
             logger.error(f'PostgreSQLConnection.__init__() - An error occurred during engine creation.')
@@ -77,16 +87,12 @@ class PostgreSQLConnection(DBConnection):
 
 
 class PostgreSQLTestConnection(PostgreSQLConnection):
+    # abstract class
 
     def __init__(self):
-        self.PGUSER = getenv('PGUSER', 'postgres')
-        self.PGPASSWORD = getenv('PGPASSWORD', 'postgres')
-        self.PGHOST = getenv('PGHOST', 'inpe_cdsr_postgis')
-        self.PGPORT = int(getenv('PGPORT', 5432))
-        self.PGDATABASE = getenv('PGDATABASE', 'cdsr_catalog_test')
-        self.PG_PUBLISHER_DATABASE = getenv('PG_PUBLISHER_DATABASE', 'cdsr_publisher')
-
+        # initialize the environment variables
         super().__init__()
+        self.init_file = None
 
     def __recreate_test_database(self):
         # connect to `postgres` database in order to recreate other database
@@ -104,19 +110,12 @@ class PostgreSQLTestConnection(PostgreSQLConnection):
         cur.execute(f'DROP DATABASE IF EXISTS {self.PGDATABASE};')
         cur.execute(f'CREATE DATABASE {self.PGDATABASE};')
 
-        # recreate the publisher database
-        cur.execute(f'DROP DATABASE IF EXISTS {self.PG_PUBLISHER_DATABASE};')
-        cur.execute(f'CREATE DATABASE {self.PG_PUBLISHER_DATABASE};')
-
         con.close()
 
         logger.info(f'Recreated `{self.PGDATABASE}` database.')
-        logger.info(f'Recreated `{self.PG_PUBLISHER_DATABASE}` database.')
 
     def __restore_test_database(self):
-        ##################################################
-        # connect with main database
-        ##################################################
+        # connect with database
         con = psycopg2_connect(
             user=self.PGUSER, password=self.PGPASSWORD,
             host=self.PGHOST, port=self.PGPORT,
@@ -126,7 +125,7 @@ class PostgreSQLTestConnection(PostgreSQLConnection):
         cur = con.cursor()
 
         # open schema file
-        with open(f'tests/db/cdsr_catalog_test.sql', 'r') as data:
+        with open(self.init_file, 'r') as data:
             schema = data.read()
 
         cur.execute(schema)
@@ -136,31 +135,19 @@ class PostgreSQLTestConnection(PostgreSQLConnection):
 
         logger.info(f'Restored `{self.PGDATABASE}` database.\n')
 
-        ##################################################
-        # connect with publisher database
-        ##################################################
-        con = psycopg2_connect(
-            user=self.PGUSER, password=self.PGPASSWORD,
-            host=self.PGHOST, port=self.PGPORT,
-            dbname=self.PG_PUBLISHER_DATABASE
-        )
-
-        cur = con.cursor()
-
-        # open schema file
-        with open(f'tests/db/cdsr_publisher.sql', 'r') as data:
-            schema = data.read()
-
-        cur.execute(schema)
-
-        con.commit()
-        con.close()
-
-        logger.info(f'Restored `{self.PG_PUBLISHER_DATABASE}` database.\n')
-
     def init_db(self):
         self.__recreate_test_database()
         self.__restore_test_database()
+
+
+class PostgreSQLCatalogTestConnection(PostgreSQLTestConnection):
+    # concrete class
+
+    def __init__(self):
+        super().__init__()
+        self.PGDATABASE = 'cdsr_catalog_test'
+        self._create_engine()
+        self.init_file = 'tests/db/cdsr_catalog_test.sql'
 
     def delete_from_items(self):
         self.execute('DELETE FROM bdc.items;', is_transaction=True)
@@ -179,6 +166,24 @@ class PostgreSQLTestConnection(PostgreSQLConnection):
         return result
 
 
+class PostgreSQLPublisherConnection(PostgreSQLTestConnection):
+    # concrete class
+
+    def __init__(self):
+        super().__init__()
+        self.PGDATABASE = 'cdsr_publisher'
+        self._create_engine()
+        self.init_file = 'tests/db/cdsr_publisher.sql'
+
+    def delete_from_task_error(self):
+        self.execute('DELETE FROM task_error;', is_transaction=True)
+
+    def select_from_task_error(self):
+        result = self.execute('SELECT * FROM task_error ORDER BY message;')
+        result['metadata'] = result['metadata'].astype('str')
+        return result
+
+
 class DBFactory:
 
     @staticmethod
@@ -187,7 +192,7 @@ class DBFactory:
         # then return the test database
         if FLASK_TESTING:
             # testing
-            return PostgreSQLTestConnection()
+            return PostgreSQLCatalogTestConnection()
 
         # else, return the normal database
         # production or development

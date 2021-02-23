@@ -5,10 +5,11 @@ from pandas import read_csv, to_datetime
 from pandas.testing import assert_frame_equal
 
 from publisher import create_app
+from publisher.environment import FLASK_TESTING
 from publisher.model import PostgreSQLTestConnection
 
 
-test_config={'TESTING': True}
+test_config={'TESTING': FLASK_TESTING}
 # recreate the test database just one time
 app = create_app(test_config)
 
@@ -31,6 +32,8 @@ class BaseTestCases:
         def setUpClass(cls):
             cls.api = app.test_client()
             cls.db = PostgreSQLTestConnection()
+            # initialize database
+            cls.db.init_db()
 
         def setUp(self):
             # clean `items` table before each test case

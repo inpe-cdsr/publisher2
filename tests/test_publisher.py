@@ -13,6 +13,12 @@ test_config={'TESTING': FLASK_TESTING}
 # recreate the test database just one time
 app = create_app(test_config)
 
+# initialize databases just one time
+db = PostgreSQLCatalogTestConnection()
+db.init_db()
+db_publisher = PostgreSQLPublisherConnection()
+db_publisher.init_db()
+
 
 def read_item_from_csv(file_name):
     expected = read_csv(f'tests/publisher/{file_name}')
@@ -31,19 +37,15 @@ class BaseTestCases:
         @classmethod
         def setUpClass(cls):
             cls.api = app.test_client()
-            cls.db = PostgreSQLCatalogTestConnection()
-            cls.db.init_db()
-            cls.db_publisher = PostgreSQLPublisherConnection()
-            cls.db_publisher.init_db()
 
         def setUp(self):
             # clean tables before each test case
-            self.db.delete_from_items()
-            self.db_publisher.delete_from_task_error()
+            db.delete_from_items()
+            db_publisher.delete_from_task_error()
 
         def check_if_the_items_have_been_added_in_the_database(self, expected_file_path):
             # get the result from database
-            result = self.db.select_from_items()
+            result = db.select_from_items()
             # get the expected result
             expected = read_item_from_csv(expected_file_path)
 
@@ -51,7 +53,7 @@ class BaseTestCases:
 
         def check_if_the_database_is_empty(self):
             # check if the result size is equals to 0
-            self.assertEqual(0, len(self.db.select_from_items().index))
+            self.assertEqual(0, len(db.select_from_items().index))
 
 
 class PublisherPublishOkTestCase(BaseTestCases.BaseTestCase):

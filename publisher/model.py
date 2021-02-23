@@ -10,8 +10,9 @@ from psycopg2 import connect as psycopg2_connect
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.pool import NullPool
 
-from publisher.environment import PR_FILES_PATH, PR_LOGGING_LEVEL
+from publisher.environment import FLASK_TESTING, PR_FILES_PATH, PR_LOGGING_LEVEL
 from publisher.logger import create_logger
 
 
@@ -35,8 +36,9 @@ class PostgreSQLConnection(DBConnection):
 
     def _create_engine(self):
         try:
+            # `NullPool prevents the Engine from using any connection more than once`
             # the elements for connection are got by environment variables
-            self.engine = create_engine('postgresql+psycopg2://')
+            self.engine = create_engine('postgresql+psycopg2://', poolclass=NullPool)
 
         except SQLAlchemyError as error:
             logger.error(f'PostgreSQLConnection.__init__() - An error occurred during engine creation.')
@@ -144,3 +146,18 @@ class PostgreSQLTestConnection(PostgreSQLConnection):
             result.to_csv(f'tests/publisher/{to_csv}', index=False)
 
         return result
+
+
+class DBFactory:
+
+    @staticmethod
+    def factory() -> DBConnection:
+        # if the user is testing the application (i.e. running test cases),
+        # then return the test database
+        if FLASK_TESTING:
+            # testing
+            return PostgreSQLTestConnection()
+
+        # else, return the normal database
+        # production or development
+        return PostgreSQLConnection()

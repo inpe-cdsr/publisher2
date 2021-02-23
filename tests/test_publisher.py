@@ -6,7 +6,7 @@ from pandas.testing import assert_frame_equal
 
 from publisher import create_app
 from publisher.environment import FLASK_TESTING
-from publisher.model import PostgreSQLTestConnection
+from publisher.model import PostgreSQLCatalogTestConnection, PostgreSQLPublisherConnection
 
 
 test_config={'TESTING': FLASK_TESTING}
@@ -31,13 +31,15 @@ class BaseTestCases:
         @classmethod
         def setUpClass(cls):
             cls.api = app.test_client()
-            cls.db = PostgreSQLTestConnection()
-            # initialize database
+            cls.db = PostgreSQLCatalogTestConnection()
             cls.db.init_db()
+            cls.db_publisher = PostgreSQLPublisherConnection()
+            cls.db_publisher.init_db()
 
         def setUp(self):
-            # clean `items` table before each test case
+            # clean tables before each test case
             self.db.delete_from_items()
+            self.db_publisher.delete_from_task_error()
 
         def check_if_the_items_have_been_added_in_the_database(self, expected_file_path):
             # get the result from database

@@ -84,6 +84,7 @@ class PostgreSQLTestConnection(PostgreSQLConnection):
         self.PGHOST = getenv('PGHOST', 'inpe_cdsr_postgis')
         self.PGPORT = int(getenv('PGPORT', 5432))
         self.PGDATABASE = getenv('PGDATABASE', 'cdsr_catalog_test')
+        self.PG_PUBLISHER_DATABASE = getenv('PG_PUBLISHER_DATABASE', 'cdsr_publisher')
 
         super().__init__()
 
@@ -99,15 +100,23 @@ class PostgreSQLTestConnection(PostgreSQLConnection):
 
         cur = con.cursor()
 
+        # recreate the main database
         cur.execute(f'DROP DATABASE IF EXISTS {self.PGDATABASE};')
         cur.execute(f'CREATE DATABASE {self.PGDATABASE};')
+
+        # recreate the publisher database
+        cur.execute(f'DROP DATABASE IF EXISTS {self.PG_PUBLISHER_DATABASE};')
+        cur.execute(f'CREATE DATABASE {self.PG_PUBLISHER_DATABASE};')
 
         con.close()
 
         logger.info(f'Recreated `{self.PGDATABASE}` database.')
+        logger.info(f'Recreated `{self.PG_PUBLISHER_DATABASE}` database.')
 
     def __restore_test_database(self):
-        # connect with test database
+        ##################################################
+        # connect with main database
+        ##################################################
         con = psycopg2_connect(
             user=self.PGUSER, password=self.PGPASSWORD,
             host=self.PGHOST, port=self.PGPORT,
@@ -126,6 +135,28 @@ class PostgreSQLTestConnection(PostgreSQLConnection):
         con.close()
 
         logger.info(f'Restored `{self.PGDATABASE}` database.\n')
+
+        ##################################################
+        # connect with publisher database
+        ##################################################
+        con = psycopg2_connect(
+            user=self.PGUSER, password=self.PGPASSWORD,
+            host=self.PGHOST, port=self.PGPORT,
+            dbname=self.PG_PUBLISHER_DATABASE
+        )
+
+        cur = con.cursor()
+
+        # open schema file
+        with open(f'tests/db/cdsr_publisher.sql', 'r') as data:
+            schema = data.read()
+
+        cur.execute(schema)
+
+        con.commit()
+        con.close()
+
+        logger.info(f'Restored `{self.PG_PUBLISHER_DATABASE}` database.\n')
 
     def init_db(self):
         self.__recreate_test_database()

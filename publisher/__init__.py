@@ -11,7 +11,7 @@ from werkzeug.exceptions import HTTPException
 from publisher.environment import FLASK_SECRET_KEY, PR_BASE_DIR, PR_IS_TO_GET_DATA_FROM_DB, \
                                   PR_LOGGING_LEVEL
 from publisher.logger import create_logger
-from publisher.model import PostgreSQLConnection, PostgreSQLTestConnection
+from publisher.model import DBFactory
 from publisher.publisher import Publisher
 
 
@@ -39,15 +39,8 @@ def create_app(test_config=None):
         # load the test config if passed in
         app.config.from_mapping(test_config)
 
-    # `db_connection` will be injected depending on the environment
-    if not app.config['TESTING']:
-        # production or development
-        db_connection = PostgreSQLConnection()
-    else:
-        # testing
-        db_connection = PostgreSQLTestConnection()
-        # initialize database
-        db_connection.init_db()
+    # create a db connection based on the environment variable
+    db_connection = DBFactory.factory()
 
     try:
         # ensure the instance folder exists

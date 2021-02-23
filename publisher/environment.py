@@ -11,6 +11,8 @@ def str2bool(value):
 
 FLASK_SECRET_KEY = getenv('FLASK_SECRET_KEY', 'test')
 
+FLASK_TESTING = str2bool(getenv('FLASK_TESTING', 'False'))
+
 # base directory to recursively traverse
 PR_BASE_DIR = getenv('PR_BASE_DIR', '/')
 # path to files folder

@@ -282,12 +282,7 @@ def create_item_and_get_insert_clauses(dir_path, dn_xml_file_path, assets, df_co
         logger.info(f'insert: {insert}')
         items_insert.append(insert)
 
-    result = {
-        "items_insert": items_insert,
-        "errors": errors
-    }
-
-    return result
+    return items_insert, errors
 
 
 ##################################################

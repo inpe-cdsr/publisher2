@@ -1,3 +1,4 @@
+from itertools import islice
 from json import loads
 from os.path import join as os_path_join, dirname, abspath
 
@@ -9,11 +10,25 @@ from publisher.environment import PR_FILES_PATH, PR_LOGGING_LEVEL
 from publisher.logger import create_logger
 from publisher.util import create_item_and_get_insert_clauses, PublisherWalk
 from publisher.validator import validate, QUERY_SCHEMA
-from publisher.workers import add_nums
+from publisher.workers import process_items
 
 
 # create logger object
 logger = create_logger(__name__, level=PR_LOGGING_LEVEL)
+
+
+def generate_chunk_params(p_walk, df_collections, islice_stop=10):
+    dict_collections = df_collections.to_dict()
+
+    while True:
+        # exhaust the generator to get a list of values, because generator is not serializable
+        p_walk_top = list(islice(p_walk, islice_stop)) # get the first N elements
+
+        # if the p_walk generator has been exhausted, then stop the generate_chunk_params generator
+        if not p_walk_top:
+            break
+
+        yield p_walk_top, dict_collections
 
 
 class SatelliteMetadata:
@@ -93,34 +108,23 @@ class Publisher:
         logger.info(f'query: {self.query}')
         print_line()
 
-        # list to save the INSERT clauses based on item metadata
-        items_insert = []
         # p_walk is a generator that returns just valid directories
         p_walk = PublisherWalk(self.BASE_DIR, self.query, SatelliteMetadata())
 
-        for dir_path, dn_xml_file_path, assets in p_walk:
-            # create INSERT clause based on item information
-            result = create_item_and_get_insert_clauses(
-                dir_path, dn_xml_file_path, assets, self.df_collections
-            )
+        # result = process_items.chunks(generate_chunk_params(p_walk, self.df_collections), 10)()
+        tasks = process_items.chunks(
+            generate_chunk_params(p_walk, self.df_collections), 10
+        ).apply_async(queue='worker_a')
 
-            logger.info(f'result: {result}')
+        # get the results of all chunks
+        results = tasks.get()
 
-            # if INSERT clauses have been returned, then add them to the list
-            if result['items_insert']:
-                items_insert += result['items_insert']
-
-            if result['errors']:
-                self.errors += result['errors']
+        # get the error of each chunk
+        for chunks in results:
+            for task_errors in chunks:
+                self.errors += task_errors
 
         print_line()
-
-        # if there are INSERT clauses, then insert them in the database
-        if items_insert:
-            concanate_inserts = ' '.join(items_insert)
-            # logger.info(f'concanate_inserts: \n{concanate_inserts}\n')
-            logger.info('Inserting items into database...')
-            self.db.execute(concanate_inserts, is_transaction=True)
 
         # add the walk errors in the publisher errors list
         self.errors += p_walk.errors

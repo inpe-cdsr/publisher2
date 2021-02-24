@@ -12,6 +12,7 @@ from xmltodict import parse as xmltodict_parse
 from publisher.common import fill_string_with_left_zeros, print_line
 from publisher.environment import PR_LOGGING_LEVEL
 from publisher.logger import create_logger
+from publisher.model import PostgreSQLCatalogTestConnection
 
 
 # create logger object
@@ -28,32 +29,6 @@ def convert_xml_to_dict(xml_path):
 ##################################################
 # Item
 ##################################################
-
-def create_insert_clause(item, collection_id, srid=4326):
-    '''Create `INSERT` clause based on item metadata.'''
-
-    min_x = item['bbox'][0]
-    min_y = item['bbox'][1]
-    max_x = item['bbox'][2]
-    max_y = item['bbox'][3]
-
-    properties = item['properties']
-    datetime = properties['datetime']
-
-    return (
-        # delete old item before adding a new one, if it exists
-        f'DELETE FROM bdc.items WHERE name=\'{properties["name"]}\'; '
-        # insert new item
-        'INSERT INTO bdc.items '
-        '(name, collection_id, start_date, end_date, '
-        'cloud_cover, assets, metadata, geom, min_convex_hull, srid) '
-        'VALUES '
-        f'(\'{properties["name"]}\', {collection_id}, \'{datetime}\', \'{datetime}\', '
-        f'NULL, \'{dumps(item["assets"])}\', \'{dumps(properties)}\', '
-        f'ST_GeomFromGeoJSON(\'{dumps(item["geometry"])}\'), '
-        f'ST_MakeEnvelope({min_x}, {min_y}, {max_x}, {max_y}, {srid}), {srid});'
-    )
-
 
 def get_collection_from_xml_as_dict(xml_as_dict, radio_processing):
     '''Get collection information from XML file as dictionary.'''
@@ -277,8 +252,10 @@ def create_item_and_get_insert_clauses(dir_path, dn_xml_file_path, assets, df_co
         collection_id = collection.at[0, 'id']
         logger.info(f'collection_id: {collection_id}')
 
-        # create INSERT clause based on item information
-        insert = create_insert_clause(item, collection_id)
+        # create INSERT clause based on item metadata
+        insert = PostgreSQLCatalogTestConnection.create_item_insert_clause(
+            item, collection_id
+        )
         logger.info(f'insert: {insert}')
         items_insert.append(insert)
 

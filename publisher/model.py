@@ -165,6 +165,32 @@ class PostgreSQLCatalogTestConnection(PostgreSQLTestConnection):
 
         return result
 
+    @staticmethod
+    def create_item_insert_clause(item: dict, collection_id: int, srid: int=4326) -> str:
+        '''Create `INSERT` clause to bdc.items table based on item metadata.'''
+
+        min_x = item['bbox'][0]
+        min_y = item['bbox'][1]
+        max_x = item['bbox'][2]
+        max_y = item['bbox'][3]
+
+        properties = item['properties']
+        datetime = properties['datetime']
+
+        return (
+            # delete old item before adding a new one, if it exists
+            f'DELETE FROM bdc.items WHERE name=\'{properties["name"]}\'; '
+            # insert new item
+            'INSERT INTO bdc.items '
+            '(name, collection_id, start_date, end_date, '
+            'cloud_cover, assets, metadata, geom, min_convex_hull, srid) '
+            'VALUES '
+            f'(\'{properties["name"]}\', {collection_id}, \'{datetime}\', \'{datetime}\', '
+            f'NULL, \'{dumps(item["assets"])}\', \'{dumps(properties)}\', '
+            f'ST_GeomFromGeoJSON(\'{dumps(item["geometry"])}\'), '
+            f'ST_MakeEnvelope({min_x}, {min_y}, {max_x}, {max_y}, {srid}), {srid});'
+        )
+
 
 class PostgreSQLPublisherConnection(PostgreSQLTestConnection):
     # concrete class
@@ -182,6 +208,17 @@ class PostgreSQLPublisherConnection(PostgreSQLTestConnection):
         result = self.execute('SELECT * FROM task_error ORDER BY message;')
         result['metadata'] = result['metadata'].astype('str')
         return result
+
+    @staticmethod
+    def create_task_error_insert_clause(error: dict) -> str:
+        '''Create `INSERT` clause to task_error table based on error metadata.'''
+
+        logger.error(f'\n\n error: {error} \n\n')
+
+        return (
+            'INSERT INTO task_error (message, metadata, type) VALUES '
+            f'(\'{error["message"]}\', \'{dumps(error["metadata"])}\', \'{error["type"]}\');'
+        )
 
 
 class DBFactory:

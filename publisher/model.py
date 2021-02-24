@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABC, abstractmethod
-from json import dumps
+from json import dumps, loads
 from os import getenv
 from sqlite3 import connect as sqlite3_connect
 
@@ -22,7 +22,7 @@ logger = create_logger(__name__, level=PR_LOGGING_LEVEL)
 
 class DBConnection(ABC):
     @abstractmethod
-    def execute(self, query, params=None, is_transaction=False):
+    def execute(self, query: str, params: dict=None, is_transaction: bool=False):
         raise NotImplementedError
 
     def select_from_collections(self):
@@ -57,7 +57,7 @@ class PostgreSQLConnection(DBConnection):
 
             raise SQLAlchemyError(error)
 
-    def execute(self, query, params=None, is_transaction=False):
+    def execute(self, query: str, params: dict=None, is_transaction: bool=False):
         # logger.debug('PostgreSQLConnection.execute()')
         # logger.debug(f'PostgreSQLConnection.execute() - is_transaction: {is_transaction}')
         # logger.debug(f'PostgreSQLConnection.execute() - query: {query}')
@@ -152,7 +152,7 @@ class PostgreSQLCatalogTestConnection(PostgreSQLTestConnection):
     def delete_from_items(self):
         self.execute('DELETE FROM bdc.items;', is_transaction=True)
 
-    def select_from_items(self, to_csv=None):
+    def select_from_items(self, to_csv: str=None):
         result = self.execute('SELECT name, collection_id, start_date::timestamp, '
                               'end_date::timestamp, assets, metadata, geom, min_convex_hull '
                               'FROM bdc.items ORDER BY name;')
@@ -205,15 +205,15 @@ class PostgreSQLPublisherConnection(PostgreSQLTestConnection):
         self.execute('DELETE FROM task_error;', is_transaction=True)
 
     def select_from_task_error(self):
-        result = self.execute('SELECT * FROM task_error ORDER BY message;')
-        result['metadata'] = result['metadata'].astype('str')
-        return result
+        df_result = self.execute(
+            'SELECT message, metadata, type FROM task_error ORDER BY message, metadata;'
+        )
+        # convert dataframe to JSON and convert it to dict
+        return loads(df_result.to_json(orient='records'))
 
     @staticmethod
     def create_task_error_insert_clause(error: dict) -> str:
         '''Create `INSERT` clause to task_error table based on error metadata.'''
-
-        logger.error(f'\n\n error: {error} \n\n')
 
         return (
             'INSERT INTO task_error (message, metadata, type) VALUES '

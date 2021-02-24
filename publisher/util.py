@@ -12,7 +12,7 @@ from xmltodict import parse as xmltodict_parse
 from publisher.common import fill_string_with_left_zeros, print_line
 from publisher.environment import PR_LOGGING_LEVEL
 from publisher.logger import create_logger
-from publisher.model import PostgreSQLCatalogTestConnection
+from publisher.model import PostgreSQLCatalogTestConnection, PostgreSQLPublisherConnection
 
 
 # create logger object
@@ -201,7 +201,7 @@ def create_item_and_get_insert_clauses(dir_path, dn_xml_file_path, assets, df_co
     print_line()
 
     items_insert = []
-    errors = []
+    errors_insert = []
 
     logger.info(f'dn_xml_file_path: {dn_xml_file_path}')
     logger.info(f'assets: {assets}')
@@ -236,17 +236,17 @@ def create_item_and_get_insert_clauses(dir_path, dn_xml_file_path, assets, df_co
         if len(collection.index) == 0:
             # check if the collection has not already been added to the errors list
             if not any(e['metadata']['collection'] == item['collection']['name'] \
-                        for e in errors):
-                errors.append({
-                    'type': 'warning',
-                    'message': (
-                        f'There is metadata to the `{item["collection"]["name"]}` collection, '
-                        'however this collection does not exist in the database.'
-                    ),
-                    'metadata': {
-                        'collection': item['collection']['name']
-                    }
-                })
+                    for e in errors_insert):
+                errors_insert.append(
+                    PostgreSQLPublisherConnection.create_task_error_insert_clause({
+                        'message': (
+                            f'There is metadata to the `{item["collection"]["name"]}` collection, '
+                            'however this collection does not exist in the database.'
+                        ),
+                        'metadata': {'collection': item['collection']['name']},
+                        'type': 'warning'
+                    })
+                )
             continue
 
         collection_id = collection.at[0, 'id']
@@ -259,7 +259,7 @@ def create_item_and_get_insert_clauses(dir_path, dn_xml_file_path, assets, df_co
         logger.info(f'insert: {insert}')
         items_insert.append(insert)
 
-    return items_insert, errors
+    return items_insert, errors_insert
 
 
 ##################################################
@@ -338,7 +338,7 @@ class PublisherWalk:
         self.BASE_DIR = BASE_DIR
         self.query = query
         self.satellite_metadata = satellite_metadata
-        self.errors = []
+        self.errors_insert = []
 
         # create an iterator from generator method
         self.__generator_iterator = self.__generator()
@@ -421,14 +421,12 @@ class PublisherWalk:
             # `os_path_join` creates a full path to the XML file
             return os_path_join(dir_path, dn_xml_files[0])
 
-        self.errors.append(
-            {
+        self.errors_insert.append(
+            PostgreSQLPublisherConnection.create_task_error_insert_clause({
                 'type': 'warning',
                 'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
-                'metadata': {
-                    'folder': dir_path
-                }
-            }
+                'metadata': {'folder': dir_path}
+            })
         )
         return None
 
@@ -439,14 +437,12 @@ class PublisherWalk:
         png_files = glob(f'{dir_path}/*.png')
 
         if not png_files:
-            self.errors.append(
-                {
+            self.errors_insert.append(
+                PostgreSQLPublisherConnection.create_task_error_insert_clause({
                     'type': 'warning',
                     'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                    'metadata': {
-                        'folder': dir_path
-                    }
-                }
+                    'metadata': {'folder': dir_path}
+                })
             )
             return None
 
@@ -469,15 +465,13 @@ class PublisherWalk:
                 if band == 'evi' or band == 'ndvi':
                     continue
 
-                self.errors.append(
-                    {
+                self.errors_insert.append(
+                    PostgreSQLPublisherConnection.create_task_error_insert_clause({
                         'type': 'warning',
                         'message': ('There is NOT a TIFF file in this folder that ends with the '
                                     f'`{band_template}` template, then it will be ignored.'),
-                        'metadata': {
-                            'folder': dir_path
-                        }
-                    }
+                        'metadata': {'folder': dir_path}
+                    })
                 )
                 return None
 
@@ -502,16 +496,14 @@ class PublisherWalk:
                     json_files = sorted(glob(f"{dir_path}/*{band_template.replace('.tif', '.json')}"))
 
                     if not json_files:
-                        self.errors.append(
-                            {
+                        self.errors_insert.append(
+                            PostgreSQLPublisherConnection.create_task_error_insert_clause({
                                 'type': 'warning',
                                 'message': ('There is NOT a JSON file in this folder that ends with the '
                                             f"`{band_template.replace('.tif', '.json')}` template, "
                                             'then it will be ignored.'),
-                                'metadata': {
-                                    'folder': dir_path
-                                }
-                            }
+                                'metadata': {'folder': dir_path}
+                            })
                         )
                         return None
 
@@ -529,16 +521,14 @@ class PublisherWalk:
             xml_files = sorted(glob(f"{dir_path}/*{band_template.replace('.tif', '.xml')}"))
 
             if not xml_files:
-                self.errors.append(
-                    {
+                self.errors_insert.append(
+                    PostgreSQLPublisherConnection.create_task_error_insert_clause({
                         'type': 'warning',
                         'message': ('There is NOT a XML file in this folder that ends with the '
                                     f"`{band_template.replace('.tif', '.xml')}` template, "
                                     'then it will be ignored.'),
-                        'metadata': {
-                            'folder': dir_path
-                        }
-                    }
+                        'metadata': {'folder': dir_path}
+                    })
                 )
                 return None
 
@@ -562,14 +552,12 @@ class PublisherWalk:
 
             # if the dir does not have any file, then report and ignore it
             if not files:
-                self.errors.append(
-                    {
-                        'type': 'warning',
+                self.errors_insert.append(
+                    PostgreSQLPublisherConnection.create_task_error_insert_clause({
                         'message': 'This folder is valid, but it is empty.',
-                        'metadata': {
-                            'folder': dir_path
-                        }
-                    }
+                        'metadata': {'folder': dir_path},
+                        'type': 'warning'
+                    })
                 )
                 continue
 

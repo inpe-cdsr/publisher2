@@ -78,12 +78,8 @@ def create_app(test_config=None):
             PR_BASE_DIR, PR_IS_TO_GET_DATA_FROM_DB,
             db_connection, query=dict(request.args)
         )
+        # execute main method
         publisher_app.main()
-
-        if publisher_app.errors:
-            logger.warning(f'Found errors: \n{publisher_app.errors}\n')
-            return jsonify(publisher_app.errors)
-
         return '/publish has been executed'
 
     return app

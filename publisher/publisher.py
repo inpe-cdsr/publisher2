@@ -80,7 +80,6 @@ class Publisher:
         self.BASE_DIR = BASE_DIR
         self.IS_TO_GET_DATA_FROM_DB = IS_TO_GET_DATA_FROM_DB
         self.db = db_connection
-        self.errors = []
         self.query = query
 
         if self.IS_TO_GET_DATA_FROM_DB:
@@ -123,10 +122,12 @@ class Publisher:
 
         print_line()
 
-        # get the error of each chunk
-        for chunks in results:
-            for task_errors in chunks:
-                self.errors += task_errors
-
-        # add the walk errors in the publisher errors list
-        self.errors += p_walk.errors
+        # if there are INSERT clauses, then insert them in the database
+        if p_walk.errors_insert:
+            # if there is INSERT clauses to insert in the database,
+            # then create a database instance and insert them there
+            db = PostgreSQLPublisherConnection()
+            concanate_errors = ' '.join(p_walk.errors_insert)
+            # logger.info(f'concanate_errors: \n{concanate_errors}\n')
+            logger.info('Inserting p_walk errors into database...')
+            db.execute(concanate_errors, is_transaction=True)

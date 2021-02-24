@@ -9,9 +9,7 @@ from publisher.environment import FLASK_TESTING
 from publisher.model import PostgreSQLCatalogTestConnection, PostgreSQLPublisherConnection
 
 
-test_config={'TESTING': FLASK_TESTING}
-# recreate the test database just one time
-app = create_app(test_config)
+app = create_app({'TESTING': FLASK_TESTING})
 
 # initialize the databases just one time
 db = PostgreSQLCatalogTestConnection()
@@ -284,7 +282,6 @@ class PublisherPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
         self.check_if_the_errors_have_been_added_in_the_database(expected)
 
     # CBERS2B HRC
-
 
     def test_publish__ok__cbers2b_hrc_l2_dn__path_151_row_141(self):
         # CBERS2B/2010_03/CBERS2B_HRC_20100301.130915/151_B_141_5_0/2_BC_UTM_WGS84

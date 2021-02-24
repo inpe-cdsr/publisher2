@@ -13,7 +13,7 @@ test_config={'TESTING': FLASK_TESTING}
 # recreate the test database just one time
 app = create_app(test_config)
 
-# initialize databases just one time
+# initialize the databases just one time
 db = PostgreSQLCatalogTestConnection()
 db.init_db()
 db_publisher = PostgreSQLPublisherConnection()

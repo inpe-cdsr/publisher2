@@ -6,8 +6,9 @@ from pandas import read_csv
 from werkzeug.exceptions import BadRequest
 
 from publisher.common import print_line
-from publisher.environment import PR_FILES_PATH, PR_LOGGING_LEVEL
+from publisher.environment import PR_FILES_PATH, PR_LOGGING_LEVEL, PR_TASK_CHUNKS
 from publisher.logger import create_logger
+from publisher.model import PostgreSQLPublisherConnection
 from publisher.util import create_item_and_get_insert_clauses, PublisherWalk
 from publisher.validator import validate, QUERY_SCHEMA
 from publisher.workers import process_items
@@ -113,18 +114,19 @@ class Publisher:
 
         # result = process_items.chunks(generate_chunk_params(p_walk, self.df_collections), 10)()
         tasks = process_items.chunks(
-            generate_chunk_params(p_walk, self.df_collections), 10
+            generate_chunk_params(p_walk, self.df_collections), PR_TASK_CHUNKS
         ).apply_async(queue='worker_a')
 
         # get the results of all chunks
         results = tasks.get()
+        logger.info(f'Tasks results have been joined...')
+
+        print_line()
 
         # get the error of each chunk
         for chunks in results:
             for task_errors in chunks:
                 self.errors += task_errors
-
-        print_line()
 
         # add the walk errors in the publisher errors list
         self.errors += p_walk.errors

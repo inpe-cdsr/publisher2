@@ -43,17 +43,28 @@ class BaseTestCases:
             db.delete_from_items()
             db_publisher.delete_from_task_error()
 
+        def get(self, url='/publish', query_string=None, expected='/publish has been executed',
+                expected_status_code=200):
+            response = self.api.get(url, query_string=query_string)
+
+            self.assertEqual(expected_status_code, response.status_code)
+            self.assertEqual(expected, response.get_data(as_text=True))
+
         def check_if_the_items_have_been_added_in_the_database(self, expected_file_path):
             # get the result from database
             result = db.select_from_items()
             # get the expected result
             expected = read_item_from_csv(expected_file_path)
-
             assert_frame_equal(expected, result)
 
-        def check_if_the_database_is_empty(self):
+        def check_if_the_items_table_is_empty(self):
             # check if the result size is equals to 0
             self.assertEqual(0, len(db.select_from_items().index))
+
+        def check_if_the_errors_have_been_added_in_the_database(self, expected):
+            # get the result from database
+            result = db_publisher.select_from_task_error()
+            self.assertEqual(expected, result)
 
 
 class PublisherPublishOkTestCase(BaseTestCases.BaseTestCase):
@@ -62,104 +73,74 @@ class PublisherPublishOkTestCase(BaseTestCases.BaseTestCase):
         self.maxDiff=None
         expected = [
             {
-                'type': 'warning',
                 'message': 'There is metadata to the `CBERS2B_XYZ_L2_DN` collection, however this collection does not exist in the database.',
-                'metadata': {'collection': 'CBERS2B_XYZ_L2_DN'}
-            },
-            {
-                'type': 'warning',
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/LANDSAT1/1976_10/LANDSAT1_MSS_19761002.120000/010_057_0/2_BC_UTM_WGS84'}
-            },
-            {
-                'type': 'warning',
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/LANDSAT5/1984_04/LANDSAT5_TM_19840406.124930/223_062_0/2_BC_UTM_WGS84'}
-            },
-            {
-                'type': 'warning',
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_WFI_20070928.131338/154_124_0/2_BC_LCC_WGS84'}
-            },
-            {
-                'type': 'warning',
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_HRC_20070929.124300/145_C_111_3_0/2_BC_UTM_WGS84'}
-            },
-            {
-                'type': 'warning',
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_CCD_20070925.145654/181_096_0/2_BC_UTM_WGS84'}
-            },
-            {
-                'type': 'warning',
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/LANDSAT2/1975_07/LANDSAT2_MSS_19750724.123000/230_070_0/2_BC_UTM_WGS84'}
-            },
-            {
-                'type': 'warning',
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/LANDSAT3/1982_08/LANDSAT3_MSS_19820802.120000/231_072_0/2_BC_UTM_WGS84'}
-            },
-            {
-                'message': 'This folder is valid, but it is empty.',
-                'metadata': {'folder': '/TIFF/CBERS4A/2021_01/CBERS_4A_MUX_RAW_2021_01_10.13_24_30_ETC2/201_109_0/4_BC_UTM_WGS84'},
+                'metadata': {'collection': 'CBERS2B_XYZ_L2_DN'},
                 'type': 'warning'
             },
             {
-                'message': 'This folder is valid, but it is empty.',
-                'metadata': {'folder': '/TIFF/CBERS4A/2021_01/CBERS_4A_MUX_RAW_2021_01_01.13_48_30_ETC2/209_110_0/4_BC_UTM_WGS84'},
-                'type': 'warning'
-            },
-            {
-                'message': 'This folder is valid, but it is empty.',
-                'metadata': {'folder': '/TIFF/CBERS4A/2021_01/CBERS_4A_MUX_RAW_2021_01_01.13_48_30_ETC2/209_105_0/4_BC_UTM_WGS84'},
-                'type': 'warning'
-            },
-            {
-                'message': 'This folder is valid, but it is empty.',
-                'metadata': {'folder': '/TIFF/CBERS4A/2020_08/CBERS_4A_WPM_RAW_2020_08_17.03_52_45_ETC2/373_019_0/4_BC_UTM_WGS84'},
-                'type': 'warning'
-            },
-            {
-                'message': 'This folder is valid, but it is empty.',
-                'metadata': {'folder': '/TIFF/CBERS4A/2020_08/CBERS_4A_WPM_RAW_2020_08_15.13_54_30_ETC2/212_107_0/4_BC_UTM_WGS84'},
-                'type': 'warning'
-            },
-            {
-                'type': 'warning',
                 'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'}
-            },
-            {
-                'message': 'This folder is valid, but it is empty.',
-                'metadata': {'folder': '/TIFF/CBERS4A/2020_04/CBERS_4A_MUX_RAW_2020_04_06.00_56_20_CP5/164_025_0/4_BC_UTM_WGS84'},
+                'metadata': {'folder': '/TIFF/CBERS4/2016_01/CBERS_4_MUX_DRD_2016_01_01.13_28_32_CB11/157_101_0/2_BC_UTM_WGS84'},
                 'type': 'warning'
             },
             {
-                'message': 'This folder is valid, but it is empty.',
-                'metadata': {'folder': '/TIFF/CBERS4A/2020_04/CBERS_4A_MUX_RAW_2020_04_06.00_56_20_CP5/164_025_0/0_NN_UTM_WGS84'},
-                'type': 'warning'
-            },
-            {
-                'message': 'This folder is valid, but it is empty.',
-                'metadata': {'folder': '/TIFF/CBERS4A/2020_04/CBERS_4A_WPM_RAW_2020_04_01.13_18_58_ETC2/202_112_0/4_BC_UTM_WGS84'},
-                'type': 'warning'
-            },
-            {
-                'message': 'This folder is valid, but it is empty.',
-                'metadata': {'folder': '/TIFF/CBERS4A/2020_06/CBERS_4A_MUX_RAW_2020_06_03.15_18_00_ETC2/239_112_0/4_BC_UTM_WGS84'},
-                'type': 'warning'
-            },
-            {
-                'type': 'warning',
                 'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/CBERS4/2020_07/CBERS_4_MUX_DRD_2020_07_31.13_07_00_CB11/155_103_0/4_BC_UTM_WGS84'}
+                'metadata': {'folder': '/TIFF/CBERS4/2020_07/CBERS_4_MUX_DRD_2020_07_31.13_07_00_CB11/155_103_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
             },
             {
+                'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_CCD_20070925.145654/181_096_0/2_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_HRC_20070929.124300/145_C_111_3_0/2_BC_UTM_WGS84'},
                 'type': 'warning',
+            },
+            {
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_WFI_20070928.131338/154_124_0/2_BC_LCC_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/LANDSAT1/1976_10/LANDSAT1_MSS_19761002.120000/010_057_0/2_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/LANDSAT2/1975_07/LANDSAT2_MSS_19750724.123000/230_070_0/2_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/LANDSAT3/1982_08/LANDSAT3_MSS_19820802.120000/231_072_0/2_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/LANDSAT5/1984_04/LANDSAT5_TM_19840406.124930/223_062_0/2_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/LANDSAT7/1999_07/LANDSAT7_ETM_19990719.124008/217_064_0/2_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/LANDSAT7/2003_06/LANDSAT7_ETM_20030601.125322/220_061_0/2_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
                 'message': 'There is NOT a TIFF file in this folder that ends with the `BAND13.tif` template, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84'}
+                'metadata': {'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
             },
             {
                 'message': 'There is NOT a TIFF file in this folder that ends with the `BAND13.tif` template, then it will be ignored.',
@@ -182,28 +163,58 @@ class PublisherPublishOkTestCase(BaseTestCases.BaseTestCase):
                 'type': 'warning'
             },
             {
-                'type': 'warning',
-                'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/CBERS4/2016_01/CBERS_4_MUX_DRD_2016_01_01.13_28_32_CB11/157_101_0/2_BC_UTM_WGS84'}
+                'message': 'This folder is valid, but it is empty.',
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_04/CBERS_4A_MUX_RAW_2020_04_06.00_56_20_CP5/164_025_0/0_NN_UTM_WGS84'},
+                'type': 'warning'
             },
             {
-                'type': 'warning',
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/LANDSAT7/2003_06/LANDSAT7_ETM_20030601.125322/220_061_0/2_BC_UTM_WGS84'}
+                'message': 'This folder is valid, but it is empty.',
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_04/CBERS_4A_MUX_RAW_2020_04_06.00_56_20_CP5/164_025_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
             },
             {
-                'type': 'warning',
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/LANDSAT7/1999_07/LANDSAT7_ETM_19990719.124008/217_064_0/2_BC_UTM_WGS84'}
+                'message': 'This folder is valid, but it is empty.',
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_04/CBERS_4A_WPM_RAW_2020_04_01.13_18_58_ETC2/202_112_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'This folder is valid, but it is empty.',
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_06/CBERS_4A_MUX_RAW_2020_06_03.15_18_00_ETC2/239_112_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'This folder is valid, but it is empty.',
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_08/CBERS_4A_WPM_RAW_2020_08_15.13_54_30_ETC2/212_107_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'This folder is valid, but it is empty.',
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_08/CBERS_4A_WPM_RAW_2020_08_17.03_52_45_ETC2/373_019_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'This folder is valid, but it is empty.',
+                'metadata': {'folder': '/TIFF/CBERS4A/2021_01/CBERS_4A_MUX_RAW_2021_01_01.13_48_30_ETC2/209_105_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'This folder is valid, but it is empty.',
+                'metadata': {'folder': '/TIFF/CBERS4A/2021_01/CBERS_4A_MUX_RAW_2021_01_01.13_48_30_ETC2/209_110_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'This folder is valid, but it is empty.',
+                'metadata': {'folder': '/TIFF/CBERS4A/2021_01/CBERS_4A_MUX_RAW_2021_01_10.13_24_30_ETC2/201_109_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
             }
         ]
 
-        response = self.api.get('/publish')
+        self.get()
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(expected, loads(response.get_data(as_text=True)))
-
-        self.check_if_the_items_have_been_added_in_the_database('test_publish__ok__empty_query.csv')
+        self.check_if_the_items_have_been_added_in_the_database(
+            'test_publish__ok__empty_query.csv'
+        )
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
 
     def test_publish__ok__l4_dn__missing_satellite_and_sensor(self):
         # CBERS4A/2019_12/CBERS_4A_WFI_RAW_2019_12_27.13_53_00_ETC2/215_132_0/4_BC_UTM_WGS84
@@ -216,10 +227,7 @@ class PublisherPublishOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'test_publish__ok__l4_dn__missing_satellite_and_sensor.csv'
@@ -243,10 +251,7 @@ class PublisherPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers2b/test_publish__ok__cbers2b_ccd_l2_dn.csv'
@@ -265,24 +270,21 @@ class PublisherPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        expected = [
-            {
-                'type': 'warning',
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {
-                    'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_CCD_20070925.145654/181_096_0/2_BC_UTM_WGS84'
-                }
+        expected = [{
+            'type': 'warning',
+            'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+            'metadata': {
+                'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_CCD_20070925.145654/181_096_0/2_BC_UTM_WGS84'
             }
-        ]
+        }]
 
-        response = self.api.get('/publish', query_string=query)
+        self.get(query_string=query)
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(expected, loads(response.get_data(as_text=True)))
-
-        self.check_if_the_database_is_empty()
+        self.check_if_the_items_table_is_empty()
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
 
     # CBERS2B HRC
+
 
     def test_publish__ok__cbers2b_hrc_l2_dn__path_151_row_141(self):
         # CBERS2B/2010_03/CBERS2B_HRC_20100301.130915/151_B_141_5_0/2_BC_UTM_WGS84
@@ -297,10 +299,7 @@ class PublisherPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers2b/test_publish__ok__cbers2b_hrc_l2_dn__path_151_row_141.csv'
@@ -319,10 +318,7 @@ class PublisherPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers2b/test_publish__ok__cbers2b_hrc_l2_dn__path_151_row_142.csv'
@@ -341,22 +337,18 @@ class PublisherPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        expected = [
-            {
-                'type': 'warning',
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {
-                    'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_HRC_20070929.124300/145_C_111_3_0/2_BC_UTM_WGS84'
-                }
+        expected = [{
+            'type': 'warning',
+            'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+            'metadata': {
+                'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_HRC_20070929.124300/145_C_111_3_0/2_BC_UTM_WGS84'
             }
-        ]
+        }]
 
-        response = self.api.get('/publish', query_string=query)
+        self.get(query_string=query)
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(expected, loads(response.get_data(as_text=True)))
-
-        self.check_if_the_database_is_empty()
+        self.check_if_the_items_table_is_empty()
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
 
     # CBERS2B WFI
 
@@ -373,10 +365,7 @@ class PublisherPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers2b/test_publish__ok__cbers2b_wfi_l2_dn.csv'
@@ -395,22 +384,18 @@ class PublisherPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        expected = [
-            {
-                'type': 'warning',
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {
-                    'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_WFI_20070928.131338/154_124_0/2_BC_LCC_WGS84'
-                }
+        expected = [{
+            'type': 'warning',
+            'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+            'metadata': {
+                'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_WFI_20070928.131338/154_124_0/2_BC_LCC_WGS84'
             }
-        ]
+        }]
 
-        response = self.api.get('/publish', query_string=query)
+        self.get(query_string=query)
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(expected, loads(response.get_data(as_text=True)))
-
-        self.check_if_the_database_is_empty()
+        self.check_if_the_items_table_is_empty()
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
 
     # CBERS2B XYZ
 
@@ -427,20 +412,19 @@ class PublisherPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        response = self.api.get('/publish', query_string=query)
         expected = [{
             'type': 'warning',
+            'message': ('There is metadata to the `CBERS2B_XYZ_L2_DN` collection, however '
+                        'this collection does not exist in the database.'),
             'metadata': {
                 'collection': 'CBERS2B_XYZ_L2_DN'
-            },
-            'message': ('There is metadata to the `CBERS2B_XYZ_L2_DN` collection, however '
-                        'this collection does not exist in the database.')
+            }
         }]
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(expected, loads(response.get_data(as_text=True)))
+        self.get(query_string=query)
 
-        self.check_if_the_database_is_empty()
+        self.check_if_the_items_table_is_empty()
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
 
 
 class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
@@ -460,23 +444,19 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'Dn'
         }
 
-        expected = [
-            {
-                'message': ('There is NOT a TIFF file in this folder that ends with the '
-                            '`BAND13.tif` template, then it will be ignored.'),
-                'metadata': {
-                    'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84'
-                },
-                'type': 'warning'
-            }
-        ]
+        expected = [{
+            'message': ('There is NOT a TIFF file in this folder that ends with the '
+                        '`BAND13.tif` template, then it will be ignored.'),
+            'metadata': {
+                'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84'
+            },
+            'type': 'warning'
+        }]
 
-        response = self.api.get('/publish', query_string=query)
+        self.get(query_string=query)
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(expected, loads(response.get_data(as_text=True)))
-
-        self.check_if_the_database_is_empty()
+        self.check_if_the_items_table_is_empty()
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
 
     def test_publish__ok__cbers4_awfi_l4_sr(self):
         # CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84
@@ -491,10 +471,7 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'sR'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4/test_publish__ok__cbers4_awfi_l4_sr.csv'
@@ -513,25 +490,21 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
             # ommit `radio_processing` to return both `DN` and `SR`
         }
 
-        expected = [
-            {
-                'message': ('There is NOT a TIFF file in this folder that ends with the '
-                            '`BAND13.tif` template, then it will be ignored.'),
-                'metadata': {
-                    'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84'
-                },
-                'type': 'warning'
-            }
-        ]
+        expected = [{
+            'message': ('There is NOT a TIFF file in this folder that ends with the '
+                        '`BAND13.tif` template, then it will be ignored.'),
+            'metadata': {
+                'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84'
+            },
+            'type': 'warning'
+        }]
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(expected, loads(response.get_data(as_text=True)))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4/test_publish__ok__cbers4_awfi_l4_dn_and_sr__dn_tiff_file_does_not_exist.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
 
     def test_publish__ok__cbers4_awfi__path_row_folder_is_empty(self):
         # CBERS4/2015_01/CBERS_4_AWFI_DRD_2015_01_16.13_39_12_CB11/161_093_0/
@@ -544,12 +517,9 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
             'row': '093'
         }
 
-        response = self.api.get('/publish', query_string=query)
+        self.get(query_string=query)
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
-
-        self.check_if_the_database_is_empty()
+        self.check_if_the_items_table_is_empty()
 
     def test_publish__ok__cbers4_awfi_l4_dn_and_sr__evi_tiff_file_does_not_exist(self):
         # EVI file does not exist, then it is not added to assets
@@ -565,10 +535,7 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
             # omit 'radio_processing' to get both `DN` and `SR` scenes
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4/test_publish__ok__cbers4_awfi_l4_dn_and_sr__evi_tiff_file_does_not_exist.csv'
@@ -588,10 +555,7 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'sR'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4/test_publish__ok__cbers4_awfi_l4_sr__ndvi_tiff_file_does_not_exist.csv'
@@ -610,23 +574,19 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'sR'
         }
 
-        expected = [
-            {
-                'message': ('There is NOT a TIFF file in this folder that ends with the '
-                            '`CMASK_GRID_SURFACE.tif` template, then it will be ignored.'),
-                'metadata': {
-                    'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_137_0/4_BC_UTM_WGS84'
-                },
-                'type': 'warning'
-            }
-        ]
+        expected = [{
+            'message': ('There is NOT a TIFF file in this folder that ends with the '
+                        '`CMASK_GRID_SURFACE.tif` template, then it will be ignored.'),
+            'metadata': {
+                'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_137_0/4_BC_UTM_WGS84'
+            },
+            'type': 'warning'
+        }]
 
-        response = self.api.get('/publish', query_string=query)
+        self.get(query_string=query)
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(expected, loads(response.get_data(as_text=True)))
-
-        self.check_if_the_database_is_empty()
+        self.check_if_the_items_table_is_empty()
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
 
     # CBERS4 MUX (DN and SR)
 
@@ -643,22 +603,18 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
             # ommit `radio_processing` to return both `DN` and `SR`
         }
 
-        expected = [
-            {
-                'type': 'warning',
-                'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
-                'metadata': {
-                    'folder': '/TIFF/CBERS4/2016_01/CBERS_4_MUX_DRD_2016_01_01.13_28_32_CB11/157_101_0/2_BC_UTM_WGS84'
-                }
+        expected = [{
+            'type': 'warning',
+            'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
+            'metadata': {
+                'folder': '/TIFF/CBERS4/2016_01/CBERS_4_MUX_DRD_2016_01_01.13_28_32_CB11/157_101_0/2_BC_UTM_WGS84'
             }
-        ]
+        }]
 
-        response = self.api.get('/publish', query_string=query)
+        self.get(query_string=query)
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(expected, loads(response.get_data(as_text=True)))
-
-        self.check_if_the_database_is_empty()
+        self.check_if_the_items_table_is_empty()
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
 
     def test_publish__ok__cbers4_mux_l4_dn__dn_xml_file_does_not_exist(self):
         # CBERS4/2020_07/CBERS_4_MUX_DRD_2020_07_31.13_07_00_CB11/155_103_0/4_BC_UTM_WGS84
@@ -673,22 +629,18 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'dn'
         }
 
-        expected = [
-            {
-                'type': 'warning',
-                'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
-                'metadata': {
-                    'folder': '/TIFF/CBERS4/2020_07/CBERS_4_MUX_DRD_2020_07_31.13_07_00_CB11/155_103_0/4_BC_UTM_WGS84'
-                }
+        expected = [{
+            'type': 'warning',
+            'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
+            'metadata': {
+                'folder': '/TIFF/CBERS4/2020_07/CBERS_4_MUX_DRD_2020_07_31.13_07_00_CB11/155_103_0/4_BC_UTM_WGS84'
             }
-        ]
+        }]
 
-        response = self.api.get('/publish', query_string=query)
+        self.get(query_string=query)
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(expected, loads(response.get_data(as_text=True)))
-
-        self.check_if_the_database_is_empty()
+        self.check_if_the_items_table_is_empty()
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
 
     def test_publish__ok__cbers4_mux_l4_dn(self):
         # CBERS4/2018_01/CBERS_4_MUX_DRD_2018_01_01.13_14_00_CB11/156_103_0/4_BC_UTM_WGS84
@@ -703,10 +655,7 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'dn'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4/test_publish__ok__cbers4_mux_l4_dn.csv'
@@ -725,10 +674,7 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'sr'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4/test_publish__ok__cbers4_mux_l4_sr__evi_tiff_file_does_not_exist.csv'
@@ -747,10 +693,7 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
             # omit 'radio_processing' to get both `DN` and `SR` scenes
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4/test_publish__ok__cbers4_mux_l4_dn_and_sr__evi_tiff_file_does_not_exist.csv'
@@ -773,10 +716,7 @@ class PublisherPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4/test_publish__ok__cbers4_pan10m_l2_sr__next_to_0h.csv'
@@ -799,10 +739,7 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4a/test_publish__ok__cbers4a_mux_l2_dn.csv'
@@ -822,10 +759,7 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4a/test_publish__ok__cbers4a_mux_l2_dn__next_to_0h.csv'
@@ -844,10 +778,7 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4a/test_publish__ok__cbers4a_mux_l4_dn.csv'
@@ -865,22 +796,18 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        expected = [
-            {
-                'message': 'This folder is valid, but it is empty.',
-                'metadata': {
-                    'folder': '/TIFF/CBERS4A/2021_01/CBERS_4A_MUX_RAW_2021_01_01.13_48_30_ETC2/209_105_0/4_BC_UTM_WGS84'
-                },
-                'type': 'warning'
-            }
-        ]
+        expected = [{
+            'message': 'This folder is valid, but it is empty.',
+            'metadata': {
+                'folder': '/TIFF/CBERS4A/2021_01/CBERS_4A_MUX_RAW_2021_01_01.13_48_30_ETC2/209_105_0/4_BC_UTM_WGS84'
+            },
+            'type': 'warning'
+        }]
 
-        response = self.api.get('/publish', query_string=query)
+        self.get(query_string=query)
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(expected, loads(response.get_data(as_text=True)))
-
-        self.check_if_the_database_is_empty()
+        self.check_if_the_items_table_is_empty()
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
 
     def test_publish__ok__cbers4a_mux_l4_dn_or_sr__dn_file_does_not_exist(self):
         # CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84
@@ -894,22 +821,18 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
             'geo_processing': 4
         }
 
-        expected = [
-            {
-                'type': 'warning',
-                'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
-                'metadata': {
-                    'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'
-                }
+        expected = [{
+            'type': 'warning',
+            'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
+            'metadata': {
+                'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'
             }
-        ]
+        }]
 
-        response = self.api.get('/publish', query_string=query)
+        self.get(query_string=query)
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(expected, loads(response.get_data(as_text=True)))
-
-        self.check_if_the_database_is_empty()
+        self.check_if_the_items_table_is_empty()
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
 
     # CBERS4A WFI
 
@@ -926,10 +849,7 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'SR'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4a/test_publish__ok__cbers4a_wfi_l2_and_l4_sr.csv'
@@ -948,10 +868,7 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4a/test_publish__ok__cbers4a_wfi_l4_dn.csv'
@@ -970,10 +887,7 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'sr'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4a/test_publish__ok__cbers4a_wfi_l4_sr.csv'
@@ -992,10 +906,7 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
             # radio processing is empty in order to publish both `DN` and `SR` files
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4a/test_publish__ok__cbers4a_wfi_l4_dn_and_sr.csv'
@@ -1015,12 +926,9 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        response = self.api.get('/publish', query_string=query)
+        self.get(query_string=query)
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
-
-        self.check_if_the_database_is_empty()
+        self.check_if_the_items_table_is_empty()
 
     def test_publish__ok__cbers4a_wfi__missing_geo_and_radio_processings(self):
         # CBERS4A/2019_12/CBERS_4A_WFI_RAW_2019_12_27.13_53_00_ETC2/215_132_0/4_BC_UTM_WGS84
@@ -1033,10 +941,7 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
             'row': '132'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4a/test_publish__ok__cbers4a_wfi__missing_geo_and_radio_processings.csv'
@@ -1053,10 +958,7 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4a/test_publish__ok__cbers4a_wfi__missing_path_and_row.csv'
@@ -1076,10 +978,7 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4a/test_publish__ok__cbers4a_wpm_l2_dn.csv'
@@ -1099,10 +998,7 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4a/test_publish__ok__cbers4a_wpm_l2_dn__next_to_5h.csv'
@@ -1120,12 +1016,9 @@ class PublisherPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        response = self.api.get('/publish', query_string=query)
+        self.get(query_string=query)
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
-
-        self.check_if_the_database_is_empty()
+        self.check_if_the_items_table_is_empty()
 
 
 class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
@@ -1145,10 +1038,7 @@ class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'landsat/test_publish__ok__landsat1_mss_l2_dn.csv'
@@ -1167,22 +1057,18 @@ class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        expected = [
-            {
-                'type': 'warning',
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {
-                    'folder': '/TIFF/LANDSAT1/1976_10/LANDSAT1_MSS_19761002.120000/010_057_0/2_BC_UTM_WGS84'
-                }
+        expected = [{
+            'type': 'warning',
+            'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+            'metadata': {
+                'folder': '/TIFF/LANDSAT1/1976_10/LANDSAT1_MSS_19761002.120000/010_057_0/2_BC_UTM_WGS84'
             }
-        ]
+        }]
 
-        response = self.api.get('/publish', query_string=query)
+        self.get(query_string=query)
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(expected, loads(response.get_data(as_text=True)))
-
-        self.check_if_the_database_is_empty()
+        self.check_if_the_items_table_is_empty()
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
 
     # LANDSAT2 MSS
 
@@ -1199,10 +1085,7 @@ class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'landsat/test_publish__ok__landsat2_mss_l2_dn.csv'
@@ -1221,22 +1104,18 @@ class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        expected = [
-            {
-                'type': 'warning',
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {
-                    'folder': '/TIFF/LANDSAT2/1975_07/LANDSAT2_MSS_19750724.123000/230_070_0/2_BC_UTM_WGS84'
-                }
-            }
-        ]
+        expected = [{
+            'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+            'metadata': {
+                'folder': '/TIFF/LANDSAT2/1975_07/LANDSAT2_MSS_19750724.123000/230_070_0/2_BC_UTM_WGS84'
+            },
+            'type': 'warning'
+        }]
 
-        response = self.api.get('/publish', query_string=query)
+        self.get(query_string=query)
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(expected, loads(response.get_data(as_text=True)))
-
-        self.check_if_the_database_is_empty()
+        self.check_if_the_items_table_is_empty()
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
 
     # LANDSAT3 MSS
 
@@ -1253,10 +1132,7 @@ class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'landsat/test_publish__ok__landsat3_mss_l2_dn.csv'
@@ -1275,22 +1151,18 @@ class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        expected = [
-            {
-                'type': 'warning',
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {
-                    'folder': '/TIFF/LANDSAT3/1982_08/LANDSAT3_MSS_19820802.120000/231_072_0/2_BC_UTM_WGS84'
-                }
-            }
-        ]
+        expected = [{
+            'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+            'metadata': {
+                'folder': '/TIFF/LANDSAT3/1982_08/LANDSAT3_MSS_19820802.120000/231_072_0/2_BC_UTM_WGS84'
+            },
+            'type': 'warning'
+        }]
 
-        response = self.api.get('/publish', query_string=query)
+        self.get(query_string=query)
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(expected, loads(response.get_data(as_text=True)))
-
-        self.check_if_the_database_is_empty()
+        self.check_if_the_items_table_is_empty()
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
 
     # LANDSAT5 TM
 
@@ -1307,10 +1179,7 @@ class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'landsat/test_publish__ok__landsat5_tm_l2_dn.csv'
@@ -1329,22 +1198,18 @@ class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        expected = [
-            {
-                'type': 'warning',
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {
-                    'folder': '/TIFF/LANDSAT5/1984_04/LANDSAT5_TM_19840406.124930/223_062_0/2_BC_UTM_WGS84'
-                }
-            }
-        ]
+        expected = [{
+            'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+            'metadata': {
+                'folder': '/TIFF/LANDSAT5/1984_04/LANDSAT5_TM_19840406.124930/223_062_0/2_BC_UTM_WGS84'
+            },
+            'type': 'warning'
+        }]
 
-        response = self.api.get('/publish', query_string=query)
+        self.get(query_string=query)
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(expected, loads(response.get_data(as_text=True)))
-
-        self.check_if_the_database_is_empty()
+        self.check_if_the_items_table_is_empty()
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
 
     # LANDSAT7 ETM
 
@@ -1361,10 +1226,7 @@ class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        response = self.api.get('/publish', query_string=query)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('/publish has been executed', response.get_data(as_text=True))
+        self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'landsat/test_publish__ok__landsat7_etm_l2_dn.csv'
@@ -1383,22 +1245,18 @@ class PublisherPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'DN'
         }
 
-        expected = [
-            {
-                'type': 'warning',
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {
-                    'folder': '/TIFF/LANDSAT7/1999_07/LANDSAT7_ETM_19990719.124008/217_064_0/2_BC_UTM_WGS84'
-                }
+        expected = [{
+            'type': 'warning',
+            'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+            'metadata': {
+                'folder': '/TIFF/LANDSAT7/1999_07/LANDSAT7_ETM_19990719.124008/217_064_0/2_BC_UTM_WGS84'
             }
-        ]
+        }]
 
-        response = self.api.get('/publish', query_string=query)
+        self.get(query_string=query)
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(expected, loads(response.get_data(as_text=True)))
-
-        self.check_if_the_database_is_empty()
+        self.check_if_the_items_table_is_empty()
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
 
 
 class PublisherPublishErrorTestCase(BaseTestCases.BaseTestCase):
@@ -1415,7 +1273,6 @@ class PublisherPublishErrorTestCase(BaseTestCases.BaseTestCase):
             'radio_processing': 'Dz'
         }
 
-        response = self.api.get('/publish', query_string=query)
         expected = {
             'code': 400,
             'name': 'Bad Request',
@@ -1436,10 +1293,12 @@ class PublisherPublishErrorTestCase(BaseTestCases.BaseTestCase):
             }
         }
 
+        response = self.api.get('/publish', query_string=query)
+
         self.assertEqual(400, response.status_code)
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        self.check_if_the_database_is_empty()
+        self.check_if_the_items_table_is_empty()
 
     def test_publish__error__unknown_fields(self):
         query = {
@@ -1451,7 +1310,6 @@ class PublisherPublishErrorTestCase(BaseTestCases.BaseTestCase):
             'processing': '4'
         }
 
-        response = self.api.get('/publish', query_string=query)
         expected = {
             'code': 400,
             'name': 'Bad Request',
@@ -1465,7 +1323,9 @@ class PublisherPublishErrorTestCase(BaseTestCases.BaseTestCase):
             }
         }
 
+        response = self.api.get('/publish', query_string=query)
+
         self.assertEqual(400, response.status_code)
         self.assertEqual(expected, loads(response.get_data(as_text=True)))
 
-        self.check_if_the_database_is_empty()
+        self.check_if_the_items_table_is_empty()

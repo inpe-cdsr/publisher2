@@ -14,10 +14,12 @@ logger = get_task_logger(__name__)
 # initialize Celery
 celery = Celery('publisher.workers.worker_a',  # celery name
                 broker=CELERY_BROKER_URL,
-                backend=CELERY_RESULT_BACKEND)
+                backend=CELERY_RESULT_BACKEND
+)
 
 # if True, run the tasks synchronously, else run them asynchronously
 celery.conf.task_always_eager = CELERY_ALWAYS_EAGER
+# celery.conf.task_ignore_result = True
 
 celery.conf.broker_transport_options = {
     'max_retries': 3,
@@ -66,5 +68,3 @@ def process_items(p_walk: list, df_collections: dict):
         # logger.info(f'concanate_errors: \n{concanate_errors}\n')
         logger.info('process_items - inserting task errors into database...')
         db.execute(concanate_errors, is_transaction=True)
-
-    return None

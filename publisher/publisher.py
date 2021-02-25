@@ -9,7 +9,7 @@ from publisher.common import print_line
 from publisher.environment import PR_FILES_PATH, PR_LOGGING_LEVEL, PR_TASK_CHUNKS
 from publisher.logger import create_logger
 from publisher.model import PostgreSQLPublisherConnection
-from publisher.util import create_item_and_get_insert_clauses, PublisherWalk
+from publisher.util import PublisherWalk
 from publisher.validator import validate, QUERY_SCHEMA
 from publisher.workers import CELERY_TASK_QUEUE, process_items
 
@@ -116,18 +116,9 @@ class Publisher:
             generate_chunk_params(p_walk, self.df_collections), PR_TASK_CHUNKS
         ).apply_async(queue=CELERY_TASK_QUEUE)
 
-        # get the results of all chunks
-        results = tasks.get()
-        logger.info(f'Tasks results have been joined...')
+        # wait all chunks execute
+        tasks.get()
+        logger.info('Tasks results have been ignored...')
 
+        p_walk.save_the_errors_in_the_database()
         print_line()
-
-        # if there are INSERT clauses, then insert them in the database
-        if p_walk.errors_insert:
-            # if there is INSERT clauses to insert in the database,
-            # then create a database instance and insert them there
-            db = PostgreSQLPublisherConnection()
-            concanate_errors = ' '.join(p_walk.errors_insert)
-            # logger.info(f'concanate_errors: \n{concanate_errors}\n')
-            logger.info('Inserting p_walk errors into database...')
-            db.execute(concanate_errors, is_transaction=True)

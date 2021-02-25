@@ -598,3 +598,14 @@ class PublisherWalk:
     def __next__(self):
         # this method makes the class to be a generator
         return next(self.__generator_iterator)
+
+    def save_the_errors_in_the_database(self):
+        # if there are INSERT clauses, then insert them in the database
+        if self.errors_insert:
+            # if there is INSERT clauses to insert in the database,
+            # then create a database instance and insert them there
+            db = PostgreSQLPublisherConnection()
+            concanate_errors = ' '.join(self.errors_insert)
+            # logger.info(f'concanate_errors: \n{concanate_errors}\n')
+            logger.info('Inserting PublisherWalk.errors into database...')
+            db.execute(concanate_errors, is_transaction=True)

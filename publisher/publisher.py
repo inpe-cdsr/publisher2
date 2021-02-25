@@ -11,7 +11,7 @@ from publisher.logger import create_logger
 from publisher.model import PostgreSQLPublisherConnection
 from publisher.util import create_item_and_get_insert_clauses, PublisherWalk
 from publisher.validator import validate, QUERY_SCHEMA
-from publisher.workers import process_items
+from publisher.workers import CELERY_TASK_QUEUE, process_items
 
 
 # create logger object
@@ -114,7 +114,7 @@ class Publisher:
         # run the tasks by chunks. PR_TASK_CHUNKS chunks are sent to one task
         tasks = process_items.chunks(
             generate_chunk_params(p_walk, self.df_collections), PR_TASK_CHUNKS
-        ).apply_async(queue='worker_a')
+        ).apply_async(queue=CELERY_TASK_QUEUE)
 
         # get the results of all chunks
         results = tasks.get()

@@ -3,8 +3,8 @@ from celery.utils.log import get_task_logger
 from pandas import DataFrame
 
 from publisher.model import DBFactory, PostgreSQLPublisherConnection
-from publisher.workers.environment import CELERY_BROKER_URL, CELERY_RESULT_BACKEND, \
-                                          CELERY_ALWAYS_EAGER
+from publisher.workers.environment import CELERY_ALWAYS_EAGER, CELERY_BROKER_URL, \
+                                          CELERY_RESULT_BACKEND, CELERY_TASK_QUEUE
 from publisher.util import create_item_and_get_insert_clauses
 
 
@@ -27,7 +27,7 @@ celery.conf.broker_transport_options = {
 }
 
 
-@celery.task(queue='worker_a', name='publisher.workers.worker_a.process_items')
+@celery.task(queue=CELERY_TASK_QUEUE, name='publisher.workers.worker_a.process_items')
 def process_items(p_walk: list, df_collections: dict):
     # convert from dict to dataframe again
     df_collections = DataFrame.from_dict(df_collections)

@@ -19,7 +19,7 @@ db_publisher.init_db()
 
 
 def read_item_from_csv(file_name):
-    expected = read_csv(f'tests/publisher/{file_name}')
+    expected = read_csv(f'tests/api/{file_name}')
 
     expected['start_date'] = to_datetime(expected['start_date'])
     expected['end_date'] = to_datetime(expected['end_date'])
@@ -210,7 +210,7 @@ class ApiPublishOkTestCase(BaseTestCases.BaseTestCase):
         self.get()
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'test_publish__ok__empty_query.csv'
+            'test__api_publish__ok__empty_query.csv'
         )
         self.check_if_the_errors_have_been_added_in_the_database(expected)
 
@@ -228,7 +228,7 @@ class ApiPublishOkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'test_publish__ok__l4_dn__missing_satellite_and_sensor.csv'
+            'test__api_publish__ok__l4_dn__missing_satellite_and_sensor.csv'
         )
 
 
@@ -252,7 +252,7 @@ class ApiPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers2b/test_publish__ok__cbers2b_ccd_l2_dn.csv'
+            'cbers2b/test__api_publish__ok__cbers2b_ccd_l2_dn.csv'
         )
 
     def test__api_publish__ok__cbers2b_ccd_l2_dn__quicklook_does_not_exist(self):
@@ -299,7 +299,7 @@ class ApiPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers2b/test_publish__ok__cbers2b_hrc_l2_dn__path_151_row_141.csv'
+            'cbers2b/test__api_publish__ok__cbers2b_hrc_l2_dn__path_151_row_141.csv'
         )
 
     def test__api_publish__ok__cbers2b_hrc_l2_dn__path_151_row_142(self):
@@ -318,7 +318,7 @@ class ApiPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers2b/test_publish__ok__cbers2b_hrc_l2_dn__path_151_row_142.csv'
+            'cbers2b/test__api_publish__ok__cbers2b_hrc_l2_dn__path_151_row_142.csv'
         )
 
     def test__api_publish__ok__cbers2b_hrc_l2_dn__quicklook_does_not_exist(self):
@@ -365,7 +365,7 @@ class ApiPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers2b/test_publish__ok__cbers2b_wfi_l2_dn.csv'
+            'cbers2b/test__api_publish__ok__cbers2b_wfi_l2_dn.csv'
         )
 
     def test__api_publish__ok__cbers2b_wfi_l2_dn__quicklook_does_not_exist(self):
@@ -471,7 +471,7 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4/test_publish__ok__cbers4_awfi_l4_sr.csv'
+            'cbers4/test__api_publish__ok__cbers4_awfi_l4_sr.csv'
         )
 
     def test__api_publish__ok__cbers4_awfi_l4_dn_and_sr__dn_tiff_file_does_not_exist(self):
@@ -499,7 +499,7 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4/test_publish__ok__cbers4_awfi_l4_dn_and_sr__dn_tiff_file_does_not_exist.csv'
+            'cbers4/test__api_publish__ok__cbers4_awfi_l4_dn_and_sr__dn_tiff_file_does_not_exist.csv'
         )
         self.check_if_the_errors_have_been_added_in_the_database(expected)
 
@@ -535,7 +535,7 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4/test_publish__ok__cbers4_awfi_l4_dn_and_sr__evi_tiff_file_does_not_exist.csv'
+            'cbers4/test__api_publish__ok__cbers4_awfi_l4_dn_and_sr__evi_tiff_file_does_not_exist.csv'
         )
 
     def test__api_publish__ok__cbers4_awfi_l4_sr__ndvi_tiff_file_does_not_exist(self):
@@ -555,7 +555,7 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4/test_publish__ok__cbers4_awfi_l4_sr__ndvi_tiff_file_does_not_exist.csv'
+            'cbers4/test__api_publish__ok__cbers4_awfi_l4_sr__ndvi_tiff_file_does_not_exist.csv'
         )
 
     def test__api_publish__ok__cbers4_awfi_l4_sr__quality_tiff_file_does_not_exist(self):
@@ -655,7 +655,7 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4/test_publish__ok__cbers4_mux_l4_dn.csv'
+            'cbers4/test__api_publish__ok__cbers4_mux_l4_dn.csv'
         )
 
     def test__api_publish__ok__cbers4_mux_l4_sr__evi_tiff_file_does_not_exist(self):
@@ -674,7 +674,7 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4/test_publish__ok__cbers4_mux_l4_sr__evi_tiff_file_does_not_exist.csv'
+            'cbers4/test__api_publish__ok__cbers4_mux_l4_sr__evi_tiff_file_does_not_exist.csv'
         )
 
     def test__api_publish__ok__cbers4_mux_l4_dn_and_sr__evi_tiff_file_does_not_exist(self):
@@ -693,7 +693,7 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4/test_publish__ok__cbers4_mux_l4_dn_and_sr__evi_tiff_file_does_not_exist.csv'
+            'cbers4/test__api_publish__ok__cbers4_mux_l4_dn_and_sr__evi_tiff_file_does_not_exist.csv'
         )
 
     # CBERS4 PAN5M (DN)
@@ -716,7 +716,7 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4/test_publish__ok__cbers4_pan10m_l2_sr__next_to_0h.csv'
+            'cbers4/test__api_publish__ok__cbers4_pan10m_l2_sr__next_to_0h.csv'
         )
 
 
@@ -739,7 +739,7 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4a/test_publish__ok__cbers4a_mux_l2_dn.csv'
+            'cbers4a/test__api_publish__ok__cbers4a_mux_l2_dn.csv'
         )
 
     def test__api_publish__ok__cbers4a_mux_l2_dn__next_to_0h(self):
@@ -759,7 +759,7 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4a/test_publish__ok__cbers4a_mux_l2_dn__next_to_0h.csv'
+            'cbers4a/test__api_publish__ok__cbers4a_mux_l2_dn__next_to_0h.csv'
         )
 
     def test__api_publish__ok__cbers4a_mux_l4_dn(self):
@@ -778,7 +778,7 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4a/test_publish__ok__cbers4a_mux_l4_dn.csv'
+            'cbers4a/test__api_publish__ok__cbers4a_mux_l4_dn.csv'
         )
 
     def test__api_publish__ok__cbers4a_mux_l4_dn__empty_folder(self):
@@ -849,7 +849,7 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4a/test_publish__ok__cbers4a_wfi_l2_and_l4_sr.csv'
+            'cbers4a/test__api_publish__ok__cbers4a_wfi_l2_and_l4_sr.csv'
         )
 
     def test__api_publish__ok__cbers4a_wfi_l4_dn(self):
@@ -868,7 +868,7 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4a/test_publish__ok__cbers4a_wfi_l4_dn.csv'
+            'cbers4a/test__api_publish__ok__cbers4a_wfi_l4_dn.csv'
         )
 
     def test__api_publish__ok__cbers4a_wfi_l4_sr(self):
@@ -887,7 +887,7 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4a/test_publish__ok__cbers4a_wfi_l4_sr.csv'
+            'cbers4a/test__api_publish__ok__cbers4a_wfi_l4_sr.csv'
         )
 
     def test__api_publish__ok__cbers4a_wfi_l4_dn_and_sr(self):
@@ -906,7 +906,7 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4a/test_publish__ok__cbers4a_wfi_l4_dn_and_sr.csv'
+            'cbers4a/test__api_publish__ok__cbers4a_wfi_l4_dn_and_sr.csv'
         )
 
     def test__api_publish__ok__cbers4a_wfi__empty_result(self):
@@ -941,7 +941,7 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4a/test_publish__ok__cbers4a_wfi__missing_geo_and_radio_processings.csv'
+            'cbers4a/test__api_publish__ok__cbers4a_wfi__missing_geo_and_radio_processings.csv'
         )
 
     def test__api_publish__ok__cbers4a_wfi__missing_path_and_row(self):
@@ -958,7 +958,7 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4a/test_publish__ok__cbers4a_wfi__missing_path_and_row.csv'
+            'cbers4a/test__api_publish__ok__cbers4a_wfi__missing_path_and_row.csv'
         )
 
     # CBERS4A WPM
@@ -978,7 +978,7 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4a/test_publish__ok__cbers4a_wpm_l2_dn.csv'
+            'cbers4a/test__api_publish__ok__cbers4a_wpm_l2_dn.csv'
         )
 
     def test__api_publish__ok__cbers4a_wpm_l2_dn__next_to_5h(self):
@@ -998,7 +998,7 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4a/test_publish__ok__cbers4a_wpm_l2_dn__next_to_5h.csv'
+            'cbers4a/test__api_publish__ok__cbers4a_wpm_l2_dn__next_to_5h.csv'
         )
 
     def test__api_publish__ok__cbers4a_wpm__empty_result(self):
@@ -1038,7 +1038,7 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'landsat/test_publish__ok__landsat1_mss_l2_dn.csv'
+            'landsat/test__api_publish__ok__landsat1_mss_l2_dn.csv'
         )
 
     def test__api_publish__ok__landsat1_mss_l2_dn__quicklook_does_not_exist(self):
@@ -1085,7 +1085,7 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'landsat/test_publish__ok__landsat2_mss_l2_dn.csv'
+            'landsat/test__api_publish__ok__landsat2_mss_l2_dn.csv'
         )
 
     def test__api_publish__ok__landsat2_mss_l2_dn__quicklook_does_not_exist(self):
@@ -1132,7 +1132,7 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'landsat/test_publish__ok__landsat3_mss_l2_dn.csv'
+            'landsat/test__api_publish__ok__landsat3_mss_l2_dn.csv'
         )
 
     def test__api_publish__ok__landsat3_mss_l2_dn__quicklook_does_not_exist(self):
@@ -1179,7 +1179,7 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'landsat/test_publish__ok__landsat5_tm_l2_dn.csv'
+            'landsat/test__api_publish__ok__landsat5_tm_l2_dn.csv'
         )
 
     def test__api_publish__ok__landsat5_tm_l2_dn__quicklook_does_not_exist(self):
@@ -1226,7 +1226,7 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
-            'landsat/test_publish__ok__landsat7_etm_l2_dn.csv'
+            'landsat/test__api_publish__ok__landsat7_etm_l2_dn.csv'
         )
 
     def test__api_publish__ok__landsat7_etm_l2_dn__quicklook_does_not_exist(self):

@@ -3,7 +3,8 @@ from celery.utils.log import get_task_logger
 from pandas import DataFrame
 
 from publisher.model import DBFactory, PostgreSQLPublisherConnection
-from publisher.workers.environment import CY_BROKER_URL, CY_RESULT_BACKEND
+from publisher.workers.environment import CELERY_BROKER_URL, CELERY_RESULT_BACKEND, \
+                                          CELERY_ALWAYS_EAGER
 from publisher.util import create_item_and_get_insert_clauses
 
 
@@ -12,8 +13,11 @@ logger = get_task_logger(__name__)
 
 # initialize Celery
 celery = Celery('publisher.workers.worker_a',  # celery name
-                broker=CY_BROKER_URL,
-                backend=CY_RESULT_BACKEND)
+                broker=CELERY_BROKER_URL,
+                backend=CELERY_RESULT_BACKEND)
+
+# if True, run the tasks synchronously, else run them asynchronously
+celery.conf.task_always_eager = CELERY_ALWAYS_EAGER
 
 celery.conf.broker_transport_options = {
     'max_retries': 3,

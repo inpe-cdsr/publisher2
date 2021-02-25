@@ -37,14 +37,14 @@ $ flask run
 Run the test cases with `WARNING` logging level to suppress unnecessary logging messages:
 
 ```
-$ export PR_LOGGING_LEVEL=ERROR &&
+$ export PR_LOGGING_LEVEL=ERROR CELERY_ALWAYS_EAGER=True &&
     python -m unittest discover tests "test_*.py" -v
 ```
 
 Or, run the test cases and get coverage report:
 
 ```
-$ export PR_LOGGING_LEVEL=ERROR &&
+$ export PR_LOGGING_LEVEL=ERROR CELERY_ALWAYS_EAGER=True &&
     coverage run -m unittest discover tests "test_*.py" -v &&
     coverage report -m &&
     coverage html

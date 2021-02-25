@@ -1,3 +1,7 @@
+from os import environ
+# set the environment variable before importing the app in order to set it correctly
+environ['CELERY_ALWAYS_EAGER'] = 'True'
+
 from json import loads
 from unittest import TestCase
 

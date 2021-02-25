@@ -44,6 +44,8 @@ $ export PR_LOGGING_LEVEL=ERROR &&
 Or, run the test cases and get coverage report:
 
 ```
+$ export PR_LOGGING_LEVEL=ERROR && python tests/run_tests.py
+
 $ export PR_LOGGING_LEVEL=ERROR &&
     coverage run -m unittest discover tests "test_*.py" -v &&
     coverage report -m &&

@@ -17,9 +17,7 @@ app = create_app({'TESTING': FLASK_TESTING})
 
 # initialize the databases just one time
 db = PostgreSQLCatalogTestConnection()
-# db.init_db()
 db_publisher = PostgreSQLPublisherConnection()
-# db_publisher.init_db()
 
 
 class BaseTestCases:

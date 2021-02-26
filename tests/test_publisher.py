@@ -17,9 +17,7 @@ from publisher.workers import CELERY_TASK_QUEUE, process_items
 
 # initialize the databases just one time
 db = PostgreSQLCatalogTestConnection()
-# db.init_db()
 db_publisher = PostgreSQLPublisherConnection()
-# db_publisher.init_db()
 
 
 class BaseTestCases:

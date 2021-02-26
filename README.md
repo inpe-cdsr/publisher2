@@ -34,7 +34,15 @@ Run the script:
 $ flask run
 ```
 
-Run the test cases with `WARNING` logging level to suppress unnecessary logging messages:
+## Testing
+
+Before running the test cases for the first time, you need to initialize the databases:
+
+```
+$ flask init-db
+```
+
+Run the test cases with `ERROR` logging level to suppress unnecessary logging messages:
 
 ```
 $ export PR_LOGGING_LEVEL=ERROR &&
@@ -44,8 +52,6 @@ $ export PR_LOGGING_LEVEL=ERROR &&
 Or, run the test cases and get coverage report:
 
 ```
-$ export PR_LOGGING_LEVEL=ERROR && python tests/run_tests.py
-
 $ export PR_LOGGING_LEVEL=ERROR &&
     coverage run -m unittest discover tests "test_*.py" -v &&
     coverage report -m &&

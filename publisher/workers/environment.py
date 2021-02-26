@@ -10,7 +10,6 @@ RT_HOST = getenv('RT_HOST', 'inpe_cdsr_rabbitmq')
 RT_PORT = getenv('RT_PORT', '5672')
 
 # Celery environment variables and configuration
-CELERY_ALWAYS_EAGER = str2bool(getenv('CELERY_ALWAYS_EAGER', 'False'))
 CELERY_BROKER_URL = f'amqp://{RT_USER}:{RT_PASSWORD}@{RT_HOST}:{RT_PORT}//'
 CELERY_RESULT_BACKEND = getenv('CELERY_RESULT_BACKEND', 'rpc://')
 CELERY_TASK_QUEUE = getenv('CELERY_TASK_QUEUE', 'worker_a')

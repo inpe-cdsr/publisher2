@@ -3,8 +3,8 @@ from celery.utils.log import get_task_logger
 from pandas import DataFrame
 
 from publisher.model import DBFactory, PostgreSQLPublisherConnection
-from publisher.workers.environment import CELERY_ALWAYS_EAGER, CELERY_BROKER_URL, \
-                                          CELERY_RESULT_BACKEND, CELERY_TASK_QUEUE
+from publisher.workers.environment import CELERY_BROKER_URL, CELERY_RESULT_BACKEND, \
+                                          CELERY_TASK_QUEUE
 from publisher.util import create_item_and_get_insert_clauses
 
 

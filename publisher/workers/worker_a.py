@@ -12,21 +12,14 @@ logger = get_task_logger(__name__)
 
 
 # initialize Celery
-celery = Celery('publisher.workers.worker_a',  # celery name
-                broker=CELERY_BROKER_URL,
-                backend=CELERY_RESULT_BACKEND
+celery = Celery(
+    'publisher.workers.worker_a',  # celery name
+    broker=CELERY_BROKER_URL,
+    backend=CELERY_RESULT_BACKEND
 )
 
-# if True, run the tasks synchronously, else run them asynchronously
-celery.conf.task_always_eager = CELERY_ALWAYS_EAGER
-# celery.conf.task_ignore_result = True
-
-celery.conf.broker_transport_options = {
-    'max_retries': 3,
-    'interval_start': 0,
-    'interval_step': 0.2,
-    'interval_max': 0.5
-}
+# get configuration from file
+celery.config_from_object('publisher.workers.celery_config')
 
 
 @celery.task(queue=CELERY_TASK_QUEUE, name='publisher.workers.worker_a.process_items')

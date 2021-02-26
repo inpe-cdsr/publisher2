@@ -12,7 +12,7 @@ to_upper_case = lambda s: s.upper()
 QUERY_SCHEMA = {
     'satellite': {
         'type': 'string', 'coerce': to_upper_case, 'regex': '^CBERS[1-4][A-B]*|^LANDSAT\d',
-        'default': None, 'nullable': True
+        'required': True
     },
     'sensor': {
         'type': 'string', 'coerce': to_upper_case,

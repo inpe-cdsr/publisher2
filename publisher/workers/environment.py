@@ -12,4 +12,4 @@ RT_PORT = getenv('RT_PORT', '5672')
 # Celery environment variables and configuration
 CELERY_BROKER_URL = f'amqp://{RT_USER}:{RT_PASSWORD}@{RT_HOST}:{RT_PORT}//'
 # CELERY_RESULT_BACKEND = getenv('CELERY_RESULT_BACKEND', 'rpc://')
-CELERY_TASK_QUEUE = getenv('CELERY_TASK_QUEUE', 'worker_a')
+CELERY_TASK_QUEUE = getenv('CELERY_TASK_QUEUE', 'processing')

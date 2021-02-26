@@ -12,7 +12,7 @@ logger = get_task_logger(__name__)
 
 # initialize Celery
 celery = Celery(
-    'publisher.workers.worker_a',  # celery name
+    'publisher.workers.processing',  # celery name
     broker=CELERY_BROKER_URL,
     # backend=CELERY_RESULT_BACKEND
 )
@@ -21,7 +21,7 @@ celery = Celery(
 celery.config_from_object('publisher.workers.celery_config')
 
 
-@celery.task(queue=CELERY_TASK_QUEUE, name='publisher.workers.worker_a.process_items')
+@celery.task(queue=CELERY_TASK_QUEUE, name='publisher.workers.processing.process_items')
 def process_items(p_walk: list, df_collections: dict):
     # convert from dict to dataframe again
     df_collections = DataFrame.from_dict(df_collections)

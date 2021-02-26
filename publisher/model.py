@@ -234,3 +234,15 @@ class DBFactory:
         # else, return the normal database
         # production or development
         return PostgreSQLConnection()
+
+
+def init_dbs():
+    '''Initialize the databases.'''
+
+    # initialize the databases just one time
+    db = PostgreSQLCatalogTestConnection()
+    db.init_db()
+    db_publisher = PostgreSQLPublisherConnection()
+    db_publisher.init_db()
+
+    print('Databases have been initialized.\n')

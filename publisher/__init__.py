@@ -11,7 +11,7 @@ from werkzeug.exceptions import HTTPException
 from publisher.environment import FLASK_SECRET_KEY, PR_BASE_DIR, PR_IS_TO_GET_DATA_FROM_DB, \
                                   PR_LOGGING_LEVEL
 from publisher.logger import create_logger
-from publisher.model import DBFactory
+from publisher.model import DBFactory, init_dbs
 from publisher.publisher import Publisher
 
 
@@ -47,6 +47,14 @@ def create_app(test_config=None):
         makedirs(app.instance_path)
     except OSError:
         pass
+
+    ##################################################
+    #                      CLI                       #
+    ##################################################
+
+    @app.cli.command('init-db')
+    def init_db():
+        init_dbs()
 
     ##################################################
     #                     ROUTES                     #

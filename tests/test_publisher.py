@@ -1,8 +1,4 @@
-from os import environ
-# set the environment variable before importing the app in order to set it correctly
-environ['CELERY_ALWAYS_EAGER'] = 'False'
-
-from unittest import TestCase
+from unittest import mock, TestCase
 
 from pandas import read_csv, to_datetime
 from pandas.testing import assert_frame_equal
@@ -58,6 +54,7 @@ class BaseTestCases:
 
 class PublisherOkTestCase(BaseTestCases.BaseTestCase):
 
+    @mock.patch('publisher.workers.celery_config.task_always_eager', False)
     def test__publisher__ok__empty_query(self):
         self.maxDiff=None
 
@@ -217,6 +214,9 @@ class PublisherOkTestCase(BaseTestCases.BaseTestCase):
 
         # save the errors in the database
         p_walk.save_the_errors_in_the_database()
+
+        self.assertEqual(tasks.ready(), True)
+        self.assertEqual(tasks.successful(), True)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'test__api_publish__ok__empty_query.csv'

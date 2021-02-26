@@ -1,9 +1,5 @@
-from os import environ
-# set the environment variable before importing the app in order to set it correctly
-environ['CELERY_ALWAYS_EAGER'] = 'True'
-
 from json import loads
-from unittest import TestCase
+from unittest import mock, TestCase
 
 from pandas import read_csv, to_datetime
 from pandas.testing import assert_frame_equal
@@ -67,6 +63,7 @@ class BaseTestCases:
             self.assertEqual(expected, result)
 
 
+@mock.patch('publisher.workers.celery_config.task_always_eager', True)
 class ApiPublishOkTestCase(BaseTestCases.BaseTestCase):
 
     def test__api_publish__ok__empty_query(self):
@@ -234,6 +231,7 @@ class ApiPublishOkTestCase(BaseTestCases.BaseTestCase):
         )
 
 
+@mock.patch('publisher.workers.celery_config.task_always_eager', True)
 class ApiPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
 
     # CBERS2B CCD
@@ -426,6 +424,7 @@ class ApiPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
         self.check_if_the_errors_have_been_added_in_the_database(expected)
 
 
+@mock.patch('publisher.workers.celery_config.task_always_eager', True)
 class ApiPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
 
     # CBERS4 AWFI (DN and SR)
@@ -722,6 +721,7 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
         )
 
 
+@mock.patch('publisher.workers.celery_config.task_always_eager', True)
 class ApiPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
 
     # CBERS4A MUX
@@ -1020,6 +1020,7 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
         self.check_if_the_items_table_is_empty()
 
 
+@mock.patch('publisher.workers.celery_config.task_always_eager', True)
 class ApiPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
 
     # LANDSAT1 MSS
@@ -1258,6 +1259,7 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
         self.check_if_the_errors_have_been_added_in_the_database(expected)
 
 
+@mock.patch('publisher.workers.celery_config.task_always_eager', True)
 class ApiPublishErrorTestCase(BaseTestCases.BaseTestCase):
 
     def test__api_publish__error__invalid_values(self):

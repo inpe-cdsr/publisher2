@@ -1,3 +1,4 @@
+from time import sleep
 from unittest import mock, TestCase
 
 from pandas import read_csv, to_datetime
@@ -13,6 +14,10 @@ from publisher.workers import CELERY_TASK_QUEUE, process_items
 
 db = PostgreSQLCatalogTestConnection()
 db_publisher = PostgreSQLPublisherConnection()
+
+celery_async = ('publisher.workers.celery_config.task_always_eager', False)
+
+test_delay_secs = 3
 
 
 class BaseTestCases:
@@ -51,10 +56,10 @@ class BaseTestCases:
             self.assertEqual(expected, result)
 
 
-class PublisherOkTestCase(BaseTestCases.BaseTestCase):
+@mock.patch(*celery_async)
+class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
 
-    @mock.patch('publisher.workers.celery_config.task_always_eager', False)
-    def test__publisher__ok__empty_query(self):
+    def test__async__publisher__ok__empty_query(self):
         self.maxDiff=None
 
         expected = [
@@ -208,14 +213,12 @@ class PublisherOkTestCase(BaseTestCases.BaseTestCase):
             generate_chunk_params(p_walk, df_collections), PR_TASK_CHUNKS
         ).apply_async(queue=CELERY_TASK_QUEUE)
 
-        # wait all chunks execute
-        tasks.get()
+        # wait N seconds to the task save the data in the database
+        # before check if the data has been inserted correctly
+        sleep(test_delay_secs)
 
         # save the errors in the database
         p_walk.save_the_errors_in_the_database()
-
-        self.assertEqual(tasks.ready(), True)
-        self.assertEqual(tasks.successful(), True)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'test__api_publish__ok__empty_query.csv'

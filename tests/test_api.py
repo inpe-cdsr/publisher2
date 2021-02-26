@@ -1,4 +1,5 @@
 from json import loads
+from time import sleep
 from unittest import mock, TestCase
 
 from pandas import read_csv, to_datetime
@@ -16,6 +17,8 @@ db_publisher = PostgreSQLPublisherConnection()
 
 celery_async = ('publisher.workers.celery_config.task_always_eager', False)
 celery_sync = ('publisher.workers.celery_config.task_always_eager', True)
+
+test_delay_secs = 3
 
 
 class BaseTestCases:
@@ -209,6 +212,10 @@ class AsyncApiPublishOkTestCase(BaseTestCases.BaseTestCase):
         ]
 
         self.get()
+
+        # wait N seconds to the task save the data in the database
+        # before check if the data has been inserted correctly
+        sleep(test_delay_secs)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'test__api_publish__ok__empty_query.csv'

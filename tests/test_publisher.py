@@ -55,7 +55,7 @@ class BaseTestCases:
             result = db_publisher.select_from_task_error()
             self.assertEqual(expected, result)
 
-
+'''
 @mock.patch(*celery_async)
 class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
 
@@ -224,3 +224,4 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
             'test__api_publish__ok__empty_query.csv'
         )
         self.check_if_the_errors_have_been_added_in_the_database(expected)
+'''

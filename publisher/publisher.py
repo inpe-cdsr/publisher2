@@ -116,9 +116,8 @@ class Publisher:
             generate_chunk_params(p_walk, self.df_collections), PR_TASK_CHUNKS
         ).apply_async(queue=CELERY_TASK_QUEUE)
 
-        # wait all chunks execute
-        tasks.get()
-        logger.info('Tasks results have been ignored...')
+        # do not wait all chunks execute, because it will block the request
+        logger.info('Tasks have been executed...')
 
         p_walk.save_the_errors_in_the_database()
         print_line()

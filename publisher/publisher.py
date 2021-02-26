@@ -98,7 +98,9 @@ class Publisher:
         print_line()
         logger.info(f'BASE_DIR: {self.BASE_DIR}')
         logger.info(f'IS_TO_GET_DATA_FROM_DB: {self.IS_TO_GET_DATA_FROM_DB}')
-        logger.debug(f'df_collections:\n{self.df_collections}')
+        logger.info(f'PR_TASK_CHUNKS: {PR_TASK_CHUNKS}')
+        logger.info(f'CELERY_TASK_QUEUE: {CELERY_TASK_QUEUE}')
+        logger.info(f'df_collections:\n{self.df_collections}')
 
         # validate self.query
         is_valid, self.query, errors = validate(self.query, QUERY_SCHEMA)

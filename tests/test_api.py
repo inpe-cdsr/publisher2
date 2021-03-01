@@ -7,7 +7,7 @@ from tests.base import BaseTestCases, celery_async, celery_sync, test_delay_secs
 
 
 @mock.patch(*celery_async)
-class AsyncApiPublishOkTestCase(BaseTestCases.BaseTestCase):
+class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
 
     def __execute_publisher(self, query):
         self.get(query_string=query)
@@ -222,7 +222,7 @@ class AsyncApiPublishOkTestCase(BaseTestCases.BaseTestCase):
 
 
 @mock.patch(*celery_sync)
-class ApiPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
+class ApiPublishCbers2BOkTestCase(BaseTestCases.ApiBaseTestCase):
 
     # CBERS2B
 
@@ -454,7 +454,7 @@ class ApiPublishCbers2BOkTestCase(BaseTestCases.BaseTestCase):
 
 
 @mock.patch(*celery_sync)
-class ApiPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
+class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
 
     def test__api_publish__ok__cbers4(self):
         self.maxDiff=None
@@ -803,7 +803,7 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.BaseTestCase):
 
 
 @mock.patch(*celery_sync)
-class ApiPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
+class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
 
     # CBERS4A
 
@@ -1171,7 +1171,7 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.BaseTestCase):
 
 
 @mock.patch(*celery_sync)
-class ApiPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
+class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
 
     # LANDSAT1
 
@@ -1535,7 +1535,7 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.BaseTestCase):
 
 
 @mock.patch(*celery_sync)
-class ApiPublishErrorTestCase(BaseTestCases.BaseTestCase):
+class ApiPublishErrorTestCase(BaseTestCases.ApiBaseTestCase):
 
     def test__api_publish__error__invalid_values(self):
         query = {

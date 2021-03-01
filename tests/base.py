@@ -22,14 +22,43 @@ test_delay_secs = 0.6
 class BaseTestCases:
     class BaseTestCase(TestCase):
 
-        @classmethod
-        def setUpClass(cls):
-            cls.api = app.test_client()
-
         def setUp(self):
             # clean tables before each test case
             db.delete_from_items()
             db_publisher.delete_from_task_error()
+
+        @staticmethod
+        def read_item_from_csv(file_name):
+            expected = read_csv(f'tests/api/{file_name}')
+
+            expected['start_date'] = to_datetime(expected['start_date'])
+            expected['end_date'] = to_datetime(expected['end_date'])
+            expected['assets'] = expected['assets'].astype('str')
+            expected['metadata'] = expected['metadata'].astype('str')
+
+            return expected
+
+        def check_if_the_items_have_been_added_in_the_database(self, expected_file_path):
+            # get the result from database
+            result = db.select_from_items()
+            # get the expected result
+            expected = BaseTestCases.BaseTestCase.read_item_from_csv(expected_file_path)
+            assert_frame_equal(expected, result)
+
+        def check_if_the_items_table_is_empty(self):
+            # check if the result size is equals to 0
+            self.assertEqual(0, len(db.select_from_items().index))
+
+        def check_if_the_errors_have_been_added_in_the_database(self, expected):
+            # get the result from database
+            result = db_publisher.select_from_task_error()
+            self.assertEqual(expected, result)
+
+    class ApiBaseTestCase(BaseTestCase):
+
+        @classmethod
+        def setUpClass(cls):
+            cls.api = app.test_client()
 
         def get(self, url='/publish', query_string=None, expected='/publish has been executed',
                 expected_status_code=200):
@@ -37,64 +66,3 @@ class BaseTestCases:
 
             self.assertEqual(expected_status_code, response.status_code)
             self.assertEqual(expected, response.get_data(as_text=True))
-
-        @staticmethod
-        def read_item_from_csv(file_name):
-            expected = read_csv(f'tests/api/{file_name}')
-
-            expected['start_date'] = to_datetime(expected['start_date'])
-            expected['end_date'] = to_datetime(expected['end_date'])
-            expected['assets'] = expected['assets'].astype('str')
-            expected['metadata'] = expected['metadata'].astype('str')
-
-            return expected
-
-        def check_if_the_items_have_been_added_in_the_database(self, expected_file_path):
-            # get the result from database
-            result = db.select_from_items()
-            # get the expected result
-            expected = BaseTestCases.BaseTestCase.read_item_from_csv(expected_file_path)
-            assert_frame_equal(expected, result)
-
-        def check_if_the_items_table_is_empty(self):
-            # check if the result size is equals to 0
-            self.assertEqual(0, len(db.select_from_items().index))
-
-        def check_if_the_errors_have_been_added_in_the_database(self, expected):
-            # get the result from database
-            result = db_publisher.select_from_task_error()
-            self.assertEqual(expected, result)
-
-    class BaseTestCase2(TestCase):
-
-        def setUp(self):
-            # clean tables before each test case
-            db.delete_from_items()
-            db_publisher.delete_from_task_error()
-
-        @staticmethod
-        def read_item_from_csv(file_name):
-            expected = read_csv(f'tests/api/{file_name}')
-
-            expected['start_date'] = to_datetime(expected['start_date'])
-            expected['end_date'] = to_datetime(expected['end_date'])
-            expected['assets'] = expected['assets'].astype('str')
-            expected['metadata'] = expected['metadata'].astype('str')
-
-            return expected
-
-        def check_if_the_items_have_been_added_in_the_database(self, expected_file_path):
-            # get the result from database
-            result = db.select_from_items()
-            # get the expected result
-            expected = BaseTestCases.BaseTestCase.read_item_from_csv(expected_file_path)
-            assert_frame_equal(expected, result)
-
-        def check_if_the_items_table_is_empty(self):
-            # check if the result size is equals to 0
-            self.assertEqual(0, len(db.select_from_items().index))
-
-        def check_if_the_errors_have_been_added_in_the_database(self, expected):
-            # get the result from database
-            result = db_publisher.select_from_task_error()
-            self.assertEqual(expected, result)

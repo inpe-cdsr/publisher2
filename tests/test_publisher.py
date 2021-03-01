@@ -8,7 +8,7 @@ from tests.base import BaseTestCases, celery_async, test_delay_secs
 
 
 @mock.patch(*celery_async)
-class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase2):
+class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
 
     @staticmethod
     def __create_and_execute_publisher(query):

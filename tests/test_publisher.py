@@ -1,60 +1,14 @@
 from time import sleep
-from unittest import mock, TestCase
-
-from pandas import read_csv, to_datetime
-from pandas.testing import assert_frame_equal
+from unittest import mock
 
 from publisher import Publisher
 from publisher.environment import PR_BASE_DIR
-from publisher.model import PostgreSQLCatalogTestConnection, PostgreSQLPublisherConnection
 
-
-db = PostgreSQLCatalogTestConnection()
-db_publisher = PostgreSQLPublisherConnection()
-
-celery_async = ('publisher.workers.celery_config.task_always_eager', False)
-
-test_delay_secs = 0.6
-
-
-class BaseTestCases:
-    class BaseTestCase(TestCase):
-
-        def setUp(self):
-            # clean tables before each test case
-            db.delete_from_items()
-            db_publisher.delete_from_task_error()
-
-        @staticmethod
-        def read_item_from_csv(file_name):
-            expected = read_csv(f'tests/api/{file_name}')
-
-            expected['start_date'] = to_datetime(expected['start_date'])
-            expected['end_date'] = to_datetime(expected['end_date'])
-            expected['assets'] = expected['assets'].astype('str')
-            expected['metadata'] = expected['metadata'].astype('str')
-
-            return expected
-
-        def check_if_the_items_have_been_added_in_the_database(self, expected_file_path):
-            # get the result from database
-            result = db.select_from_items()
-            # get the expected result
-            expected = BaseTestCases.BaseTestCase.read_item_from_csv(expected_file_path)
-            assert_frame_equal(expected, result)
-
-        def check_if_the_items_table_is_empty(self):
-            # check if the result size is equals to 0
-            self.assertEqual(0, len(db.select_from_items().index))
-
-        def check_if_the_errors_have_been_added_in_the_database(self, expected):
-            # get the result from database
-            result = db_publisher.select_from_task_error()
-            self.assertEqual(expected, result)
+from tests.base import BaseTestCases, celery_async, test_delay_secs
 
 
 @mock.patch(*celery_async)
-class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
+class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase2):
 
     @staticmethod
     def __create_and_execute_publisher(query):

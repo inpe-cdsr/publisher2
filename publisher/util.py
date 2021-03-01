@@ -204,7 +204,7 @@ def create_item_and_get_insert_clauses(dir_path, dn_xml_file_path, assets, df_co
     errors_insert = []
 
     logger.info(f'dn_xml_file_path: {dn_xml_file_path}')
-    logger.info(f'assets: {assets}')
+    # logger.info(f'assets: {assets}')
 
     # convert DN XML file in a dictionary
     xml_as_dict = convert_xml_to_dict(dn_xml_file_path)
@@ -218,18 +218,18 @@ def create_item_and_get_insert_clauses(dir_path, dn_xml_file_path, assets, df_co
 
     # list of items (e.g. [dn_item, sr_item])
     items = create_items_from_xml_as_dict(xml_as_dict, assets)
-    logger.info(f'items size: {len(items)}\n')
+    # logger.info(f'items size: {len(items)}\n')
 
     for item in items:
         print_line()
         logger.info(f'item: {item}\n')
-        logger.info(f"item[collection][name]: {item['collection']['name']}")
+        # logger.info(f"item[collection][name]: {item['collection']['name']}")
 
         # get collection id from dataframe
         collection = df_collections.loc[
             df_collections['name'] == item['collection']['name']
         ].reset_index(drop=True)
-        logger.info(f'collection:\n{collection}')
+        # logger.info(f'collection:\n{collection}')
 
         # if `collection` is an empty dataframe, a collection was not found by its name,
         # then save the warning and ignore it
@@ -250,7 +250,7 @@ def create_item_and_get_insert_clauses(dir_path, dn_xml_file_path, assets, df_co
             continue
 
         collection_id = collection.at[0, 'id']
-        logger.info(f'collection_id: {collection_id}')
+        # logger.info(f'collection_id: {collection_id}')
 
         # create INSERT clause based on item metadata
         insert = PostgreSQLCatalogTestConnection.create_item_insert_clause(
@@ -593,11 +593,15 @@ class PublisherWalk:
     def __generator(self):
         '''Generator that returns just directories with valid files.'''
 
+        # logger.info('PublisherWalk\n')
+
         # example
         # CBERS2B/2010_03/CBERS2B_CCD_20100301.130915/151_098_0/2_BC_UTM_WGS84
         base_path = f'{self.BASE_DIR}/{self.query["satellite"]}'
 
         for dir_path, dirs, files in walk(base_path):
+            # logger.info(f'dir_path: {dir_path}')
+
             # get dir path starting at `/TIFF`
             index = dir_path.find('TIFF')
             # `splitted_dir_path` example:
@@ -611,6 +615,8 @@ class PublisherWalk:
             # if I'm not inside a geo processing dir, then ignore it
             if dir_level != 6:
                 continue
+
+            # logger.info(f'dir_path: {dir_path}')
 
             # if the dir does not have any file, then report and ignore it
             if not files:

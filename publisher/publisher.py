@@ -113,6 +113,8 @@ class Publisher:
         # p_walk is a generator that returns just valid directories
         p_walk = PublisherWalk(self.BASE_DIR, self.query, SatelliteMetadata())
 
+        print_line()
+
         # run the tasks by chunks. PR_TASK_CHUNKS chunks are sent to one task
         tasks = process_items.chunks(
             generate_chunk_params(p_walk, self.df_collections), PR_TASK_CHUNKS

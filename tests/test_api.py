@@ -1,6 +1,5 @@
 from json import loads
 from time import sleep
-
 from unittest import mock
 
 from tests.base import BaseTestCases, celery_async, celery_sync, test_delay_secs
@@ -20,7 +19,9 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
 
     def test__api_publish__ok__cbers2b(self):
         query = {
-            'satellite': 'CBERS2B'
+            'satellite': 'CBERS2B',
+            'start_date': '1950-01-01',
+            'end_date': '2050-12-31'
         }
 
         expected = [
@@ -83,7 +84,9 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
 
     def test__api_publish__ok__cbers4a(self):
         query = {
-            'satellite': 'CBERS4A'
+            'satellite': 'CBERS4A',
+            'start_date': '1950-01-01',
+            'end_date': '2050-12-31'
         }
 
         expected = [
@@ -175,7 +178,9 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
 
     def test__api_publish__ok__landsat1(self):
         query = {
-            'satellite': 'LANDSAT1'
+            'satellite': 'LANDSAT1',
+            'start_date': '1950-01-01',
+            'end_date': '2050-12-31'
         }
 
         expected = [
@@ -197,7 +202,9 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
 
     def test__api_publish__ok__landsat7(self):
         query = {
-            'satellite': 'LANDSAT7'
+            'satellite': 'LANDSAT7',
+            'start_date': '1950-01-01',
+            'end_date': '2050-12-31'
         }
 
         expected = [
@@ -230,7 +237,9 @@ class ApiPublishCbers2BOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.maxDiff=None
 
         query = {
-            'satellite': 'CBERS2B'
+            'satellite': 'CBERS2B',
+            'start_date': '1950-01-01',
+            'end_date': '2050-12-31'
         }
 
         expected = [
@@ -460,7 +469,9 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
         self.maxDiff=None
 
         query = {
-            'satellite': 'CBERS4'
+            'satellite': 'CBERS4',
+            'start_date': '1950-01-01',
+            'end_date': '2050-12-31'
         }
 
         expected = [
@@ -811,7 +822,9 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.maxDiff=None
 
         query = {
-            'satellite': 'CBERS4A'
+            'satellite': 'CBERS4A',
+            'start_date': '1950-01-01',
+            'end_date': '2050-12-31'
         }
 
         expected = [
@@ -1179,7 +1192,9 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.maxDiff=None
 
         query = {
-            'satellite': 'LANDSAT1'
+            'satellite': 'LANDSAT1',
+            'start_date': '1950-01-01',
+            'end_date': '2050-12-31'
         }
 
         expected = [
@@ -1250,7 +1265,9 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.maxDiff=None
 
         query = {
-            'satellite': 'LANDSAT2'
+            'satellite': 'LANDSAT2',
+            'start_date': '1950-01-01',
+            'end_date': '2050-12-31'
         }
 
         expected = [
@@ -1321,7 +1338,9 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.maxDiff=None
 
         query = {
-            'satellite': 'LANDSAT3'
+            'satellite': 'LANDSAT3',
+            'start_date': '1950-01-01',
+            'end_date': '2050-12-31'
         }
 
         expected = [
@@ -1392,7 +1411,9 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.maxDiff=None
 
         query = {
-            'satellite': 'LANDSAT5'
+            'satellite': 'LANDSAT5',
+            'start_date': '1950-01-01',
+            'end_date': '2050-12-31'
         }
 
         expected = [
@@ -1463,7 +1484,9 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.maxDiff=None
 
         query = {
-            'satellite': 'LANDSAT7'
+            'satellite': 'LANDSAT7',
+            'start_date': '1950-01-01',
+            'end_date': '2050-12-31'
         }
 
         expected = [
@@ -1581,6 +1604,8 @@ class ApiPublishErrorTestCase(BaseTestCases.ApiBaseTestCase):
             'satellite': 'CBERS4A',
             'satelliti': 'CBERS2B',
             'sensors': 'wfi',
+            'start_date': '2021-01-01',
+            'end_date': '2021-01-01',
             'date': '2019-12-01',
             'pathy': '215',
             'rown': '132',
@@ -1607,10 +1632,8 @@ class ApiPublishErrorTestCase(BaseTestCases.ApiBaseTestCase):
 
         self.check_if_the_items_table_is_empty()
 
-    def test__api_publish__error__required_field_satellite(self):
+    def test__api_publish__error__required_fields(self):
         query = {
-            'start_date': '2019-12-01',
-            'end_date': '2020-06-30',
             'path': '215',
             'row': '132',
             'geo_processing': '4',
@@ -1621,7 +1644,31 @@ class ApiPublishErrorTestCase(BaseTestCases.ApiBaseTestCase):
             'code': 400,
             'name': 'Bad Request',
             'description': {
-                'satellite': ['required field']
+                'satellite': ['required field'],
+                'start_date': ['required field'],
+                'end_date': ['required field']
+            }
+        }
+
+        response = self.api.get('/publish', query_string=query)
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(expected, loads(response.get_data(as_text=True)))
+
+        self.check_if_the_items_table_is_empty()
+
+    def test__api_publish__error__start_date_cannot_be_greater_than_end_date(self):
+        query = {
+            'satellite': 'CBERS4',
+            'start_date': '2020-01-15',
+            'end_date': '2020-01-01'
+        }
+
+        expected = {
+            'code': 400,
+            'name': 'Bad Request',
+            'description': {
+                'start_date': ['`start_date` field is greater than `end_date` field.']
             }
         }
 

@@ -24,7 +24,9 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
 
     def test__publisher__ok__cbers2b(self):
         query = {
-            'satellite': 'CBERS2B'
+            'satellite': 'CBERS2B',
+            'start_date': '1950-01-01',
+            'end_date': '2050-12-31'
         }
 
         expected = [
@@ -87,7 +89,9 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
 
     def test__publisher__ok__cbers4a(self):
         query = {
-            'satellite': 'CBERS4A'
+            'satellite': 'CBERS4A',
+            'start_date': '1950-01-01',
+            'end_date': '2050-12-31'
         }
 
         expected = [
@@ -179,7 +183,9 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
 
     def test__publisher__ok__landsat1(self):
         query = {
-            'satellite': 'LANDSAT1'
+            'satellite': 'LANDSAT1',
+            'start_date': '1950-01-01',
+            'end_date': '2050-12-31'
         }
 
         expected = [
@@ -201,7 +207,9 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
 
     def test__publisher__ok__landsat7(self):
         query = {
-            'satellite': 'LANDSAT7'
+            'satellite': 'LANDSAT7',
+            'start_date': '1950-01-01',
+            'end_date': '2050-12-31'
         }
 
         expected = [

@@ -1,10 +1,13 @@
 from time import sleep
 from unittest import mock
 
-from publisher import Publisher
-from publisher.environment import PR_BASE_DIR
+from publisher import Publisher, DBFactory, PR_BASE_DIR
 
 from tests.base import BaseTestCases, celery_async, test_delay_secs
+
+
+# create a db connection based on the environment variable
+db_connection = DBFactory.factory()
 
 
 @mock.patch(*celery_async)
@@ -13,7 +16,7 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
     @staticmethod
     def __create_and_execute_publisher(query):
         # create Publisher object and run the main method
-        publisher_app = Publisher(PR_BASE_DIR, False, None, query=query)
+        publisher_app = Publisher(PR_BASE_DIR, db_connection, query=query)
         publisher_app.main()
 
         # wait N seconds to the task save the data in the database

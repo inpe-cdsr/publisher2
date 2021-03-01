@@ -9,6 +9,23 @@ to_date = lambda s: datetime.strptime(s, '%Y-%m-%d')
 to_upper_case = lambda s: s.upper()
 
 
+class PublisherValidator(Validator):
+    def _validate_it_cannot_be_greater_than(self, target_field, self_field, self_value):
+        '''Check if the field is greater than the other one.
+        First field cannot be greater than the other one.
+
+        The rule's arguments are validated against this schema:
+        {'type': 'string'}
+        '''
+
+        if target_field not in self.document:
+            self._error(self_field, f'Field {target_field} is not in the document.')
+
+        target_value = self.document[target_field]
+        if self_value > target_value:
+            self._error(self_field, f'`{self_field}` field is greater than `{target_field}` field.')
+
+
 QUERY_SCHEMA = {
     'satellite': {
         'type': 'string', 'coerce': to_upper_case, 'regex': '^CBERS[1-4][A-B]*|^LANDSAT\d',
@@ -19,12 +36,12 @@ QUERY_SCHEMA = {
         'default': None, 'nullable': True
     },
     'start_date': {
-        'type': 'datetime', 'coerce': to_date,
-        'default': None, 'nullable': True
+        'type': 'datetime', 'coerce': to_date, 'it_cannot_be_greater_than': 'end_date',
+        'required': True
     },
     'end_date': {
         'type': 'datetime', 'coerce': to_date,
-        'default': None, 'nullable': True
+        'required': True
     },
     'path': {
         'type': 'integer', 'coerce': int, 'min': 1, 'max': 999,
@@ -46,7 +63,7 @@ QUERY_SCHEMA = {
 
 
 def validate(data, schema):
-    v = Validator(schema)
+    v = PublisherValidator(schema)
     is_valid = v.validate(data)
 
     if is_valid:

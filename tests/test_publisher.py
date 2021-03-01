@@ -231,4 +231,3 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
             'landsat/test__api_publish__ok__landsat7.csv'
         )
         self.check_if_the_errors_have_been_added_in_the_database(expected)
-

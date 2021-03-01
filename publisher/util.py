@@ -343,71 +343,6 @@ class PublisherWalk:
         # create an iterator from generator method
         self.__generator_iterator = self.__generator()
 
-    def __is_dir_path_valid(self, dir_path):
-        '''Check if `dir_path` parameter is valid based on `query`.'''
-
-        # get dir path starting at `/TIFF`
-        index = dir_path.find('TIFF')
-        # `splitted_dir_path` example:
-        # ['TIFF', 'CBERS4A', '2020_11', 'CBERS_4A_WFI_RAW_2020_11_10.13_41_00_ETC2', '207_148_0', '2_BC_UTM_WGS84']
-        splitted_dir_path = dir_path[index:].split(os_path_sep)
-
-        # a valid dir path must have at least five folders (+1 the base path (i.e. /TIFF))
-        if len(splitted_dir_path) != 6:
-            return False, None, None
-
-        _, satellite_dir, year_month_dir, scene_dir, path_row_dir, level_dir = splitted_dir_path
-
-        # if the informed satellite is not equal to the dir, then the folder is invalid
-        if self.query['satellite'] is not None and self.query['satellite'] != satellite_dir:
-            return False, None, None
-
-        _, sensor_dir, date_dir, time_dir = decode_scene_dir(scene_dir)
-
-        # if the informed sensor is not equal to the dir, then the folder is invalid
-        if self.query['sensor'] is not None and self.query['sensor'] != sensor_dir:
-            return False, None, None
-
-        # if the actual dir is not inside the date range, then the folder is invalid
-        if self.query['start_date'] is not None and self.query['end_date'] is not None:
-            # convert date from str to datetime
-            date = datetime.strptime(date_dir, '%Y-%m-%d')
-
-            # if time dir is between 0h and 5h, then consider it one day ago,
-            # because date is reception date and not viewing date
-            if time_dir >= '00:00:00' and time_dir <= '05:00:00':
-                # subtract one day from the date
-                date -= timedelta(days=1)
-
-            if not (date >= self.query['start_date'] and date <= self.query['end_date']):
-                return False, None, None
-
-        # if the informed path/row is not inside the dir, then the folder is invalid
-        if self.query['path'] is not None or self.query['row'] is not None:
-            splitted_path_row = path_row_dir.split('_')
-
-            if len(splitted_path_row) == 3:
-                # example: `151_098_0`
-                path, row, _ = splitted_path_row
-            elif len(splitted_path_row) == 5:
-                # example: `151_B_141_5_0`
-                path, _, row, _, _ = splitted_path_row
-            else:
-                raise InternalServerError(f'Invalid path/row dir: {path_row_dir}')
-
-            if self.query['path'] is not None and self.query['path'] != int(path):
-                return False, None, None
-
-            if self.query['row'] is not None and self.query['row'] != int(row):
-                return False, None, None
-
-        # if the level_dir does not start with the informed geo_processing, then the folder is invalid
-        if self.query['geo_processing'] is not None and not level_dir.startswith(str(self.query['geo_processing'])):
-            # example: `2_BC_UTM_WGS84`
-            return False, None, None
-
-        return True, satellite_dir, sensor_dir
-
     def __get_dn_xml_file_path(self, files, dir_path):
         # example: CBERS_4_AWFI_20201228_157_135_L4_RIGHT_BAND16.xml
         dn_template = '^[a-zA-Z0-9_]+BAND\d+.xml$'
@@ -541,6 +476,120 @@ class PublisherWalk:
 
         return assets
 
+    def __filter_dir(self, dir_level, dir_path, dirs):
+        '''Filter `dirs` parameter based on the directory level.'''
+
+        # check the year_month dirs
+        if dir_level == 2:
+            # I'm inside satellite folder, then the dirs are year-month folders
+            # return just the year_month dirs that are between the date range
+            # `start_date` and `end_date` fields are required
+
+            # example: 2019_01
+            start_year_month = (f"{self.query['start_date'].year}_"
+                                f"{fill_string_with_left_zeros(str(self.query['start_date'].month), 2)}")
+            # example: 2020_12
+            end_year_month = (f"{self.query['end_date'].year}_"
+                              f"{fill_string_with_left_zeros(str(self.query['end_date'].month), 2)}")
+
+            return [d for d in dirs if d >= start_year_month and d <= end_year_month]
+
+        # check the scene dirs
+        elif dir_level == 3:
+            # I'm inside year-month folder, then the dirs are scene folders
+            # return just the scene dirs that have the selected sensor
+
+            # if the option is None, then return the original dirs
+            if self.query['sensor'] is None:
+                return dirs
+
+            def check_scene_dir(scene_dir):
+                _, sensor_dir, date_dir, time_dir = decode_scene_dir(scene_dir)
+
+                # if scene_dir does not have the selected sensor, then not return it
+                if sensor_dir != self.query['sensor']:
+                    return None
+
+                # convert date from str to datetime
+                date = datetime.strptime(date_dir, '%Y-%m-%d')
+
+                # if time dir is between 0h and 5h, then consider it one day ago,
+                # because date is reception date and not viewing date
+                if time_dir >= '00:00:00' and time_dir <= '05:00:00':
+                    # subtract one day from the date
+                    date -= timedelta(days=1)
+
+                # if scene_dir is not inside the selected date range, then not return it
+                if not (date >= self.query['start_date'] and date <= self.query['end_date']):
+                    return None
+
+                return scene_dir
+
+            return list(filter(check_scene_dir, dirs))
+
+        # check the path/row dirs
+        elif dir_level == 4:
+            # I'm inside sensor folder, then the dirs are path/row folders
+
+            def check_path_row_dir(path_row_dir):
+                splitted_path_row = path_row_dir.split('_')
+
+                if len(splitted_path_row) == 3:
+                    # example: `151_098_0`
+                    path, row, _ = splitted_path_row
+                elif len(splitted_path_row) == 5:
+                    # example: `151_B_141_5_0`
+                    path, _, row, _, _ = splitted_path_row
+                else:
+                    raise InternalServerError(f'Invalid path/row dir: `{path_row_dir}`')
+
+                if self.query['path'] is not None and self.query['path'] != int(path):
+                    return None
+
+                if self.query['row'] is not None and self.query['row'] != int(row):
+                    return None
+
+                return path_row_dir
+
+            return list(filter(check_path_row_dir, dirs))
+
+        # check the geo processing dirs
+        elif dir_level == 5:
+            # I'm inside path/row folder, then the dirs are geo processing folders
+
+            # if the option is None, then return the original dirs
+            if self.query['geo_processing'] is None:
+                return dirs
+
+            # if the level_dir does not start with the informed geo_processing, then the folder is invalid
+            # `d` example: `2_BC_UTM_WGS84`
+            return [d for d in dirs if d.startswith(str(self.query['geo_processing']))]
+
+        # check files existence
+        elif dir_level == 6:
+            # I'm inside geo processing folder, then should not have dirs inside here
+
+            if dirs:
+                self.errors_insert.append(
+                    PostgreSQLPublisherConnection.create_task_error_insert_clause({
+                        'message': 'There are folders inside a geo processing directory.',
+                        'metadata': {'folder': dir_path},
+                        'type': 'warning'
+                    })
+                )
+
+            return dirs
+
+        self.errors_insert.append(
+            PostgreSQLPublisherConnection.create_task_error_insert_clause({
+                'message': f'Invalid `{dir_level}` directory level.',
+                'metadata': {'folder': dir_path},
+                'type': 'warning'
+            })
+        )
+
+        return dirs
+
     def __generator(self):
         '''Generator that returns just directories with valid files.'''
 
@@ -549,9 +598,18 @@ class PublisherWalk:
         base_path = f'{self.BASE_DIR}/{self.query["satellite"]}'
 
         for dir_path, dirs, files in walk(base_path):
-            # if dir is not valid based on query, then ignore it
-            is_dir_path_valid, satellite, sensor = self.__is_dir_path_valid(dir_path)
-            if not is_dir_path_valid:
+            # get dir path starting at `/TIFF`
+            index = dir_path.find('TIFF')
+            # `splitted_dir_path` example:
+            # ['TIFF', 'CBERS4A', '2020_11', 'CBERS_4A_WFI_RAW_2020_11_10.13_41_00_ETC2', '207_148_0', '2_BC_UTM_WGS84']
+            splitted_dir_path = dir_path[index:].split(os_path_sep)
+            dir_level = len(splitted_dir_path)
+
+            # get just the valid dirs and replace old ones with them
+            dirs[:] = self.__filter_dir(dir_level, dir_path, dirs)
+
+            # if I'm not inside a geo processing dir, then ignore it
+            if dir_level != 6:
                 continue
 
             # if the dir does not have any file, then report and ignore it
@@ -569,6 +627,10 @@ class PublisherWalk:
             dn_xml_file_path = self.__get_dn_xml_file_path(files, dir_path)
             if not dn_xml_file_path:
                 continue
+
+            # extract `satellite` and `sensor` data from path
+            _, satellite, _, scene_dir, *_ = splitted_dir_path
+            _, sensor, *_ = decode_scene_dir(scene_dir)
 
             assets = {}
             for radio_processing in self.query['radio_processing']:

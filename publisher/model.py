@@ -215,9 +215,13 @@ class PostgreSQLPublisherConnection(PostgreSQLTestConnection):
     def create_task_error_insert_clause(error: dict) -> str:
         '''Create `INSERT` clause to task_error table based on error metadata.'''
 
+        metadata = dumps(error['metadata'])
+
         return (
+            # delete old task error before adding a new one, if it exists
+            f'DELETE FROM task_error WHERE message=\'{error["message"]}\' AND metadata=\'{metadata}\'; '
             'INSERT INTO task_error (message, metadata, type) VALUES '
-            f'(\'{error["message"]}\', \'{dumps(error["metadata"])}\', \'{error["type"]}\');'
+            f'(\'{error["message"]}\', \'{metadata}\', \'{error["type"]}\');'
         )
 
 

@@ -112,7 +112,7 @@ class PostgreSQLTestConnection(PostgreSQLConnection):
 
         con.close()
 
-        logger.info(f'Recreated `{self.PGDATABASE}` database.')
+        logger.info(f'Recreated `{self.PGDATABASE}` database.\n')
 
     def __restore_test_database(self):
         # connect with database

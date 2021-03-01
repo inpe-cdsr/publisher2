@@ -8,6 +8,8 @@ from tests.base import BaseTestCases, celery_async, test_delay_secs
 
 # create a db connection based on the environment variable
 db_connection = DBFactory.factory()
+# get all available collections from the database
+df_collections = db_connection.select_from_collections()
 
 
 @mock.patch(*celery_async)
@@ -16,7 +18,7 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
     @staticmethod
     def __create_and_execute_publisher(query):
         # create Publisher object and run the main method
-        publisher_app = Publisher(PR_BASE_DIR, db_connection, query=query)
+        publisher_app = Publisher(PR_BASE_DIR, df_collections, query=query)
         publisher_app.main()
 
         # wait N seconds to the task save the data in the database

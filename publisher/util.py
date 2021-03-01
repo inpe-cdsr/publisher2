@@ -541,15 +541,14 @@ class PublisherWalk:
 
         return assets
 
-    def __get_base_dir(self):
-        # example
-        # CBERS2B/2010_03/CBERS2B_CCD_20100301.130915/151_098_0/2_BC_UTM_WGS84
-        return f'{self.BASE_DIR}/{self.query["satellite"]}'
-
     def __generator(self):
         '''Generator that returns just directories with valid files.'''
 
-        for dir_path, dirs, files in walk(self.__get_base_dir()):
+        # example
+        # CBERS2B/2010_03/CBERS2B_CCD_20100301.130915/151_098_0/2_BC_UTM_WGS84
+        base_path = f'{self.BASE_DIR}/{self.query["satellite"]}'
+
+        for dir_path, dirs, files in walk(base_path):
             # if dir is not valid based on query, then ignore it
             is_dir_path_valid, satellite, sensor = self.__is_dir_path_valid(dir_path)
             if not is_dir_path_valid:

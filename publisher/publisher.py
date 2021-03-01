@@ -75,14 +75,11 @@ class SatelliteMetadata:
 
 class Publisher:
 
-    def __init__(self, BASE_DIR, db_connection, query=None):
+    def __init__(self, BASE_DIR, df_collections, query=None):
         # base directory to search the files
         self.BASE_DIR = BASE_DIR
-        self.db = db_connection
+        self.df_collections = df_collections
         self.query = query
-
-        # get all available collections from database and save the result in a CSV file
-        self.df_collections = self.db.select_from_collections()
 
     def main(self):
         '''Main method.'''

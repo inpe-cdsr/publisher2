@@ -249,4 +249,4 @@ def init_dbs():
     db_publisher = PostgreSQLPublisherConnection()
     db_publisher.init_db()
 
-    print('Databases have been initialized.\n')
+    logger.warning('Databases have been initialized.\n')

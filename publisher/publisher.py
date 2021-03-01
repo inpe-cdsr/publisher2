@@ -75,20 +75,14 @@ class SatelliteMetadata:
 
 class Publisher:
 
-    def __init__(self, BASE_DIR, IS_TO_GET_DATA_FROM_DB, db_connection, query=None):
+    def __init__(self, BASE_DIR, db_connection, query=None):
         # base directory to search the files
         self.BASE_DIR = BASE_DIR
-        self.IS_TO_GET_DATA_FROM_DB = IS_TO_GET_DATA_FROM_DB
         self.db = db_connection
         self.query = query
 
-        if self.IS_TO_GET_DATA_FROM_DB:
-            # get all available collections from database and save the result in a CSV file
-            self.df_collections = self.db.select_from_collections()
-            self.df_collections.to_csv(f'{PR_FILES_PATH}/collections.csv', index=False)
-        else:
-            # get all available collections from CSV file
-            self.df_collections = read_csv(f'{PR_FILES_PATH}/collections.csv')
+        # get all available collections from database and save the result in a CSV file
+        self.df_collections = self.db.select_from_collections()
 
     def main(self):
         '''Main method.'''
@@ -96,8 +90,8 @@ class Publisher:
         logger.info('Publisher.main()')
 
         print_line()
+
         logger.info(f'BASE_DIR: {self.BASE_DIR}')
-        logger.info(f'IS_TO_GET_DATA_FROM_DB: {self.IS_TO_GET_DATA_FROM_DB}')
         logger.info(f'PR_TASK_CHUNKS: {PR_TASK_CHUNKS}')
         logger.info(f'CELERY_TASK_QUEUE: {CELERY_TASK_QUEUE}')
         logger.info(f'df_collections:\n{self.df_collections}')

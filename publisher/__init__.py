@@ -8,8 +8,7 @@ from os.path import join as os_path_join
 from flask import Flask, jsonify, request
 from werkzeug.exceptions import HTTPException
 
-from publisher.environment import FLASK_SECRET_KEY, PR_BASE_DIR, PR_IS_TO_GET_DATA_FROM_DB, \
-                                  PR_LOGGING_LEVEL
+from publisher.environment import FLASK_SECRET_KEY, PR_BASE_DIR, PR_LOGGING_LEVEL
 from publisher.logger import create_logger
 from publisher.model import DBFactory, init_dbs
 from publisher.publisher import Publisher
@@ -83,8 +82,7 @@ def create_app(test_config=None):
     def publish():
         # `dict(request.args)`` returns the query string as a dict
         publisher_app = Publisher(
-            PR_BASE_DIR, PR_IS_TO_GET_DATA_FROM_DB,
-            db_connection, query=dict(request.args)
+            PR_BASE_DIR, db_connection, query=dict(request.args)
         )
         # execute main method
         publisher_app.main()

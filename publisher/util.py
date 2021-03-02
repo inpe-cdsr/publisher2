@@ -7,11 +7,11 @@ from os import walk
 from os.path import abspath, dirname, join as os_path_join, sep as os_path_sep
 from re import search
 
-from werkzeug.exceptions import InternalServerError
 from xmltodict import parse as xmltodict_parse
 
 from publisher.common import fill_string_with_left_zeros, print_line
 from publisher.environment import PR_LOGGING_LEVEL
+from publisher.exception import PublisherDecodeException
 from publisher.logger import create_logger
 from publisher.model import PostgreSQLCatalogTestConnection, PostgreSQLPublisherConnection
 
@@ -291,7 +291,7 @@ def decode_scene_dir(scene_dir):
             # this time has NOT just time, then I join the time parts (e.g. '13_53_00_ETC2')
             time = ':'.join(time[0:3])
         else:
-            raise InternalServerError(f'Invalid scene dir: {scene_dir}')
+            raise PublisherDecodeException()
 
     elif scene_dir_first.startswith('CBERS2B') or scene_dir_first.startswith('LANDSAT'):
         # examples: CBERS2B_CCD_20070925.145654
@@ -302,20 +302,20 @@ def decode_scene_dir(scene_dir):
 
         if len(date) != 8:
             # example: a time should be something like this: '20070925'
-            raise InternalServerError(f'Invalid scene dir: {scene_dir}')
+            raise PublisherDecodeException()
 
         # I build the date string based on the old one (e.g. from '20070925' to '2007-09-25')
         date = f'{date[0:4]}-{date[4:6]}-{date[6:8]}'
 
         if len(time) != 6:
             # example: a time should be something like this: '145654'
-            raise InternalServerError(f'Invalid scene dir: {scene_dir}')
+            raise PublisherDecodeException()
 
         # I build the time string based on the old one (e.g. from '145654' to '14:56:54')
         time = f'{time[0:2]}:{time[2:4]}:{time[4:6]}'
 
     else:
-        raise InternalServerError(f'Invalid scene dir: {scene_dir}')
+        raise PublisherDecodeException()
 
     return satellite, sensor, date, time
 
@@ -505,7 +505,17 @@ class PublisherWalk:
                 return dirs
 
             def check_scene_dir(scene_dir):
-                _, sensor_dir, date_dir, time_dir = decode_scene_dir(scene_dir)
+                try:
+                    _, sensor_dir, date_dir, time_dir = decode_scene_dir(scene_dir)
+                except PublisherDecodeException:
+                    self.errors_insert.append(
+                        PostgreSQLPublisherConnection.create_task_error_insert_clause({
+                            'message': f'Scene directory cannot be decoded: `{scene_dir}`.',
+                            'metadata': {'folder': dir_path},
+                            'type': 'warning'
+                        })
+                    )
+                    return None
 
                 # if scene_dir does not have the selected sensor, then not return it
                 if sensor_dir != self.query['sensor']:
@@ -542,7 +552,14 @@ class PublisherWalk:
                     # example: `151_B_141_5_0`
                     path, _, row, _, _ = splitted_path_row
                 else:
-                    raise InternalServerError(f'Invalid path/row dir: `{path_row_dir}`')
+                    self.errors_insert.append(
+                        PostgreSQLPublisherConnection.create_task_error_insert_clause({
+                            'message': f'Invalid path/row directory: `{path_row_dir}`.',
+                            'metadata': {'folder': dir_path},
+                            'type': 'warning'
+                        })
+                    )
+                    return None
 
                 if self.query['path'] is not None and self.query['path'] != int(path):
                     return None

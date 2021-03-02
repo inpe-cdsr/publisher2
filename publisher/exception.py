@@ -1,0 +1,2 @@
+class PublisherDecodeException(Exception):
+    pass

@@ -1,11 +1,13 @@
 from copy import deepcopy
 from datetime import datetime, timedelta
 from glob import glob
-from json import dumps
+from itertools import islice
+from json import dumps, loads
 from os import walk
-from os.path import join as os_path_join, sep as os_path_sep
+from os.path import abspath, dirname, join as os_path_join, sep as os_path_sep
 from re import search
 
+from pandas import read_csv
 from werkzeug.exceptions import InternalServerError
 from xmltodict import parse as xmltodict_parse
 
@@ -681,3 +683,62 @@ class PublisherWalk:
             # logger.info(f'concanate_errors: \n{concanate_errors}\n')
             logger.info('Inserting PublisherWalk.errors into database...')
             db.execute(concanate_errors, is_transaction=True)
+
+
+##################################################
+# Other
+##################################################
+
+def generate_chunk_params(p_walk, df_collections, islice_stop=10):
+    dict_collections = df_collections.to_dict()
+
+    while True:
+        # exhaust the generator to get a list of values, because generator is not serializable
+        p_walk_top = list(islice(p_walk, islice_stop)) # get the first N elements
+
+        # if the p_walk generator has been exhausted, then stop the generate_chunk_params generator
+        if not p_walk_top:
+            break
+
+        yield p_walk_top, dict_collections
+
+
+class SatelliteMetadata:
+
+    def __init__(self):
+        self.SATELLITES = None
+
+        # read satellites metadata file
+        self.__read_metadata_file()
+
+    def __read_metadata_file(self):
+        '''Read JSON satellite metadata file.'''
+
+        # dirname(abspath(__file__)): project's root directory
+        satellites_path = os_path_join(dirname(abspath(__file__)), 'metadata', 'satellites.json')
+
+        with open(satellites_path, 'r') as data:
+            # read JSON file and convert it to dict
+            self.SATELLITES = loads(data.read())
+
+    def get_assets_metadata(self, satellite=None, sensor=None, radio_processing=None, **kwargs):
+        '''Get assets metadata based on the parameters.'''
+
+        # get the satellite information
+        satellite = list(filter(lambda s: s['name'] == satellite, self.SATELLITES['satellites']))
+
+        # if a satellite has not been found, then return None
+        if not satellite:
+            return None
+
+        # if a satellite has been found, then get the unique value inside the list
+        # and get the sensor information
+        sensor = list(filter(lambda s: s['name'] == sensor, satellite[0]['sensors']))
+
+        # if a sensor has not been found, then return None
+        if not sensor:
+            return None
+
+        # if a sensor has been found, then get the unique value inside the list
+        # and return assets metadata based on the radiometric processing (i.e. DN or SR)
+        return  sensor[0]['assets'][radio_processing]

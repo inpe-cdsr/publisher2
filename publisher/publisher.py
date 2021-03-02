@@ -1,76 +1,16 @@
-from itertools import islice
-from json import loads
-from os.path import join as os_path_join, dirname, abspath
-
-from pandas import read_csv
 from werkzeug.exceptions import BadRequest
 
 from publisher.common import print_line
 from publisher.environment import PR_FILES_PATH, PR_LOGGING_LEVEL, PR_TASK_CHUNKS
 from publisher.logger import create_logger
 from publisher.model import PostgreSQLPublisherConnection
-from publisher.util import PublisherWalk
+from publisher.util import generate_chunk_params, PublisherWalk, SatelliteMetadata
 from publisher.validator import validate, QUERY_SCHEMA
 from publisher.workers import CELERY_TASK_QUEUE, process_items
 
 
 # create logger object
 logger = create_logger(__name__, level=PR_LOGGING_LEVEL)
-
-
-def generate_chunk_params(p_walk, df_collections, islice_stop=10):
-    dict_collections = df_collections.to_dict()
-
-    while True:
-        # exhaust the generator to get a list of values, because generator is not serializable
-        p_walk_top = list(islice(p_walk, islice_stop)) # get the first N elements
-
-        # if the p_walk generator has been exhausted, then stop the generate_chunk_params generator
-        if not p_walk_top:
-            break
-
-        yield p_walk_top, dict_collections
-
-
-class SatelliteMetadata:
-
-    def __init__(self):
-        self.SATELLITES = None
-
-        # read satellites metadata file
-        self.__read_metadata_file()
-
-    def __read_metadata_file(self):
-        '''Read JSON satellite metadata file.'''
-
-        # dirname(abspath(__file__)): project's root directory
-        satellites_path = os_path_join(dirname(abspath(__file__)), 'metadata', 'satellites.json')
-
-        with open(satellites_path, 'r') as data:
-            # read JSON file and convert it to dict
-            self.SATELLITES = loads(data.read())
-
-    def get_assets_metadata(self, satellite=None, sensor=None, radio_processing=None, **kwargs):
-        '''Get assets metadata based on the parameters.'''
-
-        # get the satellite information
-        satellite = list(filter(lambda s: s['name'] == satellite, self.SATELLITES['satellites']))
-
-        # if a satellite has not been found, then return None
-        if not satellite:
-            return None
-
-        # if a satellite has been found, then get the unique value inside the list
-        # and get the sensor information
-        sensor = list(filter(lambda s: s['name'] == sensor, satellite[0]['sensors']))
-
-        # if a sensor has not been found, then return None
-        if not sensor:
-            return None
-
-        # if a sensor has been found, then get the unique value inside the list
-        # and return assets metadata based on the radiometric processing (i.e. DN or SR)
-        return  sensor[0]['assets'][radio_processing]
 
 
 class Publisher:

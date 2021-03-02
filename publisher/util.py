@@ -511,7 +511,7 @@ class PublisherWalk:
                     self.errors_insert.append(
                         PostgreSQLPublisherConnection.create_task_error_insert_clause({
                             'message': f'Scene directory cannot be decoded: `{scene_dir}`.',
-                            'metadata': {'folder': dir_path},
+                            'metadata': {'folder': dir_path, 'method': '__filter_dir'},
                             'type': 'warning'
                         })
                     )
@@ -654,7 +654,18 @@ class PublisherWalk:
 
             # extract `satellite` and `sensor` data from path
             _, satellite, _, scene_dir, *_ = splitted_dir_path
-            _, sensor, *_ = decode_scene_dir(scene_dir)
+
+            try:
+                _, sensor, *_ = decode_scene_dir(scene_dir)
+            except PublisherDecodeException:
+                self.errors_insert.append(
+                    PostgreSQLPublisherConnection.create_task_error_insert_clause({
+                        'message': f'Scene directory cannot be decoded: `{scene_dir}`.',
+                        'metadata': {'folder': dir_path, 'method': '__generator'},
+                        'type': 'warning'
+                    })
+                )
+                continue
 
             assets = {}
             for radio_processing in self.query['radio_processing']:

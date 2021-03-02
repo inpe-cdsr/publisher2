@@ -1,7 +1,6 @@
 from copy import deepcopy
 from datetime import datetime, timedelta
 from glob import glob
-from itertools import islice
 from json import loads
 from os import walk
 from os.path import abspath, dirname, join as os_path_join, sep as os_path_sep
@@ -715,18 +714,6 @@ class PublisherWalk:
 ##################################################
 # Other
 ##################################################
-
-def generate_chunk_params(p_walk, df_collections, islice_stop=10):
-    while True:
-        # exhaust the generator to get a list of values, because generator is not serializable
-        p_walk_top = list(islice(p_walk, islice_stop)) # get the first N elements
-
-        # if the p_walk generator has been exhausted, then stop the generate_chunk_params generator
-        if not p_walk_top:
-            break
-
-        yield p_walk_top, df_collections
-
 
 class SatelliteMetadata:
 

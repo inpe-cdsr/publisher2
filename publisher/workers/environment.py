@@ -16,5 +16,3 @@ CELERY_BROKER_URL = f'amqp://{RT_USER}:{RT_PASSWORD}@{RT_HOST}:{RT_PORT}//'
 # CELERY_RESULT_BACKEND = getenv('CELERY_RESULT_BACKEND', 'rpc://')
 # number of chunks that are executed in one task
 CELERY_CHUNKS_PER_TASKS = int(getenv('CELERY_CHUNKS_PER_TASKS', 100))
-# number of tasks that are executed in one process
-CELERY_TASKS_PER_PROCESSES = int(getenv('CELERY_TASKS_PER_PROCESSES', 10))

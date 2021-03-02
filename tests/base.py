@@ -16,7 +16,7 @@ db_publisher = PostgreSQLPublisherConnection()
 celery_async = ('publisher.workers.celery_config.task_always_eager', False)
 celery_sync = ('publisher.workers.celery_config.task_always_eager', True)
 
-test_delay_secs = 0.6
+test_delay_secs = 0.8
 
 
 class BaseTestCases:

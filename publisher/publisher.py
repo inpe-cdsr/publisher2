@@ -4,8 +4,7 @@ from publisher.common import print_line
 from publisher.environment import PR_LOGGING_LEVEL
 from publisher.logger import create_logger
 from publisher.validator import validate, QUERY_SCHEMA
-from publisher.workers import CELERY_CHUNKS_PER_TASKS, CELERY_MASTER_QUEUE, \
-                              CELERY_TASKS_PER_PROCESSES, master
+from publisher.workers import CELERY_CHUNKS_PER_TASKS, CELERY_MASTER_QUEUE, master
 
 
 # create logger object
@@ -28,7 +27,6 @@ class Publisher:
 
         logger.info(f'BASE_DIR: {self.BASE_DIR}')
         logger.info(f'CELERY_CHUNKS_PER_TASKS: {CELERY_CHUNKS_PER_TASKS}')
-        logger.info(f'CELERY_TASKS_PER_PROCESSES: {CELERY_TASKS_PER_PROCESSES}')
         logger.info(f'df_collections:\n{self.df_collections}\n')
 
         # validate self.query
@@ -40,7 +38,7 @@ class Publisher:
         print_line()
 
         # run `master` task
-        task = master.apply_async(
+        master.apply_async(
             (self.BASE_DIR, self.query, self.df_collections.to_dict()),
             queue=CELERY_MASTER_QUEUE
         )

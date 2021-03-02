@@ -1,10 +1,14 @@
+from datetime import datetime
+
 from celery import Celery
 from celery.utils.log import get_task_logger
 from pandas import DataFrame
 
+from publisher.environment import PR_TASK_CHUNKS
 from publisher.model import DBFactory, PostgreSQLPublisherConnection
 from publisher.workers.environment import CELERY_BROKER_URL, CELERY_TASK_QUEUE
-from publisher.util import create_item_and_get_insert_clauses
+from publisher.util import create_item_and_get_insert_clauses, generate_chunk_params, \
+                           PublisherWalk, SatelliteMetadata
 
 
 logger = get_task_logger(__name__)
@@ -21,8 +25,37 @@ celery = Celery(
 celery.config_from_object('publisher.workers.celery_config')
 
 
+@celery.task(queue='master', name='publisher.workers.processing.master')
+def master(base_dir: str, query: dict, df_collections: dict) -> None:
+    '''Master task. It calls the workers.'''
+
+    logger.info(f'master - base_dir: {base_dir}')
+    logger.info(f'master - query: {query}\n')
+
+    # convert dates from str to date
+    query['start_date'] = datetime.strptime(query['start_date'].split('T')[0], '%Y-%m-%d')
+    query['end_date'] = datetime.strptime(query['end_date'].split('T')[0], '%Y-%m-%d')
+
+    # p_walk is a generator that returns just valid directories
+    p_walk = PublisherWalk(base_dir, query, SatelliteMetadata())
+
+    # run the tasks by chunks. PR_TASK_CHUNKS chunks are sent to one task
+    tasks = process_items.chunks(
+        generate_chunk_params(p_walk, df_collections), PR_TASK_CHUNKS
+    ).apply_async(queue=CELERY_TASK_QUEUE)
+
+    # save the errors
+    p_walk.save_the_errors_in_the_database()
+
+    logger.info('`run_master_process` task has been executed...\n')
+
+
 @celery.task(queue=CELERY_TASK_QUEUE, name='publisher.workers.processing.process_items')
-def process_items(p_walk: list, df_collections: dict):
+def process_items(p_walk: list, df_collections: dict) -> None:
+    '''Worker task that processes the items.'''
+
+    logger.info(f'process_items - p_walk: {p_walk}\n')
+
     # convert from dict to dataframe again
     df_collections = DataFrame.from_dict(df_collections)
 
@@ -38,8 +71,8 @@ def process_items(p_walk: list, df_collections: dict):
         items_insert += __items_insert
         errors_insert += __errors_insert
 
-    logger.info(f'process_items - items_insert: {items_insert}')
-    logger.info(f'process_items - errors_insert: {errors_insert}')
+    logger.info(f'process_items - items_insert: {items_insert}\n')
+    logger.info(f'process_items - errors_insert: {errors_insert}\n')
 
     # if there are INSERT clauses, then insert them in the database
     if items_insert:

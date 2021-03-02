@@ -1,12 +1,10 @@
 from werkzeug.exceptions import BadRequest
 
 from publisher.common import print_line
-from publisher.environment import PR_FILES_PATH, PR_LOGGING_LEVEL, PR_TASK_CHUNKS
+from publisher.environment import PR_LOGGING_LEVEL, PR_TASK_CHUNKS
 from publisher.logger import create_logger
-from publisher.model import PostgreSQLPublisherConnection
-from publisher.util import generate_chunk_params, PublisherWalk, SatelliteMetadata
 from publisher.validator import validate, QUERY_SCHEMA
-from publisher.workers import CELERY_TASK_QUEUE, process_items
+from publisher.workers import CELERY_TASK_QUEUE, master
 
 
 # create logger object
@@ -41,16 +39,13 @@ class Publisher:
         logger.info(f'query: {self.query}')
         print_line()
 
-        # p_walk is a generator that returns just valid directories
-        p_walk = PublisherWalk(self.BASE_DIR, self.query, SatelliteMetadata())
-
-        # run the tasks by chunks. PR_TASK_CHUNKS chunks are sent to one task
-        tasks = process_items.chunks(
-            generate_chunk_params(p_walk, self.df_collections), PR_TASK_CHUNKS
-        ).apply_async(queue=CELERY_TASK_QUEUE)
+        # run `master` task
+        task = master.apply_async(
+            (self.BASE_DIR, self.query, self.df_collections.to_dict()),
+            queue='master'
+        )
 
         # do not wait all chunks execute, because it will block the request
-        logger.info('Tasks have been executed...')
+        logger.info('`master` task has been executed...')
 
-        p_walk.save_the_errors_in_the_database()
         print_line()

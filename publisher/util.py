@@ -2,12 +2,11 @@ from copy import deepcopy
 from datetime import datetime, timedelta
 from glob import glob
 from itertools import islice
-from json import dumps, loads
+from json import loads
 from os import walk
 from os.path import abspath, dirname, join as os_path_join, sep as os_path_sep
 from re import search
 
-from pandas import read_csv
 from werkzeug.exceptions import InternalServerError
 from xmltodict import parse as xmltodict_parse
 
@@ -690,8 +689,6 @@ class PublisherWalk:
 ##################################################
 
 def generate_chunk_params(p_walk, df_collections, islice_stop=10):
-    dict_collections = df_collections.to_dict()
-
     while True:
         # exhaust the generator to get a list of values, because generator is not serializable
         p_walk_top = list(islice(p_walk, islice_stop)) # get the first N elements
@@ -700,7 +697,7 @@ def generate_chunk_params(p_walk, df_collections, islice_stop=10):
         if not p_walk_top:
             break
 
-        yield p_walk_top, dict_collections
+        yield p_walk_top, df_collections
 
 
 class SatelliteMetadata:

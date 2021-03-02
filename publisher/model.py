@@ -241,7 +241,7 @@ class DBFactory:
 
 
 def init_dbs():
-    '''Initialize the databases.'''
+    '''Initialize the test databases.'''
 
     # initialize the databases just one time
     db = PostgreSQLCatalogTestConnection()

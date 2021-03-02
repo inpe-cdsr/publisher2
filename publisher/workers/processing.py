@@ -4,15 +4,18 @@ from celery import Celery
 from celery.utils.log import get_task_logger
 from pandas import DataFrame
 
-from publisher.environment import PR_TASK_CHUNKS
 from publisher.model import DBFactory, PostgreSQLPublisherConnection
-from publisher.workers.environment import CELERY_BROKER_URL, CELERY_TASK_QUEUE
+from publisher.workers.environment import CELERY_BROKER_URL, \
+                                          CELERY_CHUNKS_PER_TASKS, CELERY_TASKS_PER_PROCESSES
 from publisher.util import create_item_and_get_insert_clauses, generate_chunk_params, \
                            PublisherWalk, SatelliteMetadata
 
 
 logger = get_task_logger(__name__)
 
+
+CELERY_MASTER_QUEUE='master'
+CELERY_PROCESSING_QUEUE='processing'
 
 # initialize Celery
 celery = Celery(
@@ -25,7 +28,7 @@ celery = Celery(
 celery.config_from_object('publisher.workers.celery_config')
 
 
-@celery.task(queue='master', name='publisher.workers.processing.master')
+@celery.task(queue=CELERY_MASTER_QUEUE, name='publisher.workers.processing.master')
 def master(base_dir: str, query: dict, df_collections: dict) -> None:
     '''Master task. It calls the workers.'''
 
@@ -39,10 +42,12 @@ def master(base_dir: str, query: dict, df_collections: dict) -> None:
     # p_walk is a generator that returns just valid directories
     p_walk = PublisherWalk(base_dir, query, SatelliteMetadata())
 
-    # run the tasks by chunks. PR_TASK_CHUNKS chunks are sent to one task
+    # run the tasks by chunks.
+    # CELERY_TASKS_PER_PROCESSES is the number of tasks that will be executed in one process
     tasks = process_items.chunks(
-        generate_chunk_params(p_walk, df_collections), PR_TASK_CHUNKS
-    ).apply_async(queue=CELERY_TASK_QUEUE)
+        generate_chunk_params(p_walk, df_collections, islice_stop=CELERY_CHUNKS_PER_TASKS),
+        CELERY_TASKS_PER_PROCESSES
+    ).apply_async(queue=CELERY_PROCESSING_QUEUE)
 
     # save the errors
     p_walk.save_the_errors_in_the_database()
@@ -50,9 +55,9 @@ def master(base_dir: str, query: dict, df_collections: dict) -> None:
     logger.info('`run_master_process` task has been executed...\n')
 
 
-@celery.task(queue=CELERY_TASK_QUEUE, name='publisher.workers.processing.process_items')
+@celery.task(queue=CELERY_PROCESSING_QUEUE, name='publisher.workers.processing.process_items')
 def process_items(p_walk: list, df_collections: dict) -> None:
-    '''Worker task that processes the items.'''
+    '''Worker task that iterate over p_walk list and processes the items.'''
 
     logger.info(f'process_items - p_walk: {p_walk}\n')
 

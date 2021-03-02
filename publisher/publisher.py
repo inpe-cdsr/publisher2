@@ -1,10 +1,11 @@
 from werkzeug.exceptions import BadRequest
 
 from publisher.common import print_line
-from publisher.environment import PR_LOGGING_LEVEL, PR_TASK_CHUNKS
+from publisher.environment import PR_LOGGING_LEVEL
 from publisher.logger import create_logger
 from publisher.validator import validate, QUERY_SCHEMA
-from publisher.workers import CELERY_TASK_QUEUE, master
+from publisher.workers import CELERY_CHUNKS_PER_TASKS, CELERY_MASTER_QUEUE, \
+                              CELERY_TASKS_PER_PROCESSES, master
 
 
 # create logger object
@@ -23,29 +24,27 @@ class Publisher:
         '''Main method.'''
 
         logger.info('Publisher.main()')
-
         print_line()
 
         logger.info(f'BASE_DIR: {self.BASE_DIR}')
-        logger.info(f'PR_TASK_CHUNKS: {PR_TASK_CHUNKS}')
-        logger.info(f'CELERY_TASK_QUEUE: {CELERY_TASK_QUEUE}')
-        logger.info(f'df_collections:\n{self.df_collections}')
+        logger.info(f'CELERY_CHUNKS_PER_TASKS: {CELERY_CHUNKS_PER_TASKS}')
+        logger.info(f'CELERY_TASKS_PER_PROCESSES: {CELERY_TASKS_PER_PROCESSES}')
+        logger.info(f'df_collections:\n{self.df_collections}\n')
 
         # validate self.query
         is_valid, self.query, errors = validate(self.query, QUERY_SCHEMA)
         if not is_valid:
             raise BadRequest(errors)
 
-        logger.info(f'query: {self.query}')
+        logger.info(f'query: {self.query}\n')
         print_line()
 
         # run `master` task
         task = master.apply_async(
             (self.BASE_DIR, self.query, self.df_collections.to_dict()),
-            queue='master'
+            queue=CELERY_MASTER_QUEUE
         )
 
         # do not wait all chunks execute, because it will block the request
         logger.info('`master` task has been executed...')
-
         print_line()

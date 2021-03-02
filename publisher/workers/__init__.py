@@ -1,2 +1,2 @@
-from .environment import CELERY_TASK_QUEUE
-from .processing import master
+from .processing import master, CELERY_MASTER_QUEUE
+from .environment import CELERY_CHUNKS_PER_TASKS, CELERY_TASKS_PER_PROCESSES

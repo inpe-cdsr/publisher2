@@ -23,11 +23,7 @@ FLASK_TESTING = str2bool(getenv('FLASK_TESTING', 'False'))
 
 # base directory to recursively traverse, base directory to search assets
 PR_BASE_DIR = getenv('PR_BASE_DIR', '/TIFF')
-# path to files folder
-PR_FILES_PATH = getenv('PR_FILES_PATH', 'files')
 PR_LOGGING_LEVEL = getenv('PR_LOGGING_LEVEL', 'INFO')
-# number of chunks per celery task
-PR_TASK_CHUNKS = int(getenv('PR_TASK_CHUNKS', 100))
 
 # if the inserted logging level already exists, then select it,
 if PR_LOGGING_LEVEL in AVAILABLE_LEVELS:

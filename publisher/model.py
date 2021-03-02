@@ -3,7 +3,6 @@
 from abc import ABC, abstractmethod
 from json import dumps, loads
 from os import getenv
-from sqlite3 import connect as sqlite3_connect
 
 from pandas import read_sql
 from psycopg2 import connect as psycopg2_connect
@@ -12,7 +11,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.pool import NullPool
 
-from publisher.environment import FLASK_TESTING, PR_FILES_PATH, PR_LOGGING_LEVEL
+from publisher.environment import FLASK_TESTING, PR_LOGGING_LEVEL
 from publisher.logger import create_logger
 
 

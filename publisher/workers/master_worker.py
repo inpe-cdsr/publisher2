@@ -39,6 +39,10 @@ def master(base_dir: str, query: dict, df_collections: dict) -> None:
     # p_walk is a generator that returns just valid directories
     p_walk = PublisherWalk(base_dir, query, SatelliteMetadata())
 
+    # statistics
+    tasks_count = 0  # number of executed tasks
+    chunks_per_tasks_count = 0  # number of chunks per tasks
+
     # run the tasks by chunks.
     while True:
         # exhaust the generator to get a list of values, because generator is not serializable
@@ -51,9 +55,15 @@ def master(base_dir: str, query: dict, df_collections: dict) -> None:
         logger.info(f'master - sending `{CELERY_CHUNKS_PER_TASKS}` chunks to `process_items` task.')
 
         # run `process_items` task
-        process_items.apply_async(
-            (p_walk_top, df_collections), queue=CELERY_PROCESSING_QUEUE
-        )
+        process_items.apply_async((p_walk_top, df_collections), queue=CELERY_PROCESSING_QUEUE)
+
+        # get statistics
+        chunks_per_tasks_count += len(p_walk_top)
+        tasks_count += 1
+
+        logger.info(f'master - `{chunks_per_tasks_count}` chunks per tasks have been sent to '
+                    '`process_items` task.')
+        logger.info(f'master - `{tasks_count}` `process_items` tasks have been executed.')
 
     # save the errors
     p_walk.save_the_errors_in_the_database()

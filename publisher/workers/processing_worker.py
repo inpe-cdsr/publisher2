@@ -1,25 +1,20 @@
-from datetime import datetime
-from itertools import islice
-
 from celery import Celery
 from celery.utils.log import get_task_logger
 from pandas import DataFrame
 
 from publisher.model import DBFactory, PostgreSQLPublisherConnection
-from publisher.workers.environment import CELERY_BROKER_URL, CELERY_CHUNKS_PER_TASKS
-from publisher.util import create_item_and_get_insert_clauses, \
-                           PublisherWalk, SatelliteMetadata
+from publisher.workers.environment import CELERY_BROKER_URL
+from publisher.util import create_item_and_get_insert_clauses
 
 
 logger = get_task_logger(__name__)
 
 
-CELERY_MASTER_QUEUE='master'
 CELERY_PROCESSING_QUEUE='processing'
 
 # initialize Celery
 celery = Celery(
-    'publisher.workers.processing',  # celery name
+    'publisher.workers.processing_worker',  # celery name
     broker=CELERY_BROKER_URL,
     # backend=CELERY_RESULT_BACKEND
 )
@@ -28,43 +23,7 @@ celery = Celery(
 celery.config_from_object('publisher.workers.celery_config')
 
 
-@celery.task(queue=CELERY_MASTER_QUEUE, name='publisher.workers.processing.master')
-def master(base_dir: str, query: dict, df_collections: dict) -> None:
-    '''Master task. It calls the workers.'''
-
-    logger.info(f'master - base_dir: {base_dir}')
-    logger.info(f'master - query: {query}\n')
-
-    # convert dates from str to date
-    query['start_date'] = datetime.strptime(query['start_date'].split('T')[0], '%Y-%m-%d')
-    query['end_date'] = datetime.strptime(query['end_date'].split('T')[0], '%Y-%m-%d')
-
-    # p_walk is a generator that returns just valid directories
-    p_walk = PublisherWalk(base_dir, query, SatelliteMetadata())
-
-    # run the tasks by chunks.
-    while True:
-        # exhaust the generator to get a list of values, because generator is not serializable
-        p_walk_top = list(islice(p_walk, CELERY_CHUNKS_PER_TASKS)) # get the first N elements
-
-        # if the p_walk generator has been exhausted, then stop the generate_chunk_params generator
-        if not p_walk_top:
-            break
-
-        logger.info(f'master - p_walk_top: {p_walk_top}')
-
-        # run `process_items` task
-        process_items.apply_async(
-            (p_walk_top, df_collections), queue=CELERY_PROCESSING_QUEUE
-        )
-
-    # save the errors
-    p_walk.save_the_errors_in_the_database()
-
-    logger.info('`master` task has been executed...\n')
-
-
-@celery.task(queue=CELERY_PROCESSING_QUEUE, name='publisher.workers.processing.process_items')
+@celery.task(queue=CELERY_PROCESSING_QUEUE, name='publisher.workers.processing_worker.process_items')
 def process_items(p_walk: list, df_collections: dict) -> None:
     '''Worker task that iterate over p_walk list and processes the items.'''
 

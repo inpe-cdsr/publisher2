@@ -48,7 +48,7 @@ def master(base_dir: str, query: dict, df_collections: dict) -> None:
         if not p_walk_top:
             break
 
-        logger.info(f'master - p_walk_top: {p_walk_top}')
+        logger.info(f'master - sending `{CELERY_CHUNKS_PER_TASKS}` chunks to `process_items` task.')
 
         # run `process_items` task
         process_items.apply_async(

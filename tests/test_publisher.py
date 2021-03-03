@@ -101,8 +101,31 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
 
         expected = [
             {
+                'message': 'Scene directory cannot be decoded: `CBERS_4A_MUX_RAW_2020_12_22.13_53_30_ETC2_CHUNK`.',
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_MUX_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_114_0/4_BC_UTM_WGS84',
+                             'method': '__generator'},
+                'type': 'warning'
+            },
+            {
+                'message': 'Scene directory cannot be decoded: `CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK`.',
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_108_0/2B_BC_UTM_WGS84',
+                             'method': '__generator'},
+                'type': 'warning'
+            },
+            {
+                'message': 'Scene directory cannot be decoded: `CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK`.',
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_116_0/4_BC_UTM_WGS84',
+                             'method': '__generator'},
+                'type': 'warning'
+            },
+            {
                 'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_108_0/4_BC_UTM_WGS84'},
                 'type': 'warning'
             },
             {

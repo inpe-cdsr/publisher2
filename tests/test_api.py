@@ -91,21 +91,9 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
 
         expected = [
             {
-                'message': 'Scene directory cannot be decoded: `CBERS_4A_MUX_RAW_2020_12_22.13_53_30_ETC2_CHUNK`.',
-                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_MUX_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_114_0/4_BC_UTM_WGS84',
-                             'method': '__generator'},
-                'type': 'warning'
-            },
-            {
-                'message': 'Scene directory cannot be decoded: `CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK`.',
-                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_108_0/2B_BC_UTM_WGS84',
-                             'method': '__generator'},
-                'type': 'warning'
-            },
-            {
-                'message': 'Scene directory cannot be decoded: `CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK`.',
-                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_116_0/4_BC_UTM_WGS84',
-                             'method': '__generator'},
+                'message': ('There is metadata to the `CBERS4A_WFI_L2B_DN` collection, however '
+                            'this collection does not exist in the database.'),
+                'metadata': {'collection': 'CBERS4A_WFI_L2B_DN'},
                 'type': 'warning'
             },
             {
@@ -247,6 +235,139 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
 
         self.check_if_the_items_have_been_added_in_the_database(
             'landsat/test__api_publish__ok__landsat7.csv'
+        )
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
+
+
+@mock.patch(*celery_sync)
+class ApiPublishAmazonia1OkTestCase(BaseTestCases.ApiBaseTestCase):
+
+    # AMAZONIA1
+
+    def test__api_publish__ok__amazonia1(self):
+        self.maxDiff=None
+
+        query = {
+            'satellite': 'AMAZONIA1',
+            'start_date': '1950-01-01',
+            'end_date': '2050-12-31'
+        }
+
+        expected = [
+            {
+                'message': 'This folder is valid, but it is empty.',
+                'metadata': {'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11/217_015_0/4_BC_LCC_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'This folder is valid, but it is empty.',
+                'metadata': {'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.14_35_23_CB11_SIR18/233_017_0/4_BC_LCC_WGS84'},
+                'type': 'warning'
+            }
+        ]
+
+        self.get(query_string=query)
+
+        self.check_if_the_items_have_been_added_in_the_database(
+            'amazonia1/test__api_publish__ok__amazonia1.csv'
+        )
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
+
+    # AMAZONIA1 WFI
+
+    def test__api_publish__ok__amazonia1_wfi_l2_dn__01(self):
+        # AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11/217_015_0/2_BC_LCC_WGS84
+        query = {
+            'satellite': 'AMAzoNIa1',
+            'sensor': 'wFi',
+            'start_date': '2021-03-01',
+            'end_date': '2021-03-03',
+            'path': 217,
+            'row': '015',
+            'geo_processing': '2',
+            'radio_processing': 'DN'
+        }
+
+        self.get(query_string=query)
+
+        self.check_if_the_items_have_been_added_in_the_database(
+            'amazonia1/test__api_publish__ok__amazonia1_wfi_l2_dn__01.csv'
+        )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
+
+    def test__api_publish__ok__amazonia1_wfi__01(self):
+        # AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11/217_015_0
+        query = {
+            'satellite': 'AMAzoNIa1',
+            'sensor': 'wFi',
+            'start_date': '2021-03-01',
+            'end_date': '2021-03-03',
+            'path': 217,
+            'row': '015',
+            # 'geo_processing': '2',
+            # 'radio_processing': 'DN'
+        }
+
+        expected = [
+            {
+                'message': 'This folder is valid, but it is empty.',
+                'metadata': {'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11/217_015_0/4_BC_LCC_WGS84'},
+                'type': 'warning'
+            }
+        ]
+
+        self.get(query_string=query)
+
+        self.check_if_the_items_have_been_added_in_the_database(
+            'amazonia1/test__api_publish__ok__amazonia1_wfi_l2_dn__01.csv'
+        )
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
+
+    def test__api_publish__ok__amazonia1_wfi_l2_dn__02(self):
+        # AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.14_35_23_CB11_SIR18/233_017_0/2_BC_LCC_WGS84
+        query = {
+            'satellite': 'AMAzoNIa1',
+            'sensor': 'wFi',
+            'start_date': '2021-03-01',
+            'end_date': '2021-03-03',
+            'path': '233',
+            'row': 17,
+            'geo_processing': '2',
+            'radio_processing': 'DN'
+        }
+
+        self.get(query_string=query)
+
+        self.check_if_the_items_have_been_added_in_the_database(
+            'amazonia1/test__api_publish__ok__amazonia1_wfi_l2_dn__02.csv'
+        )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
+
+    def test__api_publish__ok__amazonia1_wfi__02(self):
+        # AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.14_35_23_CB11_SIR18/233_017_0/2_BC_LCC_WGS84
+        query = {
+            'satellite': 'AMAzoNIa1',
+            'sensor': 'wFi',
+            'start_date': '2021-03-01',
+            'end_date': '2021-03-03',
+            'path': '233',
+            'row': 17,
+            # 'geo_processing': '2',
+            # 'radio_processing': 'DN'
+        }
+
+        expected = [
+            {
+                'message': 'This folder is valid, but it is empty.',
+                'metadata': {'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.14_35_23_CB11_SIR18/233_017_0/4_BC_LCC_WGS84'},
+                'type': 'warning'
+            }
+        ]
+
+        self.get(query_string=query)
+
+        self.check_if_the_items_have_been_added_in_the_database(
+            'amazonia1/test__api_publish__ok__amazonia1_wfi_l2_dn__02.csv'
         )
         self.check_if_the_errors_have_been_added_in_the_database(expected)
 
@@ -852,21 +973,9 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
 
         expected = [
             {
-                'message': 'Scene directory cannot be decoded: `CBERS_4A_MUX_RAW_2020_12_22.13_53_30_ETC2_CHUNK`.',
-                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_MUX_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_114_0/4_BC_UTM_WGS84',
-                             'method': '__generator'},
-                'type': 'warning'
-            },
-            {
-                'message': 'Scene directory cannot be decoded: `CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK`.',
-                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_108_0/2B_BC_UTM_WGS84',
-                             'method': '__generator'},
-                'type': 'warning'
-            },
-            {
-                'message': 'Scene directory cannot be decoded: `CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK`.',
-                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_116_0/4_BC_UTM_WGS84',
-                             'method': '__generator'},
+                'message': ('There is metadata to the `CBERS4A_WFI_L2B_DN` collection, however '
+                            'this collection does not exist in the database.'),
+                'metadata': {'collection': 'CBERS4A_WFI_L2B_DN'},
                 'type': 'warning'
             },
             {
@@ -1622,7 +1731,7 @@ class ApiPublishErrorTestCase(BaseTestCases.ApiBaseTestCase):
             'code': 400,
             'name': 'Bad Request',
             'description': {
-                'satellite': ["value does not match regex '^CBERS[1-4][A-B]*|^LANDSAT\\d\'"],
+                'satellite': ["value does not match regex 'AMAZONIA1|^CBERS[1-4][A-B]*|^LANDSAT\\d\'"],
                 'start_date': [
                     "field 'start_date' cannot be coerced: time data '2020-15-31' does not match format '%Y-%m-%d'",
                     'must be of datetime type'

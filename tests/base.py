@@ -21,6 +21,7 @@ test_delay_secs = 0.8
 
 class BaseTestCases:
     class BaseTestCase(TestCase):
+        # maxDiff=None
 
         def setUp(self):
             # clean tables before each test case
@@ -41,6 +42,7 @@ class BaseTestCases:
         def check_if_the_items_have_been_added_in_the_database(self, expected_file_path):
             # get the result from database
             result = db.select_from_items()
+            # result = db.select_from_items(to_csv=expected_file_path)
             # get the expected result
             expected = BaseTestCases.BaseTestCase.read_item_from_csv(expected_file_path)
             assert_frame_equal(expected, result)

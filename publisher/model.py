@@ -160,7 +160,7 @@ class PostgreSQLCatalogTestConnection(PostgreSQLTestConnection):
         result['metadata'] = result['metadata'].astype('str')
 
         if to_csv is not None:
-            result.to_csv(f'tests/publisher/{to_csv}', index=False)
+            result.to_csv(f'tests/api/{to_csv}', index=False)
 
         return result
 

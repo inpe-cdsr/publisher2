@@ -28,7 +28,7 @@ class PublisherValidator(Validator):
 
 QUERY_SCHEMA = {
     'satellite': {
-        'type': 'string', 'coerce': to_upper_case, 'regex': '^CBERS[1-4][A-B]*|^LANDSAT\d',
+        'type': 'string', 'coerce': to_upper_case, 'regex': 'AMAZONIA1|^CBERS[1-4][A-B]*|^LANDSAT\d',
         'required': True
     },
     'sensor': {

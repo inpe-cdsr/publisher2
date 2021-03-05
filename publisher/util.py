@@ -272,10 +272,13 @@ def decode_scene_dir(scene_dir):
 
     scene_dir_first, scene_dir_second = scene_dir.split('.')
 
-    if scene_dir_first.startswith('CBERS_4'):
-        # examples: CBERS_4_MUX_DRD_2020_07_31.13_07_00_CB11
-        # or CBERS_4A_MUX_RAW_2019_12_27.13_53_00_ETC2
-        # or CBERS_4A_MUX_RAW_2019_12_28.14_15_00
+    if scene_dir_first.startswith('AMAZONIA_1') or scene_dir_first.startswith('CBERS_4'):
+        # examples:
+        # - AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11
+        # - AMAZONIA_1_WFI_DRD_2021_03_03.14_35_23_CB11_SIR18
+        # - CBERS_4_MUX_DRD_2020_07_31.13_07_00_CB11
+        # - CBERS_4A_MUX_RAW_2019_12_27.13_53_00_ETC2
+        # - CBERS_4A_MUX_RAW_2019_12_28.14_15_00
 
         satellite, number, sensor, _, *date = scene_dir_first.split('_')
         # create satellite name with its number
@@ -283,11 +286,9 @@ def decode_scene_dir(scene_dir):
         date = '-'.join(date)
         time = scene_dir_second.split('_')
 
-        if len(time) == 3:
-            # this time has just time, then I join the parts (e.g. '13_53_00')
-            time = ':'.join(time)
-        elif len(time) == 4:
-            # this time has NOT just time, then I join the time parts (e.g. '13_53_00_ETC2')
+        if len(time) >= 3:
+            # get the time part from the list of parts
+            # `time` can be: `13_53_00`, `13_53_00_ETC2`, `14_35_23_CB11_SIR18`, etc.
             time = ':'.join(time[0:3])
         else:
             raise PublisherDecodeException()

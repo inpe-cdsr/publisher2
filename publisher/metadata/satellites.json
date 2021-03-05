@@ -1,6 +1,37 @@
 {
 	"satellites": [
 		{
+			"name": "AMAZONIA1",
+			"sensors": [
+				{
+					"name": "WFI",
+					"resolution": 58,
+					"quicklook": [
+						"red",
+						"nir",
+						"green"
+					],
+					"assets": {
+						"DN": {
+							"blue":  "BAND1.tif",
+							"green": "BAND2.tif",
+							"red":   "BAND3.tif",
+							"nir":   "BAND4.tif"
+						},
+						"SR": {
+							"blue":    "BAND1_GRID_SURFACE.tif",
+							"green":   "BAND2_GRID_SURFACE.tif",
+							"red":     "BAND3_GRID_SURFACE.tif",
+							"nir":     "BAND4_GRID_SURFACE.tif",
+							"quality": "CMASK_GRID_SURFACE.tif",
+							"evi":     "EVI.tif",
+							"ndvi":    "NDVI.tif"
+						}
+					}
+				}
+			]
+		},
+		{
 			"name": "CBERS2B",
 			"sensors": [
 				{

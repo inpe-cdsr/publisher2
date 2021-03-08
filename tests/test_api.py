@@ -120,6 +120,24 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
 
         expected = [
             {
+                'message': ('There is metadata to the `CBERS4A_MUX_L3_DN` collection, however '
+                            'this collection does not exist in the database.'),
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_MUX_RAW_2020_12_01.13_47_30_ETC2/209_122_0/3_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': ('There is metadata to the `CBERS4A_WFI_L3_DN` collection, however '
+                            'this collection does not exist in the database.'),
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_11/CBERS_4A_WFI_RAW_2020_11_22.14_11_30_ETC2/217_156_0/3_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': ('There is metadata to the `CBERS4A_WPM_L3_DN` collection, however '
+                            'this collection does not exist in the database.'),
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_WPM_RAW_2020_12_20.14_53_00_ETC2/230_126_0/3_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
                 'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'},
                 'type': 'warning'
@@ -127,11 +145,6 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
             {
                 'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_108_0/4_BC_UTM_WGS84'},
-                'type': 'warning'
-            },
-            {
-                'message': 'This folder is valid, but it is empty.',
-                'metadata': {'folder': '/TIFF/CBERS4A/2020_04/CBERS_4A_MUX_RAW_2020_04_06.00_56_20_CP5/164_025_0/0_NN_UTM_WGS84'},
                 'type': 'warning'
             },
             {
@@ -986,6 +999,24 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
 
         expected = [
             {
+                'message': ('There is metadata to the `CBERS4A_MUX_L3_DN` collection, however '
+                            'this collection does not exist in the database.'),
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_MUX_RAW_2020_12_01.13_47_30_ETC2/209_122_0/3_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': ('There is metadata to the `CBERS4A_WFI_L3_DN` collection, however '
+                            'this collection does not exist in the database.'),
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_11/CBERS_4A_WFI_RAW_2020_11_22.14_11_30_ETC2/217_156_0/3_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': ('There is metadata to the `CBERS4A_WPM_L3_DN` collection, however '
+                            'this collection does not exist in the database.'),
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_WPM_RAW_2020_12_20.14_53_00_ETC2/230_126_0/3_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
                 'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'},
                 'type': 'warning'
@@ -993,11 +1024,6 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
             {
                 'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_108_0/4_BC_UTM_WGS84'},
-                'type': 'warning'
-            },
-            {
-                'message': 'This folder is valid, but it is empty.',
-                'metadata': {'folder': '/TIFF/CBERS4A/2020_04/CBERS_4A_MUX_RAW_2020_04_06.00_56_20_CP5/164_025_0/0_NN_UTM_WGS84'},
                 'type': 'warning'
             },
             {
@@ -1720,8 +1746,8 @@ class ApiPublishErrorTestCase(BaseTestCases.ApiBaseTestCase):
             'end_date': '2020-05',
             'path': '0',
             'row': 1000,
-            'geo_processing': '5',
-            'radio_processing': 'Dz'
+            'geo_processing': '1,3C,2',
+            'radio_processing': 'Dz,sR,Dn'
         }
 
         expected = {
@@ -1739,8 +1765,8 @@ class ApiPublishErrorTestCase(BaseTestCases.ApiBaseTestCase):
                 ],
                 'path': ['min value is 1'],
                 'row': ['max value is 999'],
-                'geo_processing': ['max value is 4'],
-                'radio_processing': ['unallowed value DZ']
+                'geo_processing': ["unallowed values ['3C']"],
+                'radio_processing': ["unallowed values ['DZ']"]
             }
         }
 

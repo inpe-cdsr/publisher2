@@ -25,6 +25,35 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
         # before checking if the data has been inserted correctly
         sleep(test_delay_secs)
 
+    # AMAZONIA1
+
+    def test__publisher__ok__amazonia1(self):
+        query = {
+            'satellite': 'AMAZONIA1',
+            'start_date': '1950-01-01',
+            'end_date': '2050-12-31'
+        }
+
+        expected = [
+            {
+                'message': 'This folder is valid, but it is empty.',
+                'metadata': {'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11/217_015_0/4_BC_LCC_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'This folder is valid, but it is empty.',
+                'metadata': {'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.14_35_23_CB11_SIR18/233_017_0/4_BC_LCC_WGS84'},
+                'type': 'warning'
+            }
+        ]
+
+        AsyncPublisherOkTestCase.__create_and_execute_publisher(query)
+
+        self.check_if_the_items_have_been_added_in_the_database(
+            'amazonia1/test__api_publish__ok__amazonia1.csv'
+        )
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
+
     # CBERS2B
 
     def test__publisher__ok__cbers2b(self):

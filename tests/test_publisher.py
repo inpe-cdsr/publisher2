@@ -66,7 +66,7 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
         expected = [
             {
                 'message': 'There is metadata to the `CBERS2B_XYZ_L2_DN` collection, however this collection does not exist in the database.',
-                'metadata': {'collection': 'CBERS2B_XYZ_L2_DN'},
+                'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_XYZ_20070925.145654/181_096_0/2_BC_UTM_WGS84'},
                 'type': 'warning'
             },
             {

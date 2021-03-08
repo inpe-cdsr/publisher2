@@ -56,7 +56,7 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
         expected = [
             {
                 'message': 'There is metadata to the `CBERS2B_XYZ_L2_DN` collection, however this collection does not exist in the database.',
-                'metadata': {'collection': 'CBERS2B_XYZ_L2_DN'},
+                'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_XYZ_20070925.145654/181_096_0/2_BC_UTM_WGS84'},
                 'type': 'warning'
             },
             {
@@ -399,8 +399,6 @@ class ApiPublishCbers2BOkTestCase(BaseTestCases.ApiBaseTestCase):
     # CBERS2B
 
     def test__api_publish__ok__cbers2b(self):
-        self.maxDiff=None
-
         query = {
             'satellite': 'CBERS2B',
             'start_date': '1950-01-01',
@@ -410,7 +408,7 @@ class ApiPublishCbers2BOkTestCase(BaseTestCases.ApiBaseTestCase):
         expected = [
             {
                 'message': 'There is metadata to the `CBERS2B_XYZ_L2_DN` collection, however this collection does not exist in the database.',
-                'metadata': {'collection': 'CBERS2B_XYZ_L2_DN'},
+                'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_XYZ_20070925.145654/181_096_0/2_BC_UTM_WGS84'},
                 'type': 'warning'
             },
             {
@@ -613,12 +611,10 @@ class ApiPublishCbers2BOkTestCase(BaseTestCases.ApiBaseTestCase):
         }
 
         expected = [{
-            'type': 'warning',
             'message': ('There is metadata to the `CBERS2B_XYZ_L2_DN` collection, however '
                         'this collection does not exist in the database.'),
-            'metadata': {
-                'collection': 'CBERS2B_XYZ_L2_DN'
-            }
+            'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_XYZ_20070925.145654/181_096_0/2_BC_UTM_WGS84'},
+            'type': 'warning'
         }]
 
         self.get(query_string=query)
@@ -631,8 +627,6 @@ class ApiPublishCbers2BOkTestCase(BaseTestCases.ApiBaseTestCase):
 class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
 
     def test__api_publish__ok__cbers4(self):
-        self.maxDiff=None
-
         query = {
             'satellite': 'CBERS4',
             'start_date': '1950-01-01',
@@ -1357,8 +1351,6 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
     # LANDSAT1
 
     def test__api_publish__ok__landsat1(self):
-        self.maxDiff=None
-
         query = {
             'satellite': 'LANDSAT1',
             'start_date': '1950-01-01',
@@ -1430,8 +1422,6 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
     # LANDSAT2
 
     def test__api_publish__ok__landsat2(self):
-        self.maxDiff=None
-
         query = {
             'satellite': 'LANDSAT2',
             'start_date': '1950-01-01',
@@ -1503,8 +1493,6 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
     # LANDSAT3
 
     def test__api_publish__ok__landsat3(self):
-        self.maxDiff=None
-
         query = {
             'satellite': 'LANDSAT3',
             'start_date': '1950-01-01',
@@ -1576,8 +1564,6 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
     # LANDSAT5
 
     def test__api_publish__ok__landsat5(self):
-        self.maxDiff=None
-
         query = {
             'satellite': 'LANDSAT5',
             'start_date': '1950-01-01',
@@ -1649,8 +1635,6 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
     # LANDSAT7
 
     def test__api_publish__ok__landsat7(self):
-        self.maxDiff=None
-
         query = {
             'satellite': 'LANDSAT7',
             'start_date': '1950-01-01',

@@ -575,13 +575,14 @@ class PublisherWalk:
         elif dir_level == 5:
             # I'm inside path/row folder, then the dirs are geo processing folders
 
-            # if the option is None, then return the original dirs
-            if self.query['geo_processing'] is None:
-                return dirs
+            # lambda function to check if the directory starts with any selected geo processing
+            check_if_dir_startswith_any_gp = lambda directory: any(
+                directory.startswith(gp) for gp in self.query['geo_processing']
+            )
 
             # if the level_dir does not start with the informed geo_processing, then the folder is invalid
             # `d` example: `2_BC_UTM_WGS84`
-            return [d for d in dirs if d.startswith(str(self.query['geo_processing']))]
+            return [d for d in dirs if check_if_dir_startswith_any_gp(d)]
 
         # check files existence
         elif dir_level == 6:
@@ -617,9 +618,9 @@ class PublisherWalk:
         # CBERS2B/2010_03/CBERS2B_CCD_20100301.130915/151_098_0/2_BC_UTM_WGS84
         base_path = f'{self.BASE_DIR}/{self.query["satellite"]}'
 
-        for dir_path, dirs, files in walk(base_path):
-            # logger.info(f'dir_path: {dir_path}')
+        # logger.info(f'PublisherWalk - self.query: {self.query}')
 
+        for dir_path, dirs, files in walk(base_path):
             # get dir path starting at `/TIFF`
             index = dir_path.find('TIFF')
             # `splitted_dir_path` example:
@@ -633,8 +634,6 @@ class PublisherWalk:
             # if I'm not inside a geo processing dir, then ignore it
             if dir_level != 6:
                 continue
-
-            # logger.info(f'dir_path: {dir_path}')
 
             # if the dir does not have any file, then report and ignore it
             if not files:

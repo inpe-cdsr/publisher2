@@ -48,6 +48,8 @@ def master(base_dir: str, query: dict, df_collections: dict) -> None:
         # exhaust the generator to get a list of values, because generator is not serializable
         p_walk_top = list(islice(p_walk, CELERY_CHUNKS_PER_TASKS)) # get the first N elements
 
+        # logger.info(f'master - p_walk_top: {p_walk_top}')
+
         # if the p_walk generator has been exhausted, then stop the generate_chunk_params generator
         if not p_walk_top:
             break

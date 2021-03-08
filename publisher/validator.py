@@ -2,11 +2,17 @@ from cerberus import Validator
 from datetime import datetime
 
 
+GEO_PROCESSING_ALLOWED_LIST = ['1', '2', '2B', '3', '4']
+RADIO_PROCESSING_ALLOWED_LIST = ['DN', 'SR']
+
+
 # function to convert from string to datetime
 to_date = lambda s: datetime.strptime(s, '%Y-%m-%d')
 
 # function to transform the string on upper case
 to_upper_case = lambda s: s.upper()
+
+to_list = lambda s: sorted(to_upper_case(str(s)).split(','))
 
 
 class PublisherValidator(Validator):
@@ -52,28 +58,17 @@ QUERY_SCHEMA = {
         'default': None, 'nullable': True
     },
     'geo_processing': {
-        'type': 'integer', 'coerce': int, 'min': 1, 'max': 4,
-        'default': None, 'nullable': True
+        'type': 'list', 'coerce': to_list, 'allowed': GEO_PROCESSING_ALLOWED_LIST,
+        'default': ','.join(GEO_PROCESSING_ALLOWED_LIST)
     },
     'radio_processing': {
-        'type': 'string', 'coerce': to_upper_case, 'allowed': ['DN', 'SR'],
-        'default': None, 'nullable': True
+        'type': 'list', 'coerce': to_list, 'allowed': RADIO_PROCESSING_ALLOWED_LIST,
+        'default': ','.join(RADIO_PROCESSING_ALLOWED_LIST)
     }
 }
 
 
-def validate(data, schema):
+def validate(data: dict, schema: dict) -> (bool, dict, dict):
     v = PublisherValidator(schema)
     is_valid = v.validate(data)
-
-    if is_valid:
-        radio_processing = v.document['radio_processing']
-
-        if radio_processing == 'DN':
-            v.document['radio_processing'] = ['DN']
-        elif radio_processing == 'SR':
-            v.document['radio_processing'] = ['SR']
-        else: # elif radio_processing is None
-            v.document['radio_processing'] = ['DN', 'SR']
-
     return is_valid, v.document, v.errors

@@ -130,12 +130,6 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
 
         expected = [
             {
-                'message': ('There is metadata to the `CBERS4A_WFI_L2B_DN` collection, however '
-                            'this collection does not exist in the database.'),
-                'metadata': {'collection': 'CBERS4A_WFI_L2B_DN'},
-                'type': 'warning'
-            },
-            {
                 'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'},
                 'type': 'warning'

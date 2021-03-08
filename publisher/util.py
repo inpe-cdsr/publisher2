@@ -243,7 +243,7 @@ def create_item_and_get_insert_clauses(dir_path, dn_xml_file_path, assets, df_co
                             f'There is metadata to the `{item["collection"]["name"]}` collection, '
                             'however this collection does not exist in the database.'
                         ),
-                        'metadata': {'collection': item['collection']['name']},
+                        'metadata': {'folder': dir_path},
                         'type': 'warning'
                     })
                 )

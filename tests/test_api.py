@@ -1746,7 +1746,7 @@ class ApiPublishErrorTestCase(BaseTestCases.ApiBaseTestCase):
             'end_date': '2020-05',
             'path': '0',
             'row': 1000,
-            'geo_processing': '1,3C,2',
+            'geo_processing': '4,3C,2',
             'radio_processing': 'Dz,sR,Dn'
         }
 
@@ -1846,7 +1846,7 @@ class ApiPublishErrorTestCase(BaseTestCases.ApiBaseTestCase):
             'code': 400,
             'name': 'Bad Request',
             'description': {
-                'start_date': ['`start_date` field is greater than `end_date` field.']
+                'start_date': ['`start_date` field cannot be greater than `end_date` field.']
             }
         }
 

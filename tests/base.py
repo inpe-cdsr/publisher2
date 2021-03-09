@@ -16,12 +16,12 @@ db_publisher = PostgreSQLPublisherConnection()
 celery_async = ('publisher.workers.celery_config.task_always_eager', False)
 celery_sync = ('publisher.workers.celery_config.task_always_eager', True)
 
-test_delay_secs = 1.4
+test_delay_secs = 1.5
 
 
 class BaseTestCases:
     class BaseTestCase(TestCase):
-        # maxDiff=None
+        maxDiff=None
 
         def setUp(self):
             # clean tables before each test case

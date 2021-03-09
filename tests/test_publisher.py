@@ -146,6 +146,11 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
             },
             {
                 'message': 'This folder is valid, but it is empty.',
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_04/CBERS_4A_MUX_RAW_2020_04_23.01_24_22_CP5/266_023_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'This folder is valid, but it is empty.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2020_04/CBERS_4A_WPM_RAW_2020_04_01.13_18_58_ETC2/202_112_0/4_BC_UTM_WGS84'},
                 'type': 'warning'
             },

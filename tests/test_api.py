@@ -136,6 +136,11 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
             },
             {
                 'message': 'This folder is valid, but it is empty.',
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_04/CBERS_4A_MUX_RAW_2020_04_23.01_24_22_CP5/266_023_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'This folder is valid, but it is empty.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2020_04/CBERS_4A_WPM_RAW_2020_04_01.13_18_58_ETC2/202_112_0/4_BC_UTM_WGS84'},
                 'type': 'warning'
             },
@@ -312,7 +317,7 @@ class ApiPublishAmazonia1OkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__amazonia1_wfi__01(self):
-        # AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11/217_015_0
+        # AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11/217_015_0/
         query = {
             'satellite': 'AMAzoNIa1',
             'sensor': 'wFi',
@@ -1005,6 +1010,11 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
             },
             {
                 'message': 'This folder is valid, but it is empty.',
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_04/CBERS_4A_MUX_RAW_2020_04_23.01_24_22_CP5/266_023_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'This folder is valid, but it is empty.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2020_04/CBERS_4A_WPM_RAW_2020_04_01.13_18_58_ETC2/202_112_0/4_BC_UTM_WGS84'},
                 'type': 'warning'
             },
@@ -1198,6 +1208,32 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
             'cbers4a/test__api_publish__ok__cbers4a_mux_l4_dn__chunk.csv'
         )
         self.check_if_the_errors_have_been_added_in_the_database(expected=[])
+
+    def test__api_publish__ok__cbers4a_mux__ignore_l0_l1_folders(self):
+        # CBERS4A/2020_04/CBERS_4A_MUX_RAW_2020_04_23.01_24_22_CP5/266_023_0
+        query = {
+            'satellite': 'CbERs4a',
+            'sensor': 'mux',
+            'start_date': '2020-04-22',
+            'end_date': '2020-04-24',
+            'path': 266,
+            'row': '023',
+            # 'geo_processing': '4',
+            # 'radio_processing': 'DN'
+        }
+
+        expected = [{
+            'message': 'This folder is valid, but it is empty.',
+            'metadata': {'folder': '/TIFF/CBERS4A/2020_04/CBERS_4A_MUX_RAW_2020_04_23.01_24_22_CP5/266_023_0/4_BC_UTM_WGS84'},
+            'type': 'warning'
+        }]
+
+        self.get(query_string=query)
+
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test__api_publish__ok__cbers4a_mux__ignore_l0_l1_folders.csv'
+        )
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
 
     # CBERS4A WFI
 

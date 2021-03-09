@@ -1,8 +1,8 @@
 from cerberus import Validator
 from datetime import datetime
 
-
-GEO_PROCESSING_ALLOWED_LIST = ['1', '2', '2B', '3', '4']
+# L1 is ignored
+GEO_PROCESSING_ALLOWED_LIST = ['2', '2B', '3', '4']
 RADIO_PROCESSING_ALLOWED_LIST = ['DN', 'SR']
 
 
@@ -12,6 +12,7 @@ to_date = lambda s: datetime.strptime(s, '%Y-%m-%d')
 # function to transform the string on upper case
 to_upper_case = lambda s: s.upper()
 
+# function to convert string to a sorted list
 to_list = lambda s: sorted(to_upper_case(str(s)).split(','))
 
 
@@ -25,11 +26,11 @@ class PublisherValidator(Validator):
         '''
 
         if target_field not in self.document:
-            self._error(self_field, f'Field {target_field} is not in the document.')
+            self._error(self_field, f'`{target_field}` field is not in the document.')
 
         target_value = self.document[target_field]
         if self_value > target_value:
-            self._error(self_field, f'`{self_field}` field is greater than `{target_field}` field.')
+            self._error(self_field, f'`{self_field}` field cannot be greater than `{target_field}` field.')
 
 
 QUERY_SCHEMA = {
@@ -70,5 +71,4 @@ QUERY_SCHEMA = {
 
 def validate(data: dict, schema: dict) -> (bool, dict, dict):
     v = PublisherValidator(schema)
-    is_valid = v.validate(data)
-    return is_valid, v.document, v.errors
+    return v.validate(data), v.document, v.errors

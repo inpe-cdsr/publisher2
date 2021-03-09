@@ -1184,6 +1184,25 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_table_is_empty()
         self.check_if_the_errors_have_been_added_in_the_database(expected)
 
+    def test__api_publish__ok__cbers4a_mux_l4_dn__chunk(self):
+        # CBERS4A/2020_12/CBERS_4A_MUX_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_114_0/
+        query = {
+            'satellite': 'CbERs4a',
+            'sensor': 'mux',
+            'start_date': '2020-12-22',
+            'end_date': '2020-12-22',
+            'path': 211,
+            'row': 114,
+            'geo_processing': '4',
+            'radio_processing': 'DN'
+        }
+
+        self.get(query_string=query)
+
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test__api_publish__ok__cbers4a_mux_l4_dn__chunk.csv'
+        )
+
     # CBERS4A WFI
 
     def test__api_publish__ok__cbers4a_wfi_l2_and_l4_sr(self):
@@ -1312,6 +1331,44 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4a/test__api_publish__ok__cbers4a_wfi__missing_path_and_row.csv'
+        )
+
+    def test__api_publish__ok__cbers4a_wfi_l4_dn_and_sr__chunk(self):
+        # CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_116_0/
+        query = {
+            'satellite': 'CbERs4a',
+            'sensor': 'WfI',
+            'start_date': '2020-12-22',
+            'end_date': '2020-12-22',
+            'path': 211,
+            'row': '116',
+            'geo_processing': '4',
+            # 'radio_processing': 'DN'
+        }
+
+        self.get(query_string=query)
+
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test__api_publish__ok__cbers4a_wfi_l4_dn_and_sr__chunk.csv'
+        )
+
+    def test__api_publish__ok__cbers4a_wfi_l2b_dn__chunk(self):
+        # CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_108_0/
+        query = {
+            'satellite': 'CbERs4a',
+            'sensor': 'WfI',
+            'start_date': '2020-12-22',
+            'end_date': '2020-12-22',
+            'path': '211',
+            'row': 108,
+            'geo_processing': '2b',
+            'radio_processing': 'DN'
+        }
+
+        self.get(query_string=query)
+
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test__api_publish__ok__cbers4a_wfi_l2b_dn__chunk.csv'
         )
 
     # CBERS4A WPM

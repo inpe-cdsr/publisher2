@@ -120,24 +120,6 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
 
         expected = [
             {
-                'message': ('There is metadata to the `CBERS4A_MUX_L3_DN` collection, however '
-                            'this collection does not exist in the database.'),
-                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_MUX_RAW_2020_12_01.13_47_30_ETC2/209_122_0/3_BC_UTM_WGS84'},
-                'type': 'warning'
-            },
-            {
-                'message': ('There is metadata to the `CBERS4A_WFI_L3_DN` collection, however '
-                            'this collection does not exist in the database.'),
-                'metadata': {'folder': '/TIFF/CBERS4A/2020_11/CBERS_4A_WFI_RAW_2020_11_22.14_11_30_ETC2/217_156_0/3_BC_UTM_WGS84'},
-                'type': 'warning'
-            },
-            {
-                'message': ('There is metadata to the `CBERS4A_WPM_L3_DN` collection, however '
-                            'this collection does not exist in the database.'),
-                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_WPM_RAW_2020_12_20.14_53_00_ETC2/230_126_0/3_BC_UTM_WGS84'},
-                'type': 'warning'
-            },
-            {
                 'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'},
                 'type': 'warning'
@@ -999,24 +981,6 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
 
         expected = [
             {
-                'message': ('There is metadata to the `CBERS4A_MUX_L3_DN` collection, however '
-                            'this collection does not exist in the database.'),
-                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_MUX_RAW_2020_12_01.13_47_30_ETC2/209_122_0/3_BC_UTM_WGS84'},
-                'type': 'warning'
-            },
-            {
-                'message': ('There is metadata to the `CBERS4A_WFI_L3_DN` collection, however '
-                            'this collection does not exist in the database.'),
-                'metadata': {'folder': '/TIFF/CBERS4A/2020_11/CBERS_4A_WFI_RAW_2020_11_22.14_11_30_ETC2/217_156_0/3_BC_UTM_WGS84'},
-                'type': 'warning'
-            },
-            {
-                'message': ('There is metadata to the `CBERS4A_WPM_L3_DN` collection, however '
-                            'this collection does not exist in the database.'),
-                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_WPM_RAW_2020_12_20.14_53_00_ETC2/230_126_0/3_BC_UTM_WGS84'},
-                'type': 'warning'
-            },
-            {
                 'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'},
                 'type': 'warning'
@@ -1094,6 +1058,7 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4a/test__api_publish__ok__cbers4a_mux_l2_dn.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__cbers4a_mux_l2_dn__next_to_0h(self):
         # scene_dir with time between 0h and 5h, consider one day ago
@@ -1114,6 +1079,27 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4a/test__api_publish__ok__cbers4a_mux_l2_dn__next_to_0h.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
+
+    def test__api_publish__ok__cbers4a_mux_l3_dn(self):
+        # CBERS4A/2020_12/CBERS_4A_MUX_RAW_2020_12_01.13_47_30_ETC2/209_122_0/
+        query = {
+            'satellite': 'CbERs4a',
+            'sensor': 'mux',
+            'start_date': '2020-12-01',
+            'end_date': '2020-12-01',
+            'path': '209',
+            'row': 122,
+            'geo_processing': '3',
+            # 'radio_processing': 'DN'
+        }
+
+        self.get(query_string=query)
+
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test__api_publish__ok__cbers4a_mux_l3_dn.csv'
+        )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__cbers4a_mux_l4_dn(self):
         # CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_27.13_53_00_ETC2/215_150_0/4_BC_UTM_WGS84
@@ -1133,6 +1119,7 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4a/test__api_publish__ok__cbers4a_mux_l4_dn.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__cbers4a_mux_l4_dn__empty_folder(self):
         query = {
@@ -1202,6 +1189,7 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4a/test__api_publish__ok__cbers4a_mux_l4_dn__chunk.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     # CBERS4A WFI
 
@@ -1223,134 +1211,7 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4a/test__api_publish__ok__cbers4a_wfi_l2_and_l4_sr.csv'
         )
-
-    def test__api_publish__ok__cbers4a_wfi_l4_dn(self):
-        # CBERS4A/2019_12/CBERS_4A_WFI_RAW_2019_12_27.13_53_00_ETC2/215_132_0/4_BC_UTM_WGS84
-        query = {
-            'satellite': 'CBERS4A',
-            'sensor': 'wfi',
-            'start_date': '2019-12-20',
-            'end_date': '2019-12-30',
-            'path': '215',
-            'row': '132',
-            'geo_processing': '4',
-            'radio_processing': 'DN'
-        }
-
-        self.get(query_string=query)
-
-        self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4a/test__api_publish__ok__cbers4a_wfi_l4_dn.csv'
-        )
-
-    def test__api_publish__ok__cbers4a_wfi_l4_sr(self):
-        # CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84/
-        query = {
-            'satellite': 'cbers4a',
-            'sensor': 'wfi',
-            'start_date': '2020-12-07',
-            'end_date': '2020-12-07',
-            'path': '214',
-            'row': '108',
-            'geo_processing': '4',
-            'radio_processing': 'sr'
-        }
-
-        self.get(query_string=query)
-
-        self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4a/test__api_publish__ok__cbers4a_wfi_l4_sr.csv'
-        )
-
-    def test__api_publish__ok__cbers4a_wfi_l4_dn_and_sr(self):
-        # CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84/
-        query = {
-            'satellite': 'cbers4a',
-            'sensor': 'wfi',
-            'start_date': '2020-12-07',
-            'end_date': '2020-12-07',
-            'path': '214',
-            'row': '108',
-            'geo_processing': '4'
-            # radio processing is empty in order to publish both `DN` and `SR` files
-        }
-
-        self.get(query_string=query)
-
-        self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4a/test__api_publish__ok__cbers4a_wfi_l4_dn_and_sr.csv'
-        )
-
-    def test__api_publish__ok__cbers4a_wfi__empty_result(self):
-        # CBERS4A/2020_11/CBERS_4A_WFI_RAW_2020_11_10.13_41_00_ETC2/207_?_0/2_BC_UTM_WGS84
-        # `207_148_0` exist, but `207_105_0` does not exist
-        query = {
-            'satellite': 'CBERS4A',
-            'sensor': 'wfi',
-            'start_date': '2020-11-10',
-            'end_date': '2020-11-10',
-            'path': '207',
-            'row': '105', # <-- there is not this row
-            'geo_processing': '2',
-            'radio_processing': 'DN'
-        }
-
-        self.get(query_string=query)
-
-        self.check_if_the_items_table_is_empty()
-
-    def test__api_publish__ok__cbers4a_wfi__missing_geo_and_radio_processings(self):
-        # CBERS4A/2019_12/CBERS_4A_WFI_RAW_2019_12_27.13_53_00_ETC2/215_132_0/4_BC_UTM_WGS84
-        query = {
-            'satellite': 'CBERS4A',
-            'sensor': 'wfi',
-            'start_date': '2019-12-01',
-            'end_date': '2020-06-30',
-            'path': '215',
-            'row': '132'
-        }
-
-        self.get(query_string=query)
-
-        self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4a/test__api_publish__ok__cbers4a_wfi__missing_geo_and_radio_processings.csv'
-        )
-
-    def test__api_publish__ok__cbers4a_wfi__missing_path_and_row(self):
-        # CBERS4A/2019_12/CBERS_4A_WFI_RAW_2019_12_27.13_53_00_ETC2/215_132_0/4_BC_UTM_WGS84/
-        query = {
-            'satellite': 'CBERS4A',
-            'sensor': 'wfi',
-            'start_date': '2019-12-01',
-            'end_date': '2020-06-30',
-            'geo_processing': '4',
-            'radio_processing': 'DN'
-        }
-
-        self.get(query_string=query)
-
-        self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4a/test__api_publish__ok__cbers4a_wfi__missing_path_and_row.csv'
-        )
-
-    def test__api_publish__ok__cbers4a_wfi_l4_dn_and_sr__chunk(self):
-        # CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_116_0/
-        query = {
-            'satellite': 'CbERs4a',
-            'sensor': 'WfI',
-            'start_date': '2020-12-22',
-            'end_date': '2020-12-22',
-            'path': 211,
-            'row': '116',
-            'geo_processing': '4',
-            # 'radio_processing': 'DN'
-        }
-
-        self.get(query_string=query)
-
-        self.check_if_the_items_have_been_added_in_the_database(
-            'cbers4a/test__api_publish__ok__cbers4a_wfi_l4_dn_and_sr__chunk.csv'
-        )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__cbers4a_wfi_l2b_dn__chunk(self):
         # CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_108_0/
@@ -1370,6 +1231,162 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4a/test__api_publish__ok__cbers4a_wfi_l2b_dn__chunk.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
+
+    def test__api_publish__ok__cbers4a_wfi_l3_dn(self):
+        # CBERS4A/2020_11/CBERS_4A_WFI_RAW_2020_11_22.14_11_30_ETC2/217_156_0/
+        query = {
+            'satellite': 'CbERs4a',
+            'sensor': 'wfi',
+            'start_date': '2020-11-22',
+            'end_date': '2020-11-22',
+            'path': 217,
+            'row': '156',
+            'geo_processing': '3',
+            # 'radio_processing': 'DN'
+        }
+
+        self.get(query_string=query)
+
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test__api_publish__ok__cbers4a_wfi_l3_dn.csv'
+        )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
+
+    def test__api_publish__ok__cbers4a_wfi_l4_dn(self):
+        # CBERS4A/2019_12/CBERS_4A_WFI_RAW_2019_12_27.13_53_00_ETC2/215_132_0/4_BC_UTM_WGS84
+        query = {
+            'satellite': 'CBERS4A',
+            'sensor': 'wfi',
+            'start_date': '2019-12-20',
+            'end_date': '2019-12-30',
+            'path': '215',
+            'row': '132',
+            'geo_processing': '4',
+            'radio_processing': 'DN'
+        }
+
+        self.get(query_string=query)
+
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test__api_publish__ok__cbers4a_wfi_l4_dn.csv'
+        )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
+
+    def test__api_publish__ok__cbers4a_wfi_l4_sr(self):
+        # CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84/
+        query = {
+            'satellite': 'cbers4a',
+            'sensor': 'wfi',
+            'start_date': '2020-12-07',
+            'end_date': '2020-12-07',
+            'path': '214',
+            'row': '108',
+            'geo_processing': '4',
+            'radio_processing': 'sr'
+        }
+
+        self.get(query_string=query)
+
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test__api_publish__ok__cbers4a_wfi_l4_sr.csv'
+        )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
+
+    def test__api_publish__ok__cbers4a_wfi_l4_dn_and_sr(self):
+        # CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84/
+        query = {
+            'satellite': 'cbers4a',
+            'sensor': 'wfi',
+            'start_date': '2020-12-07',
+            'end_date': '2020-12-07',
+            'path': '214',
+            'row': '108',
+            'geo_processing': '4'
+            # radio processing is empty in order to publish both `DN` and `SR` files
+        }
+
+        self.get(query_string=query)
+
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test__api_publish__ok__cbers4a_wfi_l4_dn_and_sr.csv'
+        )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
+
+    def test__api_publish__ok__cbers4a_wfi_l4_dn_and_sr__chunk(self):
+        # CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_116_0/
+        query = {
+            'satellite': 'CbERs4a',
+            'sensor': 'WfI',
+            'start_date': '2020-12-22',
+            'end_date': '2020-12-22',
+            'path': 211,
+            'row': '116',
+            'geo_processing': '4',
+            # 'radio_processing': 'DN'
+        }
+
+        self.get(query_string=query)
+
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test__api_publish__ok__cbers4a_wfi_l4_dn_and_sr__chunk.csv'
+        )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
+
+    def test__api_publish__ok__cbers4a_wfi__empty_result(self):
+        # CBERS4A/2020_11/CBERS_4A_WFI_RAW_2020_11_10.13_41_00_ETC2/207_?_0/2_BC_UTM_WGS84
+        # `207_148_0` exist, but `207_105_0` does not exist
+        query = {
+            'satellite': 'CBERS4A',
+            'sensor': 'wfi',
+            'start_date': '2020-11-10',
+            'end_date': '2020-11-10',
+            'path': '207',
+            'row': '105', # <-- there is not this row
+            'geo_processing': '2',
+            'radio_processing': 'DN'
+        }
+
+        self.get(query_string=query)
+
+        self.check_if_the_items_table_is_empty()
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
+
+    def test__api_publish__ok__cbers4a_wfi__missing_geo_and_radio_processings(self):
+        # CBERS4A/2019_12/CBERS_4A_WFI_RAW_2019_12_27.13_53_00_ETC2/215_132_0/4_BC_UTM_WGS84
+        query = {
+            'satellite': 'CBERS4A',
+            'sensor': 'wfi',
+            'start_date': '2019-12-01',
+            'end_date': '2020-06-30',
+            'path': '215',
+            'row': '132'
+        }
+
+        self.get(query_string=query)
+
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test__api_publish__ok__cbers4a_wfi__missing_geo_and_radio_processings.csv'
+        )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
+
+    def test__api_publish__ok__cbers4a_wfi__missing_path_and_row(self):
+        # CBERS4A/2019_12/CBERS_4A_WFI_RAW_2019_12_27.13_53_00_ETC2/215_132_0/4_BC_UTM_WGS84/
+        query = {
+            'satellite': 'CBERS4A',
+            'sensor': 'wfi',
+            'start_date': '2019-12-01',
+            'end_date': '2020-06-30',
+            'geo_processing': '4',
+            'radio_processing': 'DN'
+        }
+
+        self.get(query_string=query)
+
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test__api_publish__ok__cbers4a_wfi__missing_path_and_row.csv'
+        )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     # CBERS4A WPM
 
@@ -1390,6 +1407,7 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4a/test__api_publish__ok__cbers4a_wpm_l2_dn.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__cbers4a_wpm_l2_dn__next_to_5h(self):
         # scene_dir with time between 0h and 5h, consider one day ago
@@ -1410,6 +1428,27 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4a/test__api_publish__ok__cbers4a_wpm_l2_dn__next_to_5h.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
+
+    def test__api_publish__ok__cbers4a_wpm_l3_dn(self):
+        # CBERS4A/2020_12/CBERS_4A_WPM_RAW_2020_12_20.14_53_00_ETC2/230_126_0/
+        query = {
+            'satellite': 'CbERs4a',
+            'sensor': 'wpm',
+            'start_date': '2020-12-20',
+            'end_date': '2020-12-20',
+            'path': '230',
+            'row': '126',
+            'geo_processing': '3',
+            # 'radio_processing': 'DN'
+        }
+
+        self.get(query_string=query)
+
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4a/test__api_publish__ok__cbers4a_wpm_l3_dn.csv'
+        )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__cbers4a_wpm__empty_result(self):
         query = {
@@ -1426,6 +1465,7 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_table_is_empty()
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
 
 @mock.patch(*celery_sync)

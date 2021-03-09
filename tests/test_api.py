@@ -324,13 +324,11 @@ class ApiPublishAmazonia1OkTestCase(BaseTestCases.ApiBaseTestCase):
             # 'radio_processing': 'DN'
         }
 
-        expected = [
-            {
-                'message': 'This folder is valid, but it is empty.',
-                'metadata': {'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11/217_015_0/4_BC_LCC_WGS84'},
-                'type': 'warning'
-            }
-        ]
+        expected = [{
+            'message': 'This folder is valid, but it is empty.',
+            'metadata': {'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11/217_015_0/4_BC_LCC_WGS84'},
+            'type': 'warning'
+        }]
 
         self.get(query_string=query)
 
@@ -372,13 +370,11 @@ class ApiPublishAmazonia1OkTestCase(BaseTestCases.ApiBaseTestCase):
             # 'radio_processing': 'DN'
         }
 
-        expected = [
-            {
-                'message': 'This folder is valid, but it is empty.',
-                'metadata': {'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.14_35_23_CB11_SIR18/233_017_0/4_BC_LCC_WGS84'},
-                'type': 'warning'
-            }
-        ]
+        expected = [{
+            'message': 'This folder is valid, but it is empty.',
+            'metadata': {'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.14_35_23_CB11_SIR18/233_017_0/4_BC_LCC_WGS84'},
+            'type': 'warning'
+        }]
 
         self.get(query_string=query)
 
@@ -450,6 +446,7 @@ class ApiPublishCbers2BOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers2b/test__api_publish__ok__cbers2b_ccd_l2_dn.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__cbers2b_ccd_l2_dn__quicklook_does_not_exist(self):
         # CBERS2B/2007_09/CBERS2B_CCD_20070925.145654/181_096_0/2_BC_UTM_WGS84
@@ -497,6 +494,7 @@ class ApiPublishCbers2BOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers2b/test__api_publish__ok__cbers2b_hrc_l2_dn__path_151_row_141.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__cbers2b_hrc_l2_dn__path_151_row_142(self):
         # CBERS2B/2010_03/CBERS2B_HRC_20100301.130915/151_A_142_1_0/2_BC_UTM_WGS84
@@ -516,6 +514,7 @@ class ApiPublishCbers2BOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers2b/test__api_publish__ok__cbers2b_hrc_l2_dn__path_151_row_142.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__cbers2b_hrc_l2_dn__quicklook_does_not_exist(self):
         # CBERS2B/2007_09/CBERS2B_HRC_20070929.124300/145_C_111_3_0/2_BC_UTM_WGS84
@@ -563,6 +562,7 @@ class ApiPublishCbers2BOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers2b/test__api_publish__ok__cbers2b_wfi_l2_dn.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__cbers2b_wfi_l2_dn__quicklook_does_not_exist(self):
         # CBERS2B/2007_09/CBERS2B_WFI_20070928.131338/154_124_0/2_BC_LCC_WGS84
@@ -720,6 +720,7 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4/test__api_publish__ok__cbers4_awfi_l4_sr.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__cbers4_awfi_l4_dn_and_sr__dn_tiff_file_does_not_exist(self):
         # CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84
@@ -764,6 +765,7 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
         self.get(query_string=query)
 
         self.check_if_the_items_table_is_empty()
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__cbers4_awfi_l4_dn_and_sr__evi_tiff_file_does_not_exist(self):
         # EVI file does not exist, then it is not added to assets
@@ -784,6 +786,7 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4/test__api_publish__ok__cbers4_awfi_l4_dn_and_sr__evi_tiff_file_does_not_exist.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__cbers4_awfi_l4_sr__ndvi_tiff_file_does_not_exist(self):
         # NDVI file does not exist, then it is not added to assets
@@ -804,6 +807,7 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4/test__api_publish__ok__cbers4_awfi_l4_sr__ndvi_tiff_file_does_not_exist.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__cbers4_awfi_l4_sr__quality_tiff_file_does_not_exist(self):
         # CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84
@@ -904,6 +908,7 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4/test__api_publish__ok__cbers4_mux_l4_dn.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__cbers4_mux_l4_sr__evi_tiff_file_does_not_exist(self):
         # CBERS4/2018_01/CBERS_4_MUX_DRD_2018_01_01.13_14_00_CB11/156_103_0/4_BC_UTM_WGS84
@@ -923,6 +928,7 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4/test__api_publish__ok__cbers4_mux_l4_sr__evi_tiff_file_does_not_exist.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__cbers4_mux_l4_dn_and_sr__evi_tiff_file_does_not_exist(self):
         # CBERS4/2018_01/CBERS_4_MUX_DRD_2018_01_01.13_14_00_CB11/156_103_0/4_BC_UTM_WGS84
@@ -942,6 +948,7 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4/test__api_publish__ok__cbers4_mux_l4_dn_and_sr__evi_tiff_file_does_not_exist.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     # CBERS4 PAN5M (DN)
 
@@ -965,6 +972,7 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4/test__api_publish__ok__cbers4_pan10m_l2_sr__next_to_0h.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
 
 @mock.patch(*celery_sync)
@@ -1515,6 +1523,7 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'landsat/test__api_publish__ok__landsat1_mss_l2_dn.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__landsat1_mss_l2_dn__quicklook_does_not_exist(self):
         # LANDSAT1/1976_10/LANDSAT1_MSS_19761002.120000/010_057_0/2_BC_UTM_WGS84
@@ -1586,6 +1595,7 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'landsat/test__api_publish__ok__landsat2_mss_l2_dn.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__landsat2_mss_l2_dn__quicklook_does_not_exist(self):
         # LANDSAT2/1975_07/LANDSAT2_MSS_19750724.123000/230_070_0/2_BC_UTM_WGS84
@@ -1657,6 +1667,7 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'landsat/test__api_publish__ok__landsat3_mss_l2_dn.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__landsat3_mss_l2_dn__quicklook_does_not_exist(self):
         # LANDSAT3/1982_08/LANDSAT3_MSS_19820802.120000/231_072_0/2_BC_UTM_WGS84
@@ -1728,6 +1739,7 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'landsat/test__api_publish__ok__landsat5_tm_l2_dn.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__landsat5_tm_l2_dn__quicklook_does_not_exist(self):
         # LANDSAT5/1984_04/LANDSAT5_TM_19840406.124930/223_062_0/2_BC_UTM_WGS84
@@ -1744,9 +1756,7 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
 
         expected = [{
             'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-            'metadata': {
-                'folder': '/TIFF/LANDSAT5/1984_04/LANDSAT5_TM_19840406.124930/223_062_0/2_BC_UTM_WGS84'
-            },
+            'metadata': {'folder': '/TIFF/LANDSAT5/1984_04/LANDSAT5_TM_19840406.124930/223_062_0/2_BC_UTM_WGS84'},
             'type': 'warning'
         }]
 
@@ -1804,6 +1814,7 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_have_been_added_in_the_database(
             'landsat/test__api_publish__ok__landsat7_etm_l2_dn.csv'
         )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__landsat7_etm_l2_dn__quicklook_does_not_exist(self):
         # LANDSAT7/1999_07/LANDSAT7_ETM_19990719.124008/217_064_0/2_BC_UTM_WGS84

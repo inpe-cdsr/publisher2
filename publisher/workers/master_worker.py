@@ -54,13 +54,16 @@ def master(base_dir: str, query: dict, df_collections: dict) -> None:
         if not p_walk_top:
             break
 
-        logger.info(f'master - sending `{CELERY_CHUNKS_PER_TASKS}` chunks to `process_items` task.')
+        # get the number of records to process
+        p_walk_top_size = len(p_walk_top)
+
+        logger.info(f'master - sending `{p_walk_top_size}` chunks to `process_items` task.')
 
         # run `process_items` task
         process_items.apply_async((p_walk_top, df_collections), queue=CELERY_PROCESSING_QUEUE)
 
         # get statistics
-        chunks_per_tasks_count += len(p_walk_top)
+        chunks_per_tasks_count += p_walk_top_size
         tasks_count += 1
 
         logger.info(f'master - `{chunks_per_tasks_count}` chunks per tasks have been sent to '

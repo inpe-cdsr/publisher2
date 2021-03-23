@@ -352,9 +352,20 @@ class PublisherWalk:
         # for both DN or SR files, I extract information from a DN XML file
         dn_xml_files = list(filter(lambda f: search(dn_template, f), files))
 
+        # if there are DN XML files, then...
         if dn_xml_files:
-            # `dn_xml_files[0]` gets the first DN XML file
-            # `os_path_join` creates a full path to the XML file
+            # check if there are DN XML files without `RIGHT` and `LEFT` string
+            # dn_xml_files_wo_rl - DN XML files without `RIGHT` and `LEFT` string
+            dn_xml_files_wo_rl = [xml for xml in dn_xml_files \
+                                  if 'RIGHT' not in xml and 'LEFT' not in xml]
+
+            # if there are files without `RIGHT` and `LEFT` string, then...
+            if dn_xml_files_wo_rl:
+                # `dn_xml_files_wo_rl[0]` gets the first DN XML file and
+                # `os_path_join` creates a full path to the XML file
+                return os_path_join(dir_path, dn_xml_files_wo_rl[0])
+
+            # if there are just files with `RIGHT` and `LEFT` string, then use them
             return os_path_join(dir_path, dn_xml_files[0])
 
         self.errors_insert.append(
@@ -614,8 +625,7 @@ class PublisherWalk:
 
         # logger.info('PublisherWalk\n')
 
-        # example
-        # CBERS2B/2010_03/CBERS2B_CCD_20100301.130915/151_098_0/2_BC_UTM_WGS84
+        # `base_path` example: /TIFF/CBERS2B/
         base_path = f'{self.BASE_DIR}/{self.query["satellite"]}'
 
         # logger.info(f'PublisherWalk - self.query: {self.query}')
@@ -624,7 +634,8 @@ class PublisherWalk:
             # get dir path starting at `/TIFF`
             index = dir_path.find('TIFF')
             # `splitted_dir_path` example:
-            # ['TIFF', 'CBERS4A', '2020_11', 'CBERS_4A_WFI_RAW_2020_11_10.13_41_00_ETC2', '207_148_0', '2_BC_UTM_WGS84']
+            # ['TIFF', 'CBERS4A', '2020_11', 'CBERS_4A_WFI_RAW_2020_11_10.13_41_00_ETC2',
+            #  '207_148_0', '2_BC_UTM_WGS84']
             splitted_dir_path = dir_path[index:].split(os_path_sep)
             dir_level = len(splitted_dir_path)
 

@@ -6,6 +6,7 @@ from os import walk
 from os.path import abspath, dirname, join as os_path_join, sep as os_path_sep
 from re import search
 
+from shapely.geometry import mapping
 from xmltodict import parse as xmltodict_parse
 
 from publisher.common import fill_string_with_left_zeros, print_line
@@ -13,6 +14,7 @@ from publisher.environment import PR_LOGGING_LEVEL
 from publisher.exception import PublisherDecodeException
 from publisher.logger import create_logger
 from publisher.model import PostgreSQLCatalogTestConnection, PostgreSQLPublisherConnection
+from publisher.utils.geom import raster_convexhull, raster_extent
 
 
 # create logger object
@@ -107,40 +109,40 @@ def get_properties_from_xml_as_dict(xml_as_dict, collection):
     return properties
 
 
-def get_bbox_from_xml_as_dict(xml_as_dict):
-    '''Get bounding box information from XML file as dictionary.'''
+def get_geometry_from_xml_as_dict(tiff_path, epsg=4326):
+    '''Get TIFF extent from the TIFF path.'''
 
-    # Label: UL - upper left; UR - upper right; LR - bottom right; LL - bottom left
+    tiff_extent = raster_extent(tiff_path)
 
-    # create bbox object
-    # specification: https://tools.ietf.org/html/rfc7946#section-5
-    # `all axes of the most southwesterly point followed by all axes of the more northeasterly point`
-    return [
-        xml_as_dict['image']['imageData']['LL']['longitude'], # bottom left longitude
-        xml_as_dict['image']['imageData']['LL']['latitude'], # bottom left latitude
-        xml_as_dict['image']['imageData']['UR']['longitude'], # upper right longitude
-        xml_as_dict['image']['imageData']['UR']['latitude'], # upper right latitude
-    ]
+    geojson = mapping(tiff_extent)
+    geojson['crs'] = {'type': 'name','properties': {'name': f'EPSG:{epsg}'}}
+
+    # return a GeoJSON from TIFF extent
+    return geojson
 
 
-def get_geometry_from_xml_as_dict(xml_as_dict, epsg=4326):
-    '''Get geometry information (i.e. footprint) from an XML file as dictionary.'''
+def get_convex_hull_from_xml_as_dict(tiff_path, epsg=4326):
+    '''Get TIFF convex hull from the TIFF path.'''
 
-    # Label: UL - upper left; UR - upper right; LR - bottom right; LL - bottom left
+    tiff_convex_hull = raster_convexhull(tiff_path)
 
-    # create geometry object
-    # specification: https://tools.ietf.org/html/rfc7946#section-3.1.6
-    return {
-        'type': 'Polygon',
-        'coordinates': [[
-            [xml_as_dict['image']['imageData']['UL']['longitude'], xml_as_dict['image']['imageData']['UL']['latitude']],
-            [xml_as_dict['image']['imageData']['UR']['longitude'], xml_as_dict['image']['imageData']['UR']['latitude']],
-            [xml_as_dict['image']['imageData']['LR']['longitude'], xml_as_dict['image']['imageData']['LR']['latitude']],
-            [xml_as_dict['image']['imageData']['LL']['longitude'], xml_as_dict['image']['imageData']['LL']['latitude']],
-            [xml_as_dict['image']['imageData']['UL']['longitude'], xml_as_dict['image']['imageData']['UL']['latitude']]
-        ]],
-        'crs': {'type': 'name','properties': {'name': f'EPSG:{epsg}'}}
-    }
+    geojson = mapping(tiff_convex_hull)
+    geojson['crs'] = {'type': 'name','properties': {'name': f'EPSG:{epsg}'}}
+
+    # return a GeoJSON from TIFF convex hull
+    return geojson
+
+
+def get_tiff_path_from_assets(assets):
+    '''Returns the first band TIFF file path that is found inside `assets` dictionary.'''
+
+    for k, v in assets.items():
+        # check if the asset is a band TIFF file
+        if 'tiff' in v['type'] and 'BAND' in v['href']:
+            # return the first one path that is found
+            return  v['href']
+
+    return None
 
 
 def create_items_from_xml_as_dict(xml_as_dict, assets):
@@ -158,9 +160,11 @@ def create_items_from_xml_as_dict(xml_as_dict, assets):
         dn_item = {}
         dn_item['collection'] = get_collection_from_xml_as_dict(xml_as_dict, 'DN')
         dn_item['properties'] = get_properties_from_xml_as_dict(xml_as_dict, dn_item['collection'])
-        dn_item['bbox'] = get_bbox_from_xml_as_dict(xml_as_dict)
-        dn_item['geometry'] = get_geometry_from_xml_as_dict(xml_as_dict)
         dn_item['assets'] = assets['DN']
+        # get one TIFF path in order to extract the geometry and convex_hull
+        tiff_path = get_tiff_path_from_assets(dn_item['assets'])
+        dn_item['geometry'] = get_geometry_from_xml_as_dict(tiff_path)
+        # dn_item['convex_hull'] = get_convex_hull_from_xml_as_dict(tiff_path)
 
         # create SR item from DN item, because they have almost the same information
         # the only different information they have is the radiometric processing
@@ -190,24 +194,26 @@ def create_items_from_xml_as_dict(xml_as_dict, assets):
 
     # extract other information to the item
     item['properties'] = get_properties_from_xml_as_dict(xml_as_dict, item['collection'])
-    item['bbox'] = get_bbox_from_xml_as_dict(xml_as_dict)
-    item['geometry'] = get_geometry_from_xml_as_dict(xml_as_dict)
+    # get one TIFF path in order to extract the geometry and convex_hull
+    tiff_path = get_tiff_path_from_assets(item['assets'])
+    item['geometry'] = get_geometry_from_xml_as_dict(tiff_path)
+    # item['convex_hull'] = get_convex_hull_from_xml_as_dict(tiff_path)
 
     # return either `DN` or `SR` item
     return [item]
 
 
-def create_item_and_get_insert_clauses(dir_path, dn_xml_file_path, assets, df_collections):
+def create_item_and_get_insert_clauses(dir_path, dn_xml_path, assets, df_collections):
     print_line()
 
     items_insert = []
     errors_insert = []
 
-    logger.info(f'dn_xml_file_path: {dn_xml_file_path}')
+    logger.info(f'dn_xml_path: {dn_xml_path}')
     # logger.info(f'assets: {assets}')
 
     # convert DN XML file in a dictionary
-    xml_as_dict = convert_xml_to_dict(dn_xml_file_path)
+    xml_as_dict = convert_xml_to_dict(dn_xml_path)
 
     # if there is NOT `DN` information in the XML file, then the method returns None
     if 'prdf' not in xml_as_dict:
@@ -222,8 +228,9 @@ def create_item_and_get_insert_clauses(dir_path, dn_xml_file_path, assets, df_co
 
     for item in items:
         print_line()
-        logger.info(f'item: {item}\n')
-        # logger.info(f"item[collection][name]: {item['collection']['name']}")
+        # logger.info(f'item: {item}\n')
+        logger.info(f"item[properties]: {item['properties']}")
+        logger.info(f"item[collection]: {item['collection']}")
 
         # get collection id from dataframe
         collection = df_collections.loc[
@@ -234,6 +241,8 @@ def create_item_and_get_insert_clauses(dir_path, dn_xml_file_path, assets, df_co
         # if `collection` is an empty dataframe, a collection was not found by its name,
         # then save the warning and ignore it
         if len(collection.index) == 0:
+            logger.warning(f'There is metadata to the `{item["collection"]["name"]}` collection, '
+                            'however this collection does not exist in the database.')
             # check if the collection has not already been added to the errors list
             if not any(e['metadata']['collection'] == item['collection']['name'] \
                     for e in errors_insert):
@@ -256,7 +265,9 @@ def create_item_and_get_insert_clauses(dir_path, dn_xml_file_path, assets, df_co
         insert = PostgreSQLCatalogTestConnection.create_item_insert_clause(
             item, collection_id
         )
-        logger.info(f'insert: {insert}')
+        # logger.info(f'insert: {insert}\n')
+        logger.info(f"Adding an INSERT clause to `{item['properties']['name']}` "
+                     "item in the list...\n")
         items_insert.append(insert)
 
     return items_insert, errors_insert
@@ -344,7 +355,7 @@ class PublisherWalk:
         # create an iterator from generator method
         self.__generator_iterator = self.__generator()
 
-    def __get_dn_xml_file_path(self, files, dir_path):
+    def __get_dn_xml_path(self, files, dir_path):
         # example: CBERS_4_AWFI_20201228_157_135_L4_RIGHT_BAND16.xml
         dn_template = '^[a-zA-Z0-9_]+BAND\d+.xml$'
 
@@ -471,7 +482,7 @@ class PublisherWalk:
                 self.errors_insert.append(
                     PostgreSQLPublisherConnection.create_task_error_insert_clause({
                         'type': 'warning',
-                        'message': ('There is NOT a XML file in this folder that ends with the '
+                        'message': ('There is NOT an XML file in this folder that ends with the '
                                     f"`{band_template.replace('.tif', '.xml')}` template, "
                                     'then it will be ignored.'),
                         'metadata': {'folder': dir_path}
@@ -658,8 +669,8 @@ class PublisherWalk:
                 continue
 
             # if there is not DN XML file, then ignore it
-            dn_xml_file_path = self.__get_dn_xml_file_path(files, dir_path)
-            if not dn_xml_file_path:
+            dn_xml_path = self.__get_dn_xml_path(files, dir_path)
+            if not dn_xml_path:
                 continue
 
             # extract `satellite` and `sensor` data from path
@@ -700,7 +711,7 @@ class PublisherWalk:
                 continue
 
             # yield just valid directories
-            yield dir_path, dn_xml_file_path, assets
+            yield dir_path, dn_xml_path, assets
 
     def __iter__(self):
         # this method makes the class to be an iterable

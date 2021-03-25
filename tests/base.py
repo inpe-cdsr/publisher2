@@ -1,5 +1,6 @@
 from unittest import TestCase
 
+from numpy import nan as NaN
 from pandas import read_csv, to_datetime
 from pandas.testing import assert_frame_equal
 
@@ -16,7 +17,7 @@ db_publisher = PostgreSQLPublisherConnection()
 celery_async = ('publisher.workers.celery_config.task_always_eager', False)
 celery_sync = ('publisher.workers.celery_config.task_always_eager', True)
 
-test_delay_secs = 1.5
+test_delay_secs = 2.5
 
 
 class BaseTestCases:
@@ -45,6 +46,11 @@ class BaseTestCases:
             # result = db.select_from_items(to_csv=expected_file_path)
             # get the expected result
             expected = BaseTestCases.BaseTestCase.read_item_from_csv(expected_file_path)
+            # fill pandas NaN (None, NaN, etc.) with numpy NaN
+            expected.fillna({'min_convex_hull': NaN}, inplace=True)
+            result.fillna({'min_convex_hull': NaN}, inplace=True)
+            # print(f'\n expected.head(): \n{expected.head()}\n')
+            # print(f' result.head(): \n{result.head()}\n')
             assert_frame_equal(expected, result)
 
         def check_if_the_items_table_is_empty(self):

@@ -168,13 +168,17 @@ class PostgreSQLCatalogTestConnection(PostgreSQLTestConnection):
     def create_item_insert_clause(item: dict, collection_id: int, srid: int=4326) -> str:
         '''Create `INSERT` clause to bdc.items table based on item metadata.'''
 
-        min_x = item['bbox'][0]
-        min_y = item['bbox'][1]
-        max_x = item['bbox'][2]
-        max_y = item['bbox'][3]
-
         properties = item['properties']
         datetime = properties['datetime']
+
+        # default: ignore `convex_hull`, because its calc is slow
+        convex_hull_column = ''
+        convex_hull_value = ''
+
+        # but, if there are `convex_hull` inside `item`, then insert it together
+        if 'convex_hull' in item:
+            convex_hull_column = 'min_convex_hull, '
+            convex_hull_value = f'ST_GeomFromGeoJSON(\'{dumps(item["convex_hull"])}\'), '
 
         return (
             # delete old item before adding a new one, if it exists
@@ -182,12 +186,12 @@ class PostgreSQLCatalogTestConnection(PostgreSQLTestConnection):
             # insert new item
             'INSERT INTO bdc.items '
             '(name, collection_id, start_date, end_date, '
-            'cloud_cover, assets, metadata, geom, min_convex_hull, srid) '
+            f'cloud_cover, assets, metadata, geom, {convex_hull_column} srid) '
             'VALUES '
             f'(\'{properties["name"]}\', {collection_id}, \'{datetime}\', \'{datetime}\', '
             f'NULL, \'{dumps(item["assets"])}\', \'{dumps(properties)}\', '
             f'ST_GeomFromGeoJSON(\'{dumps(item["geometry"])}\'), '
-            f'ST_MakeEnvelope({min_x}, {min_y}, {max_x}, {max_y}, {srid}), {srid});'
+            f'{convex_hull_value} {srid});'
         )
 
 

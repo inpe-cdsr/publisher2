@@ -40,10 +40,10 @@ def process_items(p_walk: list, df_collections: dict) -> None:
     items_insert = []
     errors_insert = []
 
-    for dir_path, dn_xml_path, assets in p_walk:
+    for dir_path, metadata, assets in p_walk:
         # create INSERT clause based on item information
         __items_insert, __errors_insert = create_item_and_get_insert_clauses(
-            dir_path, dn_xml_path, assets, df_collections
+            dir_path, metadata, assets, df_collections
         )
 
         items_insert += __items_insert

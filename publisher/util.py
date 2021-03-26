@@ -32,14 +32,61 @@ def convert_xml_to_dict(xml_path):
 # Item
 ##################################################
 
-def get_collection_from_xml_as_dict(xml_as_dict, radio_processing):
-    '''Get collection information from XML file as dictionary.'''
+def get_xml_as_dict_from_xml_path(xml_path):
+    xml_as_dict = convert_xml_to_dict(xml_path)
+
+    # logger.info(f'get_xml_as_dict_from_xml_path - xml_path: {xml_path}')
+
+    # 'prdf' - DN file; and 'rpdf' - SR file
+    if 'prdf' not in xml_as_dict and 'rpdf' not in xml_as_dict:
+        return None
+
+    if 'prdf' in xml_as_dict:
+        xml_as_dict = xml_as_dict['prdf']
+
+        if 'leftCamera' in xml_as_dict:
+            xml_as_dict = xml_as_dict['leftCamera']
+
+        xml_as_dict['datetime'] = xml_as_dict['viewing']['center'][0:19]
+        xml_as_dict['sun_position'] = dict(xml_as_dict['image']['sunPosition'])
+        # rename key from 'sunAzimuth' to 'azimuth'
+        xml_as_dict['sun_position']['azimuth'] = xml_as_dict['sun_position'].pop('sunAzimuth')
+        xml_as_dict['sync_loss'] = None  # default value
+
+        # if there is sync loss inside the XML, then get it
+        if 'syncLoss' in xml_as_dict['image']:
+            sync_loss_bands = xml_as_dict['image']['syncLoss']['band']
+            # get the max value from the sync losses
+            xml_as_dict['sync_loss'] = max([
+                float(sync_loss_band['#text']) for sync_loss_band in sync_loss_bands
+            ])
+
+    elif 'rpdf' in xml_as_dict:
+        xml_as_dict = xml_as_dict['rpdf']
+
+        if 'leftCamera' in xml_as_dict:
+            xml_as_dict = xml_as_dict['leftCamera']
+
+        xml_as_dict['datetime'] = xml_as_dict['sceneInfo']['centerTime'][0:19]
+        xml_as_dict['sun_position'] = dict(xml_as_dict['sunPosition'])
+        # default 'azimuth' field to SR scene is right, then I do not need to rename it
+        xml_as_dict['sync_loss'] = None
+
+    # convert values to float
+    for key in xml_as_dict['sun_position']:
+        xml_as_dict['sun_position'][key] = float(xml_as_dict['sun_position'][key])
+
+    return xml_as_dict
+
+
+def get_item_collection(metadata, radio_processing):
+    '''Get collection information from parameters.'''
 
     collection = {
-        'satellite': xml_as_dict['satellite']['name'] + xml_as_dict['satellite']['number'],
-        'sensor': xml_as_dict['satellite']['instrument']['#text'],
+        'satellite': metadata['satellite'],
+        'sensor': metadata['sensor'],
         # geometric processing: L2, L4, etc.
-        'geo_processing': xml_as_dict['image']['level'],
+        'geo_processing': metadata['geo_processing'],
         # radiometric processing: DN or SR
         'radio_processing': radio_processing,
     }
@@ -60,56 +107,41 @@ def get_collection_from_xml_as_dict(xml_as_dict, radio_processing):
     return collection
 
 
-def get_properties_from_xml_as_dict(xml_as_dict, collection):
-    '''Get properties information from XML file as dictionary.'''
+def get_item_properties(xml_path, metadata, collection):
+    '''Get properties information from parameters.'''
+
+    xml_as_dict = get_xml_as_dict_from_xml_path(xml_path)
 
     # get the item's properties
     properties = {
         # get just the date and time of the string
-        'datetime': xml_as_dict['viewing']['center'][0:19],
-        # fill path and row with left zeros in order to create the item name
-        'path': fill_string_with_left_zeros(xml_as_dict['image']['path']),
-        'row': fill_string_with_left_zeros(xml_as_dict['image']['row']),
-        # CQ fills it
-        # 'cloud_cover': '',
+        'datetime': xml_as_dict['datetime'],
+        # convert path and row from string to integer
+        'path': int(metadata['path']),
+        'row': int(metadata['row']),
         'satellite': collection['satellite'],
         'sensor': collection['sensor'],
-        # 'deleted': item['deleted']
+        'sun_position': xml_as_dict['sun_position'],
+        'sync_loss': xml_as_dict['sync_loss'],
+        # CQ fills it
+        # 'cloud_cover': '',
+        # 'deleted': item['deleted'],
     }
 
     # create item name based on its properties (e.g. `CBERS4A_MUX_070122_20200813`)
     properties['name'] = (
         f"{collection['satellite']}_{collection['sensor']}_"
-        f"{properties['path']}{properties['row']}_"
+        # fill path and row with left zeros in order to create the item name
+        f"{fill_string_with_left_zeros(str(properties['path']))}"
+        f"{fill_string_with_left_zeros(str(properties['row']))}_"
         f"{properties['datetime'].split('T')[0].replace('-', '')}_"
         f"L{collection['geo_processing']}_{collection['radio_processing']}"
     )
 
-    # convert path and row to integer
-    properties['path'] = int(properties['path'])
-    properties['row'] = int(properties['row'])
-
-    # if there is sync loss in the XML file, then I get it and add it in properties
-    if 'syncLoss' in xml_as_dict['image']:
-        sync_loss_bands = xml_as_dict['image']['syncLoss']['band']
-        # get the max value from the sync losses
-        properties['sync_loss'] = max([
-            float(sync_loss_band['#text']) for sync_loss_band in sync_loss_bands
-        ])
-
-    # if there is sun position in the XML file, then I get it and add it in properties
-    if 'sunPosition' in xml_as_dict['image']:
-        properties['sun_position'] = dict(xml_as_dict['image']['sunPosition'])
-        # rename key from 'sunAzimuth' to 'sun_azimuth'
-        properties['sun_position']['sun_azimuth'] = properties['sun_position'].pop('sunAzimuth')
-        # convert values to float
-        for key in properties['sun_position']:
-            properties['sun_position'][key] = float(properties['sun_position'][key])
-
     return properties
 
 
-def get_geometry_from_xml_as_dict(tiff_path, epsg=4326):
+def get_geometry_from_tiff(tiff_path, epsg=4326):
     '''Get TIFF extent from the TIFF path.'''
 
     tiff_extent = raster_extent(tiff_path)
@@ -121,7 +153,7 @@ def get_geometry_from_xml_as_dict(tiff_path, epsg=4326):
     return geojson
 
 
-def get_convex_hull_from_xml_as_dict(tiff_path, epsg=4326):
+def get_convex_hull_from_tiff(tiff_path, epsg=4326):
     '''Get TIFF convex hull from the TIFF path.'''
 
     tiff_convex_hull = raster_convexhull(tiff_path)
@@ -133,46 +165,65 @@ def get_convex_hull_from_xml_as_dict(tiff_path, epsg=4326):
     return geojson
 
 
-def get_tiff_path_from_assets(assets):
+def get_file_path_from_assets(assets, file_type='tiff'):
     '''Returns the first band TIFF file path that is found inside `assets` dictionary.'''
+
+    if file_type == 'xml':
+        for k, v in assets.items():
+            # search the first XML file without `RIGHT` and `LEFT` strings
+            if file_type in v['type']:
+                xml_path = v['href']
+                if 'BAND' in xml_path and 'RIGHT' not in xml_path \
+                        and 'LEFT' not in xml_path:
+                    return  xml_path
+    # else, if there are just files with `RIGHT` and `LEFT` string,
+    # then return it in the next loop
 
     for k, v in assets.items():
         # check if the asset is a band TIFF file
-        if 'tiff' in v['type'] and 'BAND' in v['href']:
+        if file_type in v['type'] and 'BAND' in v['href']:
             # return the first one path that is found
             return  v['href']
 
     return None
 
 
-def create_items_from_xml_as_dict(xml_as_dict, assets):
+def create_items(metadata, assets):
     '''
     Return a list of items based on an XML file as dictionary and the
     radiometric processing information the user chose.
     '''
 
-    if 'leftCamera' in xml_as_dict:
-        xml_as_dict = xml_as_dict['leftCamera']
-
     # if user chose `DN` and `SR` radiometric processings, then create both items
     if 'DN' in assets and 'SR' in assets:
+        ##################################################
         # create DN item
-        dn_item = {}
-        dn_item['collection'] = get_collection_from_xml_as_dict(xml_as_dict, 'DN')
-        dn_item['properties'] = get_properties_from_xml_as_dict(xml_as_dict, dn_item['collection'])
-        dn_item['assets'] = assets['DN']
-        # get one TIFF path in order to extract the geometry and convex_hull
-        tiff_path = get_tiff_path_from_assets(dn_item['assets'])
-        dn_item['geometry'] = get_geometry_from_xml_as_dict(tiff_path)
-        # dn_item['convex_hull'] = get_convex_hull_from_xml_as_dict(tiff_path)
+        ##################################################
+        dn_item = {'collection': get_item_collection(metadata, 'DN')}
 
-        # create SR item from DN item, because they have almost the same information
+        # get one XML path to extract extra metadata
+        xml_path = get_file_path_from_assets(assets['DN'], file_type='xml')
+        dn_item['properties'] = get_item_properties(xml_path, metadata, dn_item['collection'])
+
+        # get one TIFF path in order to extract the geometry and convex_hull
+        tiff_path = get_file_path_from_assets(assets['DN'])
+        dn_item['geometry'] = get_geometry_from_tiff(tiff_path)
+        # dn_item['convex_hull'] = get_convex_hull_from_tiff(tiff_path)
+
+        ##################################################
+        # create SR item based on DN item, because they have almost the same information
+        ##################################################
         # the only different information they have is the radiometric processing
         sr_item = deepcopy(dn_item)
         sr_item['collection']['radio_processing'] = 'SR'
         sr_item['collection']['name'] = sr_item['collection']['name'].replace('DN', 'SR')
         sr_item['collection']['description'] = sr_item['collection']['description'].replace('DN', 'SR')
         sr_item['properties']['name'] = sr_item['properties']['name'].replace('DN', 'SR')
+
+        ##################################################
+        # add the correct asset to each item
+        ##################################################
+        dn_item['assets'] = assets['DN']
         sr_item['assets'] = assets['SR']
 
         # return both `DN` and `SR` items
@@ -181,49 +232,42 @@ def create_items_from_xml_as_dict(xml_as_dict, assets):
     # if user chose just `DN` radiometric processing, create a collection with it
     if 'DN' in assets:
         item = {
-            'collection': get_collection_from_xml_as_dict(xml_as_dict, 'DN'),
+            'collection': get_item_collection(metadata, 'DN'),
             'assets': assets['DN']
         }
 
     # if user chose just `SR` radiometric processing, create a collection with it
     elif 'SR' in assets:
         item = {
-            'collection': get_collection_from_xml_as_dict(xml_as_dict, 'SR'),
+            'collection': get_item_collection(metadata, 'SR'),
             'assets': assets['SR']
         }
 
-    # extract other information to the item
-    item['properties'] = get_properties_from_xml_as_dict(xml_as_dict, item['collection'])
+    # get one XML path to extract extra metadata
+    xml_path = get_file_path_from_assets(item['assets'], file_type='xml')
+    item['properties'] = get_item_properties(xml_path, metadata, item['collection'])
+
     # get one TIFF path in order to extract the geometry and convex_hull
-    tiff_path = get_tiff_path_from_assets(item['assets'])
-    item['geometry'] = get_geometry_from_xml_as_dict(tiff_path)
-    # item['convex_hull'] = get_convex_hull_from_xml_as_dict(tiff_path)
+    tiff_path = get_file_path_from_assets(item['assets'])
+    item['geometry'] = get_geometry_from_tiff(tiff_path)
+    # item['convex_hull'] = get_convex_hull_from_tiff(tiff_path)
 
     # return either `DN` or `SR` item
     return [item]
 
 
-def create_item_and_get_insert_clauses(dir_path, dn_xml_path, assets, df_collections):
+def create_item_and_get_insert_clauses(dir_path, metadata, assets, df_collections):
     print_line()
 
     items_insert = []
     errors_insert = []
 
-    logger.info(f'dn_xml_path: {dn_xml_path}')
+    logger.info(f'dir_path: {dir_path}')
+    logger.info(f'metadata: {metadata}')
     # logger.info(f'assets: {assets}')
 
-    # convert DN XML file in a dictionary
-    xml_as_dict = convert_xml_to_dict(dn_xml_path)
-
-    # if there is NOT `DN` information in the XML file, then the method returns None
-    if 'prdf' not in xml_as_dict:
-        return None
-
-    xml_as_dict = xml_as_dict['prdf']
-    # logger.info(f'xml_as_dict: {xml_as_dict}')
-
-    # list of items (e.g. [dn_item, sr_item])
-    items = create_items_from_xml_as_dict(xml_as_dict, assets)
+    # `items` is a list of items (e.g. [dn_item, sr_item])
+    items = create_items(metadata, assets)
     # logger.info(f'items size: {len(items)}\n')
 
     for item in items:
@@ -241,11 +285,9 @@ def create_item_and_get_insert_clauses(dir_path, dn_xml_path, assets, df_collect
         # if `collection` is an empty dataframe, a collection was not found by its name,
         # then save the warning and ignore it
         if len(collection.index) == 0:
-            logger.warning(f'There is metadata to the `{item["collection"]["name"]}` collection, '
-                            'however this collection does not exist in the database.')
             # check if the collection has not already been added to the errors list
             if not any(e['metadata']['collection'] == item['collection']['name'] \
-                    for e in errors_insert):
+                        for e in errors_insert):
                 errors_insert.append(
                     PostgreSQLPublisherConnection.create_task_error_insert_clause({
                         'message': (
@@ -326,9 +368,33 @@ def decode_scene_dir(scene_dir):
         time = f'{time[0:2]}:{time[2:4]}:{time[4:6]}'
 
     else:
-        raise PublisherDecodeException()
+        raise PublisherDecodeException(f'Scene directory cannot be decoded: `{scene_dir}`.')
 
     return satellite, sensor, date, time
+
+
+def decode_path_row_dir(path_row_dir):
+    splitted_path_row = path_row_dir.split('_')
+
+    if len(splitted_path_row) == 3:
+        # example: `151_098_0`
+        path, row, _ = splitted_path_row
+    elif len(splitted_path_row) == 5:
+        # example: `151_B_141_5_0`
+        path, _, row, *_ = splitted_path_row
+    else:
+        raise PublisherDecodeException(f'Path/row directory cannot be decoded: `{path_row_dir}`.')
+
+    return path, row
+
+
+def decode_geo_processing_dir(geo_processing_dir):
+    geo_processing = geo_processing_dir.split('_')[0]
+
+    if geo_processing == '2' or geo_processing == '2B' or geo_processing == '3' or geo_processing == '4':
+        return geo_processing
+
+    raise PublisherDecodeException(f'Geo. processing directory cannot be decoded: `{geo_processing_dir}`.')
 
 
 def is_there_sr_files_in_the_list_of_files(files):
@@ -355,38 +421,28 @@ class PublisherWalk:
         # create an iterator from generator method
         self.__generator_iterator = self.__generator()
 
-    def __get_dn_xml_path(self, files, dir_path):
-        # example: CBERS_4_AWFI_20201228_157_135_L4_RIGHT_BAND16.xml
-        dn_template = '^[a-zA-Z0-9_]+BAND\d+.xml$'
+    def __get_metadata_from_splitted_dir_path(self, splitted_dir_path):
+        # add the metadata based on the directory decode
+        metadata = {}
 
-        # get just the DN XML files based on the radiometric processing regex
-        # for both DN or SR files, I extract information from a DN XML file
-        dn_xml_files = list(filter(lambda f: search(dn_template, f), files))
+        # extract `satellite` and `sensor` data from path
+        _, metadata['satellite'], _, scene_dir, path_row_dir, geo_processing_dir = splitted_dir_path
 
-        # if there are DN XML files, then...
-        if dn_xml_files:
-            # check if there are DN XML files without `RIGHT` and `LEFT` string
-            # dn_xml_files_wo_rl - DN XML files without `RIGHT` and `LEFT` string
-            dn_xml_files_wo_rl = [xml for xml in dn_xml_files \
-                                  if 'RIGHT' not in xml and 'LEFT' not in xml]
+        try:
+            _, metadata['sensor'], *_ = decode_scene_dir(scene_dir)
+            metadata['path'], metadata['row'] = decode_path_row_dir(path_row_dir)
+            metadata['geo_processing'] = decode_geo_processing_dir(geo_processing_dir)
+        except PublisherDecodeException as error:
+            self.errors_insert.append(
+                PostgreSQLPublisherConnection.create_task_error_insert_clause({
+                    'message': error,
+                    'metadata': {'folder': dir_path, 'method': '__get_metadata_from_splitted_dir_path'},
+                    'type': 'error'
+                })
+            )
+            return None
 
-            # if there are files without `RIGHT` and `LEFT` string, then...
-            if dn_xml_files_wo_rl:
-                # `dn_xml_files_wo_rl[0]` gets the first DN XML file and
-                # `os_path_join` creates a full path to the XML file
-                return os_path_join(dir_path, dn_xml_files_wo_rl[0])
-
-            # if there are just files with `RIGHT` and `LEFT` string, then use them
-            return os_path_join(dir_path, dn_xml_files[0])
-
-        self.errors_insert.append(
-            PostgreSQLPublisherConnection.create_task_error_insert_clause({
-                'type': 'warning',
-                'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
-                'metadata': {'folder': dir_path}
-            })
-        )
-        return None
+        return metadata
 
     def __create_assets_from_metadata(self, assets_matadata, dir_path):
         '''Create assets object based on assets metadata.'''
@@ -397,9 +453,9 @@ class PublisherWalk:
         if not png_files:
             self.errors_insert.append(
                 PostgreSQLPublisherConnection.create_task_error_insert_clause({
-                    'type': 'warning',
                     'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                    'metadata': {'folder': dir_path}
+                    'metadata': {'folder': dir_path},
+                    'type': 'warning'
                 })
             )
             return None
@@ -425,10 +481,10 @@ class PublisherWalk:
 
                 self.errors_insert.append(
                     PostgreSQLPublisherConnection.create_task_error_insert_clause({
-                        'type': 'warning',
                         'message': ('There is NOT a TIFF file in this folder that ends with the '
                                     f'`{band_template}` template, then it will be ignored.'),
-                        'metadata': {'folder': dir_path}
+                        'metadata': {'folder': dir_path},
+                        'type': 'warning'
                     })
                 )
                 return None
@@ -529,11 +585,11 @@ class PublisherWalk:
             def check_scene_dir(scene_dir):
                 try:
                     _, sensor_dir, date_dir, time_dir = decode_scene_dir(scene_dir)
-                except PublisherDecodeException:
+                except PublisherDecodeException as error:
                     self.errors_insert.append(
                         PostgreSQLPublisherConnection.create_task_error_insert_clause({
-                            'message': f'Scene directory cannot be decoded: `{scene_dir}`.',
-                            'metadata': {'folder': dir_path, 'method': '__filter_dir'},
+                            'message': error,
+                            'metadata': {'folder': dir_path, 'method': 'check_scene_dir'},
                             'type': 'warning'
                         })
                     )
@@ -565,19 +621,13 @@ class PublisherWalk:
             # I'm inside sensor folder, then the dirs are path/row folders
 
             def check_path_row_dir(path_row_dir):
-                splitted_path_row = path_row_dir.split('_')
-
-                if len(splitted_path_row) == 3:
-                    # example: `151_098_0`
-                    path, row, _ = splitted_path_row
-                elif len(splitted_path_row) == 5:
-                    # example: `151_B_141_5_0`
-                    path, _, row, _, _ = splitted_path_row
-                else:
+                try:
+                    path, row = decode_path_row_dir(path_row_dir)
+                except PublisherDecodeException as error:
                     self.errors_insert.append(
                         PostgreSQLPublisherConnection.create_task_error_insert_clause({
-                            'message': f'Invalid path/row directory: `{path_row_dir}`.',
-                            'metadata': {'folder': dir_path},
+                            'message': error,
+                            'metadata': {'folder': dir_path, 'method': 'check_path_row_dir'},
                             'type': 'warning'
                         })
                     )
@@ -653,11 +703,11 @@ class PublisherWalk:
             # get just the valid dirs and replace old ones with them
             dirs[:] = self.__filter_dir(dir_level, dir_path, dirs)
 
-            # if I'm not inside a geo processing dir, then ignore it
+            # if I'm not inside a geo processing dir, then ignore this folder
             if dir_level != 6:
                 continue
 
-            # if the dir does not have any file, then report and ignore it
+            # if the dir does not have any file, then report and ignore this folder
             if not files:
                 self.errors_insert.append(
                     PostgreSQLPublisherConnection.create_task_error_insert_clause({
@@ -668,24 +718,9 @@ class PublisherWalk:
                 )
                 continue
 
-            # if there is not DN XML file, then ignore it
-            dn_xml_path = self.__get_dn_xml_path(files, dir_path)
-            if not dn_xml_path:
-                continue
-
-            # extract `satellite` and `sensor` data from path
-            _, satellite, _, scene_dir, *_ = splitted_dir_path
-
-            try:
-                _, sensor, *_ = decode_scene_dir(scene_dir)
-            except PublisherDecodeException:
-                self.errors_insert.append(
-                    PostgreSQLPublisherConnection.create_task_error_insert_clause({
-                        'message': f'Scene directory cannot be decoded: `{scene_dir}`.',
-                        'metadata': {'folder': dir_path, 'method': '__generator'},
-                        'type': 'warning'
-                    })
-                )
+            # if there are not enough metadata, then ignore this folder
+            metadata = self.__get_metadata_from_splitted_dir_path(splitted_dir_path)
+            if not metadata:
                 continue
 
             assets = {}
@@ -696,7 +731,7 @@ class PublisherWalk:
                     continue
 
                 assets_metadata = self.satellite_metadata.get_assets_metadata(
-                    satellite, sensor, radio_processing
+                    metadata['satellite'], metadata['sensor'], radio_processing
                 )
 
                 # if there is not a valid asset, then ignore it
@@ -706,12 +741,12 @@ class PublisherWalk:
 
                 assets[radio_processing] = __assets
 
-            # if there is not one asset at least, then ignore it
+            # if there is not one asset at least, then ignore this folder
             if not assets:
                 continue
 
             # yield just valid directories
-            yield dir_path, dn_xml_path, assets
+            yield dir_path, metadata, assets
 
     def __iter__(self):
         # this method makes the class to be an iterable

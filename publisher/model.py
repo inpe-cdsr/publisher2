@@ -218,6 +218,15 @@ class PostgreSQLPublisherConnection(PostgreSQLTestConnection):
     def create_task_error_insert_clause(error: dict) -> str:
         '''Create `INSERT` clause to task_error table based on error metadata.'''
 
+        # default: print a warning
+        _logger = logger.warning
+
+        if error['type'] == 'error':
+            _logger = logger.error
+
+        # print the error/warning
+        _logger(f"Type: `{error['type']}`. Message: `{error['message']}`. Metadata: `{error['metadata']}`")
+
         metadata = dumps(error['metadata'])
 
         return (

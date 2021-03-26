@@ -36,6 +36,14 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
 
         expected = [
             {
+                'message': 'Path/row directory cannot be decoded: `invalid_folder`.',
+                'metadata': {
+                    'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11',
+                    'method': 'check_path_row_dir'
+                },
+                'type': 'warning'
+            },
+            {
                 'message': 'This folder is valid, but it is empty.',
                 'metadata': {'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11/217_015_0/4_BC_LCC_WGS84'},
                 'type': 'warning'
@@ -130,12 +138,12 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
 
         expected = [
             {
-                'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'},
                 'type': 'warning'
             },
             {
-                'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_108_0/4_BC_UTM_WGS84'},
                 'type': 'warning'
             },
@@ -207,7 +215,7 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
 
         expected = [{
             'type': 'warning',
-            'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
+            'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
             'metadata': {
                 'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'
             }

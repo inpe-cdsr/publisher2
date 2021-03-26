@@ -26,6 +26,14 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
 
         expected = [
             {
+                'message': 'Path/row directory cannot be decoded: `invalid_folder`.',
+                'metadata': {
+                    'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11',
+                    'method': 'check_path_row_dir'
+                },
+                'type': 'warning'
+            },
+            {
                 'message': 'This folder is valid, but it is empty.',
                 'metadata': {'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11/217_015_0/4_BC_LCC_WGS84'},
                 'type': 'warning'
@@ -120,12 +128,12 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
 
         expected = [
             {
-                'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'},
                 'type': 'warning'
             },
             {
-                'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_108_0/4_BC_UTM_WGS84'},
                 'type': 'warning'
             },
@@ -183,7 +191,7 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
         )
         self.check_if_the_errors_have_been_added_in_the_database(expected)
 
-    def test__api_publish__ok__cbers4a_mux_l4_dn_or_sr__dn_file_does_not_exist(self):
+    def test__api_publish__ok__cbers4a_mux_l4_dn_or_sr__quicklook_does_not_exist(self):
         # CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84
         query = {
             'satellite': 'cBERs4A',
@@ -197,7 +205,7 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
 
         expected = [{
             'type': 'warning',
-            'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
+            'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
             'metadata': {
                 'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'
             }
@@ -276,6 +284,14 @@ class ApiPublishAmazonia1OkTestCase(BaseTestCases.ApiBaseTestCase):
 
         expected = [
             {
+                'message': 'Path/row directory cannot be decoded: `invalid_folder`.',
+                'metadata': {
+                    'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11',
+                    'method': 'check_path_row_dir'
+                },
+                'type': 'warning'
+            },
+            {
                 'message': 'This folder is valid, but it is empty.',
                 'metadata': {'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11/217_015_0/4_BC_LCC_WGS84'},
                 'type': 'warning'
@@ -309,12 +325,21 @@ class ApiPublishAmazonia1OkTestCase(BaseTestCases.ApiBaseTestCase):
             'radio_processing': 'DN'
         }
 
+        expected = [{
+            'message': 'Path/row directory cannot be decoded: `invalid_folder`.',
+            'metadata': {
+                'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11',
+                'method': 'check_path_row_dir'
+            },
+            'type': 'warning'
+        }]
+
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'amazonia1/test__api_publish__ok__amazonia1_wfi_l2_dn__01.csv'
         )
-        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
 
     def test__api_publish__ok__amazonia1_wfi__01(self):
         # AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11/217_015_0/
@@ -329,11 +354,21 @@ class ApiPublishAmazonia1OkTestCase(BaseTestCases.ApiBaseTestCase):
             # 'radio_processing': 'DN'
         }
 
-        expected = [{
-            'message': 'This folder is valid, but it is empty.',
-            'metadata': {'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11/217_015_0/4_BC_LCC_WGS84'},
-            'type': 'warning'
-        }]
+        expected = [
+            {
+                'message': 'Path/row directory cannot be decoded: `invalid_folder`.',
+                'metadata': {
+                    'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11',
+                    'method': 'check_path_row_dir'
+                },
+                'type': 'warning'
+            },
+            {
+                'message': 'This folder is valid, but it is empty.',
+                'metadata': {'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11/217_015_0/4_BC_LCC_WGS84'},
+                'type': 'warning'
+            }
+        ]
 
         self.get(query_string=query)
 
@@ -355,12 +390,21 @@ class ApiPublishAmazonia1OkTestCase(BaseTestCases.ApiBaseTestCase):
             'radio_processing': 'DN'
         }
 
+        expected = [{
+            'message': 'Path/row directory cannot be decoded: `invalid_folder`.',
+            'metadata': {
+                'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11',
+                'method': 'check_path_row_dir'
+            },
+            'type': 'warning'
+        }]
+
         self.get(query_string=query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'amazonia1/test__api_publish__ok__amazonia1_wfi_l2_dn__02.csv'
         )
-        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
 
     def test__api_publish__ok__amazonia1_wfi__02(self):
         # AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.14_35_23_CB11_SIR18/233_017_0/2_BC_LCC_WGS84
@@ -375,11 +419,21 @@ class ApiPublishAmazonia1OkTestCase(BaseTestCases.ApiBaseTestCase):
             # 'radio_processing': 'DN'
         }
 
-        expected = [{
-            'message': 'This folder is valid, but it is empty.',
-            'metadata': {'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.14_35_23_CB11_SIR18/233_017_0/4_BC_LCC_WGS84'},
-            'type': 'warning'
-        }]
+        expected = [
+            {
+                'message': 'Path/row directory cannot be decoded: `invalid_folder`.',
+                'metadata': {
+                    'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11',
+                    'method': 'check_path_row_dir'
+                },
+                'type': 'warning'
+            },
+            {
+                'message': 'This folder is valid, but it is empty.',
+                'metadata': {'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.14_35_23_CB11_SIR18/233_017_0/4_BC_LCC_WGS84'},
+                'type': 'warning'
+            }
+        ]
 
         self.get(query_string=query)
 
@@ -635,16 +689,6 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
 
         expected = [
             {
-                'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/CBERS4/2016_01/CBERS_4_MUX_DRD_2016_01_01.13_28_32_CB11/157_101_0/2_BC_UTM_WGS84'},
-                'type': 'warning'
-            },
-            {
-                'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/CBERS4/2020_07/CBERS_4_MUX_DRD_2020_07_31.13_07_00_CB11/155_103_0/4_BC_UTM_WGS84'},
-                'type': 'warning'
-            },
-            {
                 'message': 'There is NOT a TIFF file in this folder that ends with the `BAND13.tif` template, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84'},
                 'type': 'warning'
@@ -657,6 +701,16 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
             {
                 'message': 'There is NOT a TIFF file in this folder that ends with the `BAND13.tif` template, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_137_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'There is NOT a TIFF file in this folder that ends with the `BAND5.tif` template, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS4/2016_01/CBERS_4_MUX_DRD_2016_01_01.13_28_32_CB11/157_101_0/2_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'There is NOT a TIFF file in this folder that ends with the `BAND5.tif` template, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS4/2020_07/CBERS_4_MUX_DRD_2020_07_31.13_07_00_CB11/155_103_0/4_BC_UTM_WGS84'},
                 'type': 'warning'
             },
             {
@@ -843,7 +897,7 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
 
     # CBERS4 MUX (DN and SR)
 
-    def test__api_publish__ok__cbers4_mux_l2_dn_and_sr__dn_xml_file_does_not_exist(self):
+    def test__api_publish__ok__cbers4_mux_l2_dn_and_sr__tiff_file_does_not_exist(self):
         # CBERS4/2016_01/CBERS_4_MUX_DRD_2016_01_01.13_28_32_CB11/157_101_0/2_BC_UTM_WGS84
         query = {
             'satellite': 'cBERs4',
@@ -858,7 +912,8 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
 
         expected = [{
             'type': 'warning',
-            'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
+            'message': 'There is NOT a TIFF file in this folder that ends with the '
+                       '`BAND5.tif` template, then it will be ignored.',
             'metadata': {
                 'folder': '/TIFF/CBERS4/2016_01/CBERS_4_MUX_DRD_2016_01_01.13_28_32_CB11/157_101_0/2_BC_UTM_WGS84'
             }
@@ -869,7 +924,7 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_table_is_empty()
         self.check_if_the_errors_have_been_added_in_the_database(expected)
 
-    def test__api_publish__ok__cbers4_mux_l4_dn__dn_xml_file_does_not_exist(self):
+    def test__api_publish__ok__cbers4_mux_l4_dn__tiff_file_does_not_exist(self):
         # CBERS4/2020_07/CBERS_4_MUX_DRD_2020_07_31.13_07_00_CB11/155_103_0/4_BC_UTM_WGS84
         query = {
             'satellite': 'CbErS4',
@@ -883,11 +938,12 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
         }
 
         expected = [{
-            'type': 'warning',
-            'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
+            'message': 'There is NOT a TIFF file in this folder that ends with the '
+                       '`BAND5.tif` template, then it will be ignored.',
             'metadata': {
                 'folder': '/TIFF/CBERS4/2020_07/CBERS_4_MUX_DRD_2020_07_31.13_07_00_CB11/155_103_0/4_BC_UTM_WGS84'
-            }
+            },
+            'type': 'warning'
         }]
 
         self.get(query_string=query)
@@ -955,9 +1011,35 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
         )
         self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
+    def test__api_publish__ok__cbers4_mux_l4_sr__there_is_not_dn_xml_file(self):
+        # CBERS4/2020_07/CBERS_4_MUX_DRD_2020_07_31.13_07_00_CB11/155_103_0/4_BC_UTM_WGS84
+
+        # there is not a DN XML file in this folder, but it does not matter,
+        # because it gets the data from SR file
+
+        query = {
+            'satellite': 'CBERS4',
+            'sensor': 'MuX',
+            'start_date': '2020-07-31',
+            'end_date': '2020-07-31',
+            'path': 155,
+            'row': '103',
+            'geo_processing': 4,
+            'radio_processing': 'sR'
+        }
+
+        self.get(query_string=query)
+
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4/test__api_publish__ok__cbers4_mux_l4_sr__there_is_not_dn_xml_file.csv'
+        )
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
+
     # CBERS4 PAN5M (DN)
+    # TODO
 
     # CBERS4 PAN10M (DN)
+    # TODO
 
     def test__api_publish__ok__cbers4_pan10m_l2_sr__next_to_0h(self):
         # CBERS4/2021_02/CBERS_4_PAN10M_DRD_2021_02_02.01_32_45_CB11/073_113_0/2_BC_UTM_WGS84
@@ -994,12 +1076,12 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
 
         expected = [
             {
-                'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'},
                 'type': 'warning'
             },
             {
-                'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
+                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_108_0/4_BC_UTM_WGS84'},
                 'type': 'warning'
             },
@@ -1164,7 +1246,7 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
         self.check_if_the_items_table_is_empty()
         self.check_if_the_errors_have_been_added_in_the_database(expected)
 
-    def test__api_publish__ok__cbers4a_mux_l4_dn_or_sr__dn_file_does_not_exist(self):
+    def test__api_publish__ok__cbers4a_mux_l4_dn_or_sr__quicklook_does_not_exist(self):
         # CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84
         query = {
             'satellite': 'cBERs4A',
@@ -1178,7 +1260,7 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
 
         expected = [{
             'type': 'warning',
-            'message': 'There is NOT a DN XML file in this folder, then it will be ignored.',
+            'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
             'metadata': {
                 'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'
             }

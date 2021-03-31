@@ -171,7 +171,7 @@ def get_file_path_from_assets(assets, file_type='tiff'):
     if file_type == 'xml':
         for k, v in assets.items():
             # search the first XML file without `RIGHT` and `LEFT` strings
-            if file_type in v['type']:
+            if 'xml' in v['type']:
                 xml_path = v['href']
                 if 'BAND' in xml_path and 'RIGHT' not in xml_path \
                         and 'LEFT' not in xml_path:
@@ -180,9 +180,9 @@ def get_file_path_from_assets(assets, file_type='tiff'):
     # then return it in the next loop
 
     for k, v in assets.items():
-        # check if the asset is a band TIFF file
+        # check if the asset is the selected `file_type`
         if file_type in v['type'] and 'BAND' in v['href']:
-            # return the first one path that is found
+            # and return the first one path that is found
             return  v['href']
 
     return None

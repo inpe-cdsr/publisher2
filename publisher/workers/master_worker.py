@@ -120,9 +120,7 @@ def master(self, base_dir: str, query: dict, df_collections: dict) -> None:
                 logger.info(f'master - p_walk first: {p_walk[0]}')
                 logger.info(f'master - p_walk last: {p_walk[-1]}')
 
-                logger.info(f'master - task.state: {task.state}')
-                logger.info(f'master - task.parent_id: {task.parent_id}')
-                logger.info(f'master - task.root_id: {task.root_id}\n')
+                logger.info(f'master - task.state: {task.state}\n')
 
                 # forget result
                 task.forget()

@@ -4,7 +4,8 @@ from pandas import DataFrame
 
 from publisher.common import print_line
 from publisher.model import DBFactory, PostgreSQLPublisherConnection
-from publisher.workers.environment import CELERY_BROKER_URL
+from publisher.workers.decorator import log_task
+from publisher.workers.environment import CELERY_BROKER_URL, CELERY_RESULT_BACKEND
 from publisher.util import create_item_and_get_insert_clauses
 
 
@@ -17,15 +18,17 @@ CELERY_PROCESSING_QUEUE='processing'
 celery = Celery(
     'publisher.workers.processing_worker',  # celery name
     broker=CELERY_BROKER_URL,
-    # backend=CELERY_RESULT_BACKEND
+    backend=CELERY_RESULT_BACKEND
 )
 
 # get configuration from file
 celery.config_from_object('publisher.workers.celery_config')
 
 
-@celery.task(queue=CELERY_PROCESSING_QUEUE, name='publisher.workers.processing_worker.process_items')
-def process_items(p_walk: list, df_collections: dict) -> None:
+@celery.task(bind=True, queue=CELERY_PROCESSING_QUEUE,
+             name='publisher.workers.processing_worker.process_items')
+@log_task
+def process_items(self, p_walk: list, df_collections: dict) -> None:
     '''Worker task that iterate over p_walk list and processes the items.'''
 
     print_line()

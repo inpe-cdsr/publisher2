@@ -13,6 +13,6 @@ RT_PORT = getenv('RT_PORT', '5672')
 # celery broker
 CELERY_BROKER_URL = f'amqp://{RT_USER}:{RT_PASSWORD}@{RT_HOST}:{RT_PORT}//'
 # celery backend
-# CELERY_RESULT_BACKEND = getenv('CELERY_RESULT_BACKEND', 'rpc://')
+CELERY_RESULT_BACKEND = getenv('CELERY_RESULT_BACKEND', 'redis://:redis@inpe_cdsr_redis:6379/0')
 # number of chunks that are executed in one task
 CELERY_CHUNKS_PER_TASKS = int(getenv('CELERY_CHUNKS_PER_TASKS', 100))

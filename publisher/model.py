@@ -149,7 +149,7 @@ class PostgreSQLCatalogTestConnection(PostgreSQLTestConnection):
         self.execute('DELETE FROM bdc.items;', is_transaction=True)
 
     def select_from_items(self, to_csv: str=None):
-        result = self.execute('SELECT name, collection_id, start_date::timestamp, '
+        result = self.execute('SELECT name, collection_id, tile_id, start_date::timestamp, '
                               'end_date::timestamp, assets, metadata, geom, min_convex_hull '
                               'FROM bdc.items ORDER BY name;')
 

@@ -46,11 +46,19 @@ class BaseTestCases:
             # result = db.select_from_items(to_csv=expected_file_path)
             # get the expected result
             expected = BaseTestCases.BaseTestCase.read_item_from_csv(expected_file_path)
+
             # fill pandas NaN (None, NaN, etc.) with numpy NaN
             expected.fillna({'min_convex_hull': NaN}, inplace=True)
             result.fillna({'min_convex_hull': NaN}, inplace=True)
+
+            # depending on the test case, the expected or result can be float, int or object,
+            # then I convert all them to float
+            expected['tile_id'] = expected['tile_id'].astype(float)
+            result['tile_id'] = result['tile_id'].astype(float)
+
             # print(f'\n expected.head(): \n{expected.head()}\n')
             # print(f' result.head(): \n{result.head()}\n')
+            
             assert_frame_equal(expected, result)
 
         def check_if_the_items_table_is_empty(self):

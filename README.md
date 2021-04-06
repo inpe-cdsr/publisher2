@@ -104,13 +104,13 @@ Build the Docker image (development or production):
 
 ```
 $ docker build -t inpe-cdsr-publisher -f Dockerfile . --no-cache
-$ docker build -t registry.dpi.inpe.br/cdsr/publisher:0.0.5 -f Dockerfile . --no-cache
+$ docker build -t registry.dpi.inpe.br/cdsr/publisher:0.0.6 -f Dockerfile . --no-cache
 ```
 
 If you have credentials, then push the image to your registry. For example:
 
 ```
-$ docker push registry.dpi.inpe.br/cdsr/publisher:0.0.5
+$ docker push registry.dpi.inpe.br/cdsr/publisher:0.0.6
 ```
 
 

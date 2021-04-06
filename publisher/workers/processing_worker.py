@@ -1,5 +1,6 @@
 from celery import Celery
 from celery.utils.log import get_task_logger
+from numpy import nan as NaN
 from pandas import DataFrame
 
 from publisher.common import print_line
@@ -28,7 +29,7 @@ celery.config_from_object('publisher.workers.celery_config')
 @celery.task(bind=True, queue=CELERY_PROCESSING_QUEUE,
              name='publisher.workers.processing_worker.process_items')
 @log_task
-def process_items(self, p_walk: list, df_collections: dict) -> None:
+def process_items(self, p_walk: list, df_collections: dict, df_tiles: dict) -> None:
     '''Worker task that iterate over p_walk list and processes the items.'''
 
     print_line()
@@ -39,6 +40,14 @@ def process_items(self, p_walk: list, df_collections: dict) -> None:
 
     # convert from dict to dataframe again
     df_collections = DataFrame.from_dict(df_collections)
+    df_tiles = DataFrame.from_dict(df_tiles)
+
+    # fill pandas NaN (None, NaN, etc.) with numpy NaN
+    df_collections.fillna({'grid_ref_sys_id': NaN}, inplace=True)
+
+    logger.info('process_items - df_collections:\n'
+                f"{df_collections[['id', 'name', 'grid_ref_sys_id', 'metadata', 'is_public']]}\n")
+    logger.info(f'process_items - df_tiles.head():\n{df_tiles.head()}\n')
 
     items_insert = []
     errors_insert = []
@@ -46,7 +55,7 @@ def process_items(self, p_walk: list, df_collections: dict) -> None:
     for dir_path, metadata, assets in p_walk:
         # create INSERT clause based on item information
         __items_insert, __errors_insert = create_item_and_get_insert_clauses(
-            dir_path, metadata, assets, df_collections
+            dir_path, metadata, assets, df_collections, df_tiles
         )
 
         items_insert += __items_insert

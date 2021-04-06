@@ -80,12 +80,13 @@ def create_app(test_config=None):
 
     @app.route('/publish')
     def publish():
-        # get all available collections from the database
+        # get all available collections and tiles from the database
         df_collections = db_connection.select_from_collections()
+        df_tiles = db_connection.select_from_tiles()
 
         # `dict(request.args)`` returns the query string as a dict
         publisher_app = Publisher(
-            PR_BASE_DIR, df_collections, query=dict(request.args)
+            PR_BASE_DIR, df_collections, df_tiles, query=dict(request.args)
         )
         # execute main method
         publisher_app.main()

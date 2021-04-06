@@ -13,10 +13,11 @@ logger = create_logger(__name__, level=PR_LOGGING_LEVEL)
 
 class Publisher:
 
-    def __init__(self, BASE_DIR, df_collections, query=None):
+    def __init__(self, BASE_DIR, df_collections, df_tiles, query=None):
         # base directory to search the files
         self.BASE_DIR = BASE_DIR
         self.df_collections = df_collections
+        self.df_tiles = df_tiles
         self.query = query
 
     def main(self):
@@ -39,7 +40,7 @@ class Publisher:
 
         # run `master` task
         master.apply_async(
-            (self.BASE_DIR, self.query, self.df_collections.to_dict()),
+            (self.BASE_DIR, self.query, self.df_collections.to_dict(), self.df_tiles.to_dict()),
             queue=CELERY_MASTER_QUEUE
         )
 

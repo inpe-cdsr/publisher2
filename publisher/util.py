@@ -2,6 +2,7 @@ from copy import deepcopy
 from datetime import datetime, timedelta
 from glob import glob
 from json import loads
+from numpy import nan as NaN, isnan
 from os import walk
 from os.path import abspath, dirname, join as os_path_join, sep as os_path_sep
 from re import search
@@ -188,6 +189,34 @@ def get_file_path_from_assets(assets, file_type='tiff'):
     return None
 
 
+def get_tile_id_from_collection(collection, metadata, df_tiles):
+    tile_id = None
+
+    collection_grid_ref_sys_id = collection.at[0, 'grid_ref_sys_id']
+
+    # if `grid_ref_sys_id` is not NaN, then it is a number
+    if not isnan(collection_grid_ref_sys_id):
+        logger.info(f'collection_grid_ref_sys_id: {collection_grid_ref_sys_id}')
+
+        path_row = metadata['path'] + metadata['row']
+        logger.info(f'path_row: {path_row}')
+
+        # get the tile record that matches with the tile name (i.e. path/row) and grid_ref_sys_id
+        df_tile_record = df_tiles.loc[
+            (df_tiles['name'] == path_row) &
+            (df_tiles['grid_ref_sys_id'] == collection_grid_ref_sys_id)
+        ].reset_index(drop=True)
+
+        logger.info(f'df_tile_record: \n{df_tile_record}\n')
+
+        # if `df_tile_record` is not empty, then fill the tile id
+        if len(df_tile_record.index) > 0:
+            tile_id = df_tile_record.at[0, 'id']
+            logger.info(f'tile_id: {tile_id}')
+
+    return tile_id
+
+
 def create_items(metadata, assets):
     '''
     Return a list of items based on an XML file as dictionary and the
@@ -256,7 +285,7 @@ def create_items(metadata, assets):
     return [item]
 
 
-def create_item_and_get_insert_clauses(dir_path, metadata, assets, df_collections):
+def create_item_and_get_insert_clauses(dir_path, metadata, assets, df_collections, df_tiles):
     print_line()
 
     items_insert = []
@@ -280,7 +309,8 @@ def create_item_and_get_insert_clauses(dir_path, metadata, assets, df_collection
         collection = df_collections.loc[
             df_collections['name'] == item['collection']['name']
         ].reset_index(drop=True)
-        # logger.info(f'collection:\n{collection}')
+        # logger.info('collection: \n'
+        #             f"{collection[['id', 'name', 'grid_ref_sys_id', 'metadata', 'is_public']]}\n")
 
         # if `collection` is an empty dataframe, a collection was not found by its name,
         # then save the warning and ignore it
@@ -303,9 +333,11 @@ def create_item_and_get_insert_clauses(dir_path, metadata, assets, df_collection
         collection_id = collection.at[0, 'id']
         # logger.info(f'collection_id: {collection_id}')
 
+        tile_id = get_tile_id_from_collection(collection, metadata, df_tiles)
+
         # create INSERT clause based on item metadata
         insert = PostgreSQLCatalogTestConnection.create_item_insert_clause(
-            item, collection_id
+            item, collection_id, tile_id
         )
         # logger.info(f'insert: {insert}\n')
         logger.info(f"Adding an INSERT clause to `{item['properties']['name']}` "

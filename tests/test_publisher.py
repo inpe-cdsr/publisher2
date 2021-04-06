@@ -8,8 +8,9 @@ from tests.base import BaseTestCases, celery_async, test_delay_secs
 
 # create a db connection based on the environment variable
 db_connection = DBFactory.factory()
-# get all available collections from the database
+# get all available collections and tiles from the database
 df_collections = db_connection.select_from_collections()
+df_tiles = db_connection.select_from_tiles()
 
 
 @mock.patch(*celery_async)
@@ -18,7 +19,7 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
     @staticmethod
     def __create_and_execute_publisher(query):
         # create Publisher object and run the main method
-        publisher_app = Publisher(PR_BASE_DIR, df_collections, query=query)
+        publisher_app = Publisher(PR_BASE_DIR, df_collections, df_tiles, query=query)
         publisher_app.main()
 
         # wait N seconds to the task save the data in the database
@@ -125,6 +126,60 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
         AsyncPublisherOkTestCase.__create_and_execute_publisher(query)
 
         self.check_if_the_items_table_is_empty()
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
+
+    # CBERS4
+
+    def test__publisher__ok__cbers4(self):
+        query = {
+            'satellite': 'CBERS4',
+            'start_date': '1950-01-01',
+            'end_date': '2050-12-31'
+        }
+
+        expected = [
+            {
+                'message': 'There is NOT a TIFF file in this folder that ends with the `BAND13.tif` template, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'There is NOT a TIFF file in this folder that ends with the `BAND13.tif` template, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_136_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'There is NOT a TIFF file in this folder that ends with the `BAND13.tif` template, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_137_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'There is NOT a TIFF file in this folder that ends with the `BAND5.tif` template, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS4/2016_01/CBERS_4_MUX_DRD_2016_01_01.13_28_32_CB11/157_101_0/2_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'There is NOT a TIFF file in this folder that ends with the `BAND5.tif` template, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS4/2020_07/CBERS_4_MUX_DRD_2020_07_31.13_07_00_CB11/155_103_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'There is NOT a TIFF file in this folder that ends with the `CMASK_GRID_SURFACE.tif` template, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_137_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
+            },
+            {
+                'message': 'This folder is valid, but it is empty.',
+                'metadata': {'folder': '/TIFF/CBERS4/2021_02/CBERS_4_PAN10M_DRD_2021_02_02.01_32_45_CB11/073_113_0/4_BC_UTM_WGS84'},
+                'type': 'warning'
+            }
+        ]
+
+        AsyncPublisherOkTestCase.__create_and_execute_publisher(query)
+
+        self.check_if_the_items_have_been_added_in_the_database(
+            'cbers4/test__api_publish__ok__cbers4.csv'
+        )
         self.check_if_the_errors_have_been_added_in_the_database(expected)
 
     # CBERS4A

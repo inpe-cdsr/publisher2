@@ -19,16 +19,7 @@ from publisher.logger import create_logger
 logger = create_logger(__name__, level=PR_LOGGING_LEVEL)
 
 
-class DBConnection(ABC):
-    @abstractmethod
-    def execute(self, query: str, params: dict=None, is_transaction: bool=False):
-        raise NotImplementedError
-
-    def select_from_collections(self):
-        return self.execute('SELECT * FROM bdc.collections ORDER BY name;')
-
-
-class PostgreSQLConnection(DBConnection):
+class PostgreSQLConnection:
 
     def __init__(self):
         self.PGUSER = getenv('PGUSER', 'postgres')
@@ -83,6 +74,12 @@ class PostgreSQLConnection(DBConnection):
             logger.error(f'PostgreSQLConnection.execute() - error: {error}\n')
 
             raise SQLAlchemyError(error)
+
+    def select_from_collections(self):
+        return self.execute('SELECT * FROM bdc.collections ORDER BY name;')
+
+    def select_from_tiles(self):
+        return self.execute('SELECT id, grid_ref_sys_id, name FROM bdc.tiles ORDER BY name;')
 
 
 class PostgreSQLTestConnection(PostgreSQLConnection):
@@ -165,15 +162,21 @@ class PostgreSQLCatalogTestConnection(PostgreSQLTestConnection):
         return result
 
     @staticmethod
-    def create_item_insert_clause(item: dict, collection_id: int, srid: int=4326) -> str:
+    def create_item_insert_clause(item: dict, collection_id: int, tile_id: int=None,
+                                  srid: int=4326) -> str:
         '''Create `INSERT` clause to bdc.items table based on item metadata.'''
 
         properties = item['properties']
         datetime = properties['datetime']
 
+        # default: ignore `tile_id`, because the most of the items do not have it
+        tile_id_column = tile_id_value = ''
         # default: ignore `convex_hull`, because its calc is slow
-        convex_hull_column = ''
-        convex_hull_value = ''
+        convex_hull_column = convex_hull_value = ''
+
+        if tile_id:
+            tile_id_column = 'tile_id, '
+            tile_id_value = f'{tile_id}, '
 
         # but, if there are `convex_hull` inside `item`, then insert it together
         if 'convex_hull' in item:
@@ -185,13 +188,13 @@ class PostgreSQLCatalogTestConnection(PostgreSQLTestConnection):
             f'DELETE FROM bdc.items WHERE name=\'{properties["name"]}\'; '
             # insert new item
             'INSERT INTO bdc.items '
-            '(name, collection_id, start_date, end_date, '
+            f'(name, collection_id, {tile_id_column} start_date, end_date, '
             f'cloud_cover, assets, metadata, geom, {convex_hull_column} srid) '
             'VALUES '
-            f'(\'{properties["name"]}\', {collection_id}, \'{datetime}\', \'{datetime}\', '
+            f'(\'{properties["name"]}\', {collection_id}, {tile_id_value} '
+            f"'{datetime}', '{datetime}', "
             f'NULL, \'{dumps(item["assets"])}\', \'{dumps(properties)}\', '
-            f'ST_GeomFromGeoJSON(\'{dumps(item["geometry"])}\'), '
-            f'{convex_hull_value} {srid});'
+            f'ST_GeomFromGeoJSON(\'{dumps(item["geometry"])}\'), {convex_hull_value} {srid});'
         )
 
 
@@ -240,7 +243,7 @@ class PostgreSQLPublisherConnection(PostgreSQLTestConnection):
 class DBFactory:
 
     @staticmethod
-    def factory() -> DBConnection:
+    def factory() -> PostgreSQLConnection:
         # if the user is testing the application (i.e. running test cases),
         # then return the test database
         if FLASK_TESTING:

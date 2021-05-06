@@ -58,7 +58,7 @@ class BaseTestCases:
 
             # print(f'\n expected.head(): \n{expected.head()}\n')
             # print(f' result.head(): \n{result.head()}\n')
-            
+
             assert_frame_equal(expected, result)
 
         def check_if_the_items_table_is_empty(self):

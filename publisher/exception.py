@@ -1,2 +1,0 @@
-class PublisherDecodeException(Exception):
-    pass

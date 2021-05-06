@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from abc import ABC, abstractmethod
 from json import dumps, loads
 from os import getenv
@@ -183,18 +181,24 @@ class PostgreSQLCatalogTestConnection(PostgreSQLTestConnection):
             convex_hull_column = 'min_convex_hull, '
             convex_hull_value = f'ST_GeomFromGeoJSON(\'{dumps(item["convex_hull"])}\'), '
 
+        # default JSON value to quality control
+        quality_control = dumps({
+            'operator_id': None, 'cloud_cover_method': None,
+            'is_public': False, 'controlled_at': None
+        })
+
         return (
             # delete old item before adding a new one, if it exists
             f'DELETE FROM bdc.items WHERE name=\'{properties["name"]}\'; '
             # insert new item
             'INSERT INTO bdc.items '
-            f'(name, collection_id, {tile_id_column} start_date, end_date, '
-            f'cloud_cover, assets, metadata, geom, {convex_hull_column} srid) '
+            f'(name, collection_id, {tile_id_column} start_date, end_date, cloud_cover, '
+            f'assets, metadata, geom, {convex_hull_column} srid, quality_control) '
             'VALUES '
             f'(\'{properties["name"]}\', {collection_id}, {tile_id_value} '
-            f"'{datetime}', '{datetime}', "
-            f'NULL, \'{dumps(item["assets"])}\', \'{dumps(properties)}\', '
-            f'ST_GeomFromGeoJSON(\'{dumps(item["geometry"])}\'), {convex_hull_value} {srid});'
+            f'\'{datetime}\', \'{datetime}\', NULL, \'{dumps(item["assets"])}\', '
+            f'\'{dumps(properties)}\', ST_GeomFromGeoJSON(\'{dumps(item["geometry"])}\'), '
+            f'{convex_hull_value} {srid}, \'{quality_control}\');'
         )
 
 

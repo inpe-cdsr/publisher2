@@ -149,7 +149,7 @@ class PostgreSQLCatalogTestConnection(PostgreSQLTestConnection):
     def select_from_items(self, to_csv: str=None):
         result = self.execute('SELECT name, collection_id, tile_id, start_date::timestamp, '
                               'end_date::timestamp, assets, metadata, geom, min_convex_hull '
-                              'FROM bdc.items ORDER BY name;')
+                              'FROM bdc.items ORDER BY name, collection_id;')
 
         result['assets'] = result['assets'].astype('str')
         result['metadata'] = result['metadata'].astype('str')
@@ -189,7 +189,9 @@ class PostgreSQLCatalogTestConnection(PostgreSQLTestConnection):
 
         return (
             # delete old item before adding a new one, if it exists
-            f'DELETE FROM bdc.items WHERE name=\'{properties["name"]}\'; '
+            # a unique item is defined by its name and collection
+            f'DELETE FROM bdc.items WHERE collection_id={collection_id} '
+            f'AND name=\'{properties["name"]}\'; '
             # insert new item
             'INSERT INTO bdc.items '
             f'(name, collection_id, {tile_id_column} start_date, end_date, cloud_cover, '

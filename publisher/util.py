@@ -41,6 +41,7 @@ def get_xml_as_dict_from_xml_path(xml_path):
     # logger.info(f'get_xml_as_dict_from_xml_path - xml_path: {xml_path}')
 
     # 'prdf' - DN file; and 'rpdf' - SR file
+    # if there is not DN or SR tags, then it returns None
     if 'prdf' not in xml_as_dict and 'rpdf' not in xml_as_dict:
         return None
 
@@ -117,7 +118,6 @@ def get_item_properties(xml_path, metadata, collection):
 
     # get the item's properties
     properties = {
-        # get just the date and time of the string
         'datetime': xml_as_dict['datetime'],
         # convert path and row from string to integer
         'path': int(metadata['path']),
@@ -126,7 +126,7 @@ def get_item_properties(xml_path, metadata, collection):
         'sensor': collection['sensor'],
         'sun_position': xml_as_dict['sun_position'],
         'sync_loss': xml_as_dict['sync_loss'],
-        # CQ fills it
+        # quality control team fills it
         # 'cloud_cover': '',
         # 'deleted': item['deleted'],
     }
@@ -137,8 +137,7 @@ def get_item_properties(xml_path, metadata, collection):
         # fill path and row with left zeros in order to create the item name
         f"{fill_string_with_left_zeros(str(properties['path']))}"
         f"{fill_string_with_left_zeros(str(properties['row']))}_"
-        f"{properties['datetime'].split('T')[0].replace('-', '')}_"
-        f"L{collection['geo_processing']}_{collection['radio_processing']}"
+        f"{properties['datetime'].split('T')[0].replace('-', '')}"
     )
 
     return properties
@@ -239,6 +238,7 @@ def create_items(metadata, assets):
         # get one TIFF path in order to extract the geometry and convex_hull
         tiff_path = get_file_path_from_assets(assets['DN'])
         dn_item['geometry'] = get_geometry_from_tiff(tiff_path)
+        # this function is slow, because of that it is commented
         # dn_item['convex_hull'] = get_convex_hull_from_tiff(tiff_path)
 
         ##################################################

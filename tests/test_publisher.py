@@ -17,7 +17,7 @@ df_tiles = db_connection.select_from_tiles()
 class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
 
     @staticmethod
-    def __create_and_execute_publisher(query):
+    def _create_and_execute_publisher(query):
         # create Publisher object and run the main method
         publisher_app = Publisher(PR_BASE_DIR, df_collections, df_tiles, query=query)
         publisher_app.main()
@@ -56,7 +56,7 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
             }
         ]
 
-        AsyncPublisherOkTestCase.__create_and_execute_publisher(query)
+        AsyncPublisherOkTestCase._create_and_execute_publisher(query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'amazonia1/test__api_publish__ok__amazonia1.csv'
@@ -95,7 +95,7 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
             }
         ]
 
-        AsyncPublisherOkTestCase.__create_and_execute_publisher(query)
+        AsyncPublisherOkTestCase._create_and_execute_publisher(query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers2b/test__api_publish__ok__cbers2b.csv'
@@ -123,7 +123,7 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
             }
         }]
 
-        AsyncPublisherOkTestCase.__create_and_execute_publisher(query)
+        AsyncPublisherOkTestCase._create_and_execute_publisher(query)
 
         self.check_if_the_items_table_is_empty()
         self.check_if_the_errors_have_been_added_in_the_database(expected)
@@ -175,7 +175,7 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
             }
         ]
 
-        AsyncPublisherOkTestCase.__create_and_execute_publisher(query)
+        AsyncPublisherOkTestCase._create_and_execute_publisher(query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4/test__api_publish__ok__cbers4.csv'
@@ -249,7 +249,7 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
             }
         ]
 
-        AsyncPublisherOkTestCase.__create_and_execute_publisher(query)
+        AsyncPublisherOkTestCase._create_and_execute_publisher(query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4a/test__api_publish__ok__cbers4a.csv'
@@ -276,7 +276,7 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
             }
         }]
 
-        AsyncPublisherOkTestCase.__create_and_execute_publisher(query)
+        AsyncPublisherOkTestCase._create_and_execute_publisher(query)
 
         self.check_if_the_items_table_is_empty()
         self.check_if_the_errors_have_been_added_in_the_database(expected)
@@ -298,7 +298,7 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
             }
         ]
 
-        AsyncPublisherOkTestCase.__create_and_execute_publisher(query)
+        AsyncPublisherOkTestCase._create_and_execute_publisher(query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'landsat/test__api_publish__ok__landsat1.csv'
@@ -327,7 +327,7 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
             }
         ]
 
-        AsyncPublisherOkTestCase.__create_and_execute_publisher(query)
+        AsyncPublisherOkTestCase._create_and_execute_publisher(query)
 
         self.check_if_the_items_have_been_added_in_the_database(
             'landsat/test__api_publish__ok__landsat7.csv'

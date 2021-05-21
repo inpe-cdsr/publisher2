@@ -624,7 +624,7 @@ class PublisherWalk:
 
         # logger.info(f'PublisherWalk - self.query: {self.query}')
 
-        for dir_path, dirs, files in walk(base_path):
+        for dir_path, dirs, files in walk(base_path, followlinks=True):
             # get dir path starting at `/TIFF`
             index = dir_path.find('TIFF')
             # `splitted_dir_path` example:

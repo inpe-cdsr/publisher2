@@ -1,7 +1,5 @@
 from os import getenv
 
-from publisher.environment import str2bool
-
 
 # RabbitMQ environment variables
 RT_USER = getenv('RT_USER', 'guest')

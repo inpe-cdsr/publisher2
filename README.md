@@ -81,17 +81,17 @@ Before running the test cases for the first time, you need to initialize the tes
 $ flask init-db
 ```
 
-Run the test cases with `ERROR` logging level to suppress unnecessary logging messages:
+Run the test cases with `CRITICAL` logging level to suppress unnecessary logging messages:
 
 ```
-$ export PR_LOGGING_LEVEL=ERROR &&
+$ export PR_LOGGING_LEVEL=CRITICAL &&
     python -m unittest discover tests "test_*.py" -v
 ```
 
 Or, run the test cases and get coverage report:
 
 ```
-$ export PR_LOGGING_LEVEL=ERROR &&
+$ export PR_LOGGING_LEVEL=CRITICAL &&
     coverage run -m unittest discover tests "test_*.py" -v &&
     coverage report -m &&
     coverage html

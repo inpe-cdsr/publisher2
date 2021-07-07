@@ -191,6 +191,18 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
 
         expected = [
             {
+                'message': ('There is metadata to the `CBERS4A_XYZ_L4_DN` collection, however '
+                            'this collection does not exist in the database.'),
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_XYZ_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84'},
+                'type': 'error'
+            },
+            {
+                'message': ('There is metadata to the `CBERS4A_XYZ_L4_SR` collection, however '
+                            'this collection does not exist in the database.'),
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_XYZ_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84'},
+                'type': 'error'
+            },
+            {
                 'message': 'There is NOT a L4 JSON file (i.e. `*h5_*.json`) in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2021_06/CBERS_4A_WFI_RAW_2021_06_15.13_45_00_ETC2/207_132_0/4_BC_UTM_WGS84'},
                 'type': 'error'

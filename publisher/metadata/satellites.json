@@ -264,6 +264,33 @@
 						},
 						"SR": null
 					}
+				},
+				{
+					"name": "XYZ",
+					"comment": "This sensor does not exist, it was created just to execute the test cases.",
+					"resolution": 10,
+					"quicklook": [
+						"red",
+						"nir",
+						"green"
+					],
+					"assets": {
+						"DN": {
+							"blue":  "BAND13.tif",
+							"green": "BAND14.tif",
+							"red":   "BAND15.tif",
+							"nir":   "BAND16.tif"
+						},
+						"SR": {
+							"blue":    "BAND13_GRID_SURFACE.tif",
+							"green":   "BAND14_GRID_SURFACE.tif",
+							"red":     "BAND15_GRID_SURFACE.tif",
+							"nir":     "BAND16_GRID_SURFACE.tif",
+							"quality": "CMASK_GRID_SURFACE.tif",
+							"evi":     "EVI.tif",
+							"ndvi":    "NDVI.tif"
+						}
+					}
 				}
 			]
 		},

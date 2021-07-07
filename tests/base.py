@@ -68,6 +68,7 @@ class BaseTestCases:
         def check_if_the_errors_have_been_added_in_the_database(self, expected):
             # get the result from database
             result = db_publisher.select_from_task_error()
+            # print(f'\n result: \n{result}\n')
             self.assertEqual(expected, result)
 
     class ApiBaseTestCase(BaseTestCase):

@@ -31,7 +31,7 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
                     'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11',
                     'method': 'check_path_row_dir'
                 },
-                'type': 'warning'
+                'type': 'error'
             },
             {
                 'message': 'This folder is valid, but it is empty.',
@@ -65,22 +65,22 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
             {
                 'message': 'There is metadata to the `CBERS2B_XYZ_L2_DN` collection, however this collection does not exist in the database.',
                 'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_XYZ_20070925.145654/181_096_0/2_BC_UTM_WGS84'},
-                'type': 'warning'
+                'type': 'error'
             },
             {
                 'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_CCD_20070925.145654/181_096_0/2_BC_UTM_WGS84'},
-                'type': 'warning'
+                'type': 'error'
             },
             {
                 'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_HRC_20070929.124300/145_C_111_3_0/2_BC_UTM_WGS84'},
-                'type': 'warning',
+                'type': 'error',
             },
             {
                 'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_WFI_20070928.131338/154_124_0/2_BC_LCC_WGS84'},
-                'type': 'warning'
+                'type': 'error'
             }
         ]
 
@@ -105,11 +105,9 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
         }
 
         expected = [{
-            'type': 'warning',
             'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-            'metadata': {
-                'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_CCD_20070925.145654/181_096_0/2_BC_UTM_WGS84'
-            }
+            'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_CCD_20070925.145654/181_096_0/2_BC_UTM_WGS84'},
+            'type': 'error'
         }]
 
         self.__execute_publisher(query)
@@ -128,14 +126,19 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
 
         expected = [
             {
+                'message': 'There is NOT a L4 JSON file (i.e. `*h5_*.json`) in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS4A/2021_06/CBERS_4A_WFI_RAW_2021_06_15.13_45_00_ETC2/207_132_0/4_BC_UTM_WGS84'},
+                'type': 'error'
+            },
+            {
                 'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'},
-                'type': 'warning'
+                'type': 'error'
             },
             {
                 'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_108_0/4_BC_UTM_WGS84'},
-                'type': 'warning'
+                'type': 'error'
             },
             {
                 'message': 'This folder is valid, but it is empty.',
@@ -204,11 +207,9 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
         }
 
         expected = [{
-            'type': 'warning',
             'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-            'metadata': {
-                'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'
-            }
+            'metadata': {'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'},
+            'type': 'error'
         }]
 
         self.__execute_publisher(query)
@@ -225,13 +226,11 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
             'end_date': '2050-12-31'
         }
 
-        expected = [
-            {
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/LANDSAT1/1976_10/LANDSAT1_MSS_19761002.120000/010_057_0/2_BC_UTM_WGS84'},
-                'type': 'warning'
-            }
-        ]
+        expected = [{
+            'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+            'metadata': {'folder': '/TIFF/LANDSAT1/1976_10/LANDSAT1_MSS_19761002.120000/010_057_0/2_BC_UTM_WGS84'},
+            'type': 'error'
+        }]
 
         self.__execute_publisher(query)
 
@@ -253,12 +252,12 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
             {
                 'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/LANDSAT7/1999_07/LANDSAT7_ETM_19990719.124008/217_064_0/2_BC_UTM_WGS84'},
-                'type': 'warning'
+                'type': 'error'
             },
             {
                 'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/LANDSAT7/2003_06/LANDSAT7_ETM_20030601.125322/220_061_0/2_BC_UTM_WGS84'},
-                'type': 'warning'
+                'type': 'error'
             }
         ]
 
@@ -289,7 +288,7 @@ class ApiPublishAmazonia1OkTestCase(BaseTestCases.ApiBaseTestCase):
                     'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11',
                     'method': 'check_path_row_dir'
                 },
-                'type': 'warning'
+                'type': 'error'
             },
             {
                 'message': 'This folder is valid, but it is empty.',
@@ -331,7 +330,7 @@ class ApiPublishAmazonia1OkTestCase(BaseTestCases.ApiBaseTestCase):
                 'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11',
                 'method': 'check_path_row_dir'
             },
-            'type': 'warning'
+            'type': 'error'
         }]
 
         self.get(query_string=query)
@@ -361,7 +360,7 @@ class ApiPublishAmazonia1OkTestCase(BaseTestCases.ApiBaseTestCase):
                     'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11',
                     'method': 'check_path_row_dir'
                 },
-                'type': 'warning'
+                'type': 'error'
             },
             {
                 'message': 'This folder is valid, but it is empty.',
@@ -396,7 +395,7 @@ class ApiPublishAmazonia1OkTestCase(BaseTestCases.ApiBaseTestCase):
                 'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11',
                 'method': 'check_path_row_dir'
             },
-            'type': 'warning'
+            'type': 'error'
         }]
 
         self.get(query_string=query)
@@ -426,7 +425,7 @@ class ApiPublishAmazonia1OkTestCase(BaseTestCases.ApiBaseTestCase):
                     'folder': '/TIFF/AMAZONIA1/2021_03/AMAZONIA_1_WFI_DRD_2021_03_03.12_57_40_CB11',
                     'method': 'check_path_row_dir'
                 },
-                'type': 'warning'
+                'type': 'error'
             },
             {
                 'message': 'This folder is valid, but it is empty.',
@@ -459,22 +458,22 @@ class ApiPublishCbers2BOkTestCase(BaseTestCases.ApiBaseTestCase):
             {
                 'message': 'There is metadata to the `CBERS2B_XYZ_L2_DN` collection, however this collection does not exist in the database.',
                 'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_XYZ_20070925.145654/181_096_0/2_BC_UTM_WGS84'},
-                'type': 'warning'
+                'type': 'error'
             },
             {
                 'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_CCD_20070925.145654/181_096_0/2_BC_UTM_WGS84'},
-                'type': 'warning'
+                'type': 'error'
             },
             {
                 'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_HRC_20070929.124300/145_C_111_3_0/2_BC_UTM_WGS84'},
-                'type': 'warning',
+                'type': 'error',
             },
             {
                 'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_WFI_20070928.131338/154_124_0/2_BC_LCC_WGS84'},
-                'type': 'warning'
+                'type': 'error'
             }
         ]
 
@@ -521,11 +520,9 @@ class ApiPublishCbers2BOkTestCase(BaseTestCases.ApiBaseTestCase):
         }
 
         expected = [{
-            'type': 'warning',
             'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-            'metadata': {
-                'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_CCD_20070925.145654/181_096_0/2_BC_UTM_WGS84'
-            }
+            'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_CCD_20070925.145654/181_096_0/2_BC_UTM_WGS84'},
+            'type': 'error'
         }]
 
         self.get(query_string=query)
@@ -589,11 +586,11 @@ class ApiPublishCbers2BOkTestCase(BaseTestCases.ApiBaseTestCase):
         }
 
         expected = [{
-            'type': 'warning',
             'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
             'metadata': {
                 'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_HRC_20070929.124300/145_C_111_3_0/2_BC_UTM_WGS84'
-            }
+            },
+            'type': 'error'
         }]
 
         self.get(query_string=query)
@@ -637,11 +634,9 @@ class ApiPublishCbers2BOkTestCase(BaseTestCases.ApiBaseTestCase):
         }
 
         expected = [{
-            'type': 'warning',
             'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-            'metadata': {
-                'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_WFI_20070928.131338/154_124_0/2_BC_LCC_WGS84'
-            }
+            'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_WFI_20070928.131338/154_124_0/2_BC_LCC_WGS84'},
+            'type': 'error'
         }]
 
         self.get(query_string=query)
@@ -668,7 +663,7 @@ class ApiPublishCbers2BOkTestCase(BaseTestCases.ApiBaseTestCase):
             'message': ('There is metadata to the `CBERS2B_XYZ_L2_DN` collection, however '
                         'this collection does not exist in the database.'),
             'metadata': {'folder': '/TIFF/CBERS2B/2007_09/CBERS2B_XYZ_20070925.145654/181_096_0/2_BC_UTM_WGS84'},
-            'type': 'warning'
+            'type': 'error'
         }]
 
         self.get(query_string=query)
@@ -691,32 +686,32 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
             {
                 'message': 'There is NOT a TIFF file in this folder that ends with the `BAND13.tif` template, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84'},
-                'type': 'warning'
+                'type': 'error'
             },
             {
                 'message': 'There is NOT a TIFF file in this folder that ends with the `BAND13.tif` template, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_136_0/4_BC_UTM_WGS84'},
-                'type': 'warning'
+                'type': 'error'
             },
             {
                 'message': 'There is NOT a TIFF file in this folder that ends with the `BAND13.tif` template, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_137_0/4_BC_UTM_WGS84'},
-                'type': 'warning'
+                'type': 'error'
             },
             {
                 'message': 'There is NOT a TIFF file in this folder that ends with the `BAND5.tif` template, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4/2016_01/CBERS_4_MUX_DRD_2016_01_01.13_28_32_CB11/157_101_0/2_BC_UTM_WGS84'},
-                'type': 'warning'
+                'type': 'error'
             },
             {
                 'message': 'There is NOT a TIFF file in this folder that ends with the `BAND5.tif` template, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4/2020_07/CBERS_4_MUX_DRD_2020_07_31.13_07_00_CB11/155_103_0/4_BC_UTM_WGS84'},
-                'type': 'warning'
+                'type': 'error'
             },
             {
                 'message': 'There is NOT a TIFF file in this folder that ends with the `CMASK_GRID_SURFACE.tif` template, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_137_0/4_BC_UTM_WGS84'},
-                'type': 'warning'
+                'type': 'error'
             },
             {
                 'message': 'This folder is valid, but it is empty.',
@@ -750,10 +745,8 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
         expected = [{
             'message': ('There is NOT a TIFF file in this folder that ends with the '
                         '`BAND13.tif` template, then it will be ignored.'),
-            'metadata': {
-                'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84'
-            },
-            'type': 'warning'
+            'metadata': {'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84'},
+            'type': 'error'
         }]
 
         self.get(query_string=query)
@@ -797,10 +790,8 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
         expected = [{
             'message': ('There is NOT a TIFF file in this folder that ends with the '
                         '`BAND13.tif` template, then it will be ignored.'),
-            'metadata': {
-                'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84'
-            },
-            'type': 'warning'
+            'metadata': {'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84'},
+            'type': 'error'
         }]
 
         self.get(query_string=query)
@@ -863,10 +854,10 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
 
         self.get(query_string=query)
 
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
         self.check_if_the_items_have_been_added_in_the_database(
             'cbers4/test__api_publish__ok__cbers4_awfi_l4_sr__ndvi_tiff_file_does_not_exist.csv'
         )
-        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
 
     def test__api_publish__ok__cbers4_awfi_l4_sr__quality_tiff_file_does_not_exist(self):
         # CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_135_0/4_BC_UTM_WGS84
@@ -884,10 +875,8 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
         expected = [{
             'message': ('There is NOT a TIFF file in this folder that ends with the '
                         '`CMASK_GRID_SURFACE.tif` template, then it will be ignored.'),
-            'metadata': {
-                'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_137_0/4_BC_UTM_WGS84'
-            },
-            'type': 'warning'
+            'metadata': {'folder': '/TIFF/CBERS4/2020_12/CBERS_4_AWFI_DRD_2020_12_28.13_17_30_CB11/157_137_0/4_BC_UTM_WGS84'},
+            'type': 'error'
         }]
 
         self.get(query_string=query)
@@ -911,12 +900,10 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
         }
 
         expected = [{
-            'type': 'warning',
             'message': 'There is NOT a TIFF file in this folder that ends with the '
                        '`BAND5.tif` template, then it will be ignored.',
-            'metadata': {
-                'folder': '/TIFF/CBERS4/2016_01/CBERS_4_MUX_DRD_2016_01_01.13_28_32_CB11/157_101_0/2_BC_UTM_WGS84'
-            }
+            'metadata': {'folder': '/TIFF/CBERS4/2016_01/CBERS_4_MUX_DRD_2016_01_01.13_28_32_CB11/157_101_0/2_BC_UTM_WGS84'},
+            'type': 'error'
         }]
 
         self.get(query_string=query)
@@ -938,12 +925,9 @@ class ApiPublishCbers4OkTestCase(BaseTestCases.ApiBaseTestCase):
         }
 
         expected = [{
-            'message': 'There is NOT a TIFF file in this folder that ends with the '
-                       '`BAND5.tif` template, then it will be ignored.',
-            'metadata': {
-                'folder': '/TIFF/CBERS4/2020_07/CBERS_4_MUX_DRD_2020_07_31.13_07_00_CB11/155_103_0/4_BC_UTM_WGS84'
-            },
-            'type': 'warning'
+            'message': 'There is NOT a TIFF file in this folder that ends with the `BAND5.tif` template, then it will be ignored.',
+            'metadata': {'folder': '/TIFF/CBERS4/2020_07/CBERS_4_MUX_DRD_2020_07_31.13_07_00_CB11/155_103_0/4_BC_UTM_WGS84'},
+            'type': 'error'
         }]
 
         self.get(query_string=query)
@@ -1076,14 +1060,19 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
 
         expected = [
             {
+                'message': 'There is NOT a L4 JSON file (i.e. `*h5_*.json`) in this folder, then it will be ignored.',
+                'metadata': {'folder': '/TIFF/CBERS4A/2021_06/CBERS_4A_WFI_RAW_2021_06_15.13_45_00_ETC2/207_132_0/4_BC_UTM_WGS84'},
+                'type': 'error'
+            },
+            {
                 'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'},
-                'type': 'warning'
+                'type': 'error'
             },
             {
                 'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_WFI_RAW_2020_12_22.13_53_30_ETC2_CHUNK/211_108_0/4_BC_UTM_WGS84'},
-                'type': 'warning'
+                'type': 'error'
             },
             {
                 'message': 'This folder is valid, but it is empty.',
@@ -1235,9 +1224,7 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
 
         expected = [{
             'message': 'This folder is valid, but it is empty.',
-            'metadata': {
-                'folder': '/TIFF/CBERS4A/2021_01/CBERS_4A_MUX_RAW_2021_01_01.13_48_30_ETC2/209_105_0/4_BC_UTM_WGS84'
-            },
+            'metadata': {'folder': '/TIFF/CBERS4A/2021_01/CBERS_4A_MUX_RAW_2021_01_01.13_48_30_ETC2/209_105_0/4_BC_UTM_WGS84'},
             'type': 'warning'
         }]
 
@@ -1259,11 +1246,9 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
         }
 
         expected = [{
-            'type': 'warning',
             'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-            'metadata': {
-                'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'
-            }
+            'metadata': {'folder': '/TIFF/CBERS4A/2019_12/CBERS_4A_MUX_RAW_2019_12_28.14_15_00/221_108_0/4_BC_UTM_WGS84'},
+            'type': 'error'
         }]
 
         self.get(query_string=query)
@@ -1606,13 +1591,11 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
             'end_date': '2050-12-31'
         }
 
-        expected = [
-            {
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/LANDSAT1/1976_10/LANDSAT1_MSS_19761002.120000/010_057_0/2_BC_UTM_WGS84'},
-                'type': 'warning'
-            }
-        ]
+        expected = [{
+            'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+            'metadata': {'folder': '/TIFF/LANDSAT1/1976_10/LANDSAT1_MSS_19761002.120000/010_057_0/2_BC_UTM_WGS84'},
+            'type': 'error'
+        }]
 
         self.get(query_string=query)
 
@@ -1657,11 +1640,9 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
         }
 
         expected = [{
-            'type': 'warning',
             'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-            'metadata': {
-                'folder': '/TIFF/LANDSAT1/1976_10/LANDSAT1_MSS_19761002.120000/010_057_0/2_BC_UTM_WGS84'
-            }
+            'metadata': {'folder': '/TIFF/LANDSAT1/1976_10/LANDSAT1_MSS_19761002.120000/010_057_0/2_BC_UTM_WGS84'},
+            'type': 'error'
         }]
 
         self.get(query_string=query)
@@ -1678,13 +1659,11 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
             'end_date': '2050-12-31'
         }
 
-        expected = [
-            {
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/LANDSAT2/1975_07/LANDSAT2_MSS_19750724.123000/230_070_0/2_BC_UTM_WGS84'},
-                'type': 'warning'
-            }
-        ]
+        expected = [{
+            'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+            'metadata': {'folder': '/TIFF/LANDSAT2/1975_07/LANDSAT2_MSS_19750724.123000/230_070_0/2_BC_UTM_WGS84'},
+            'type': 'error'
+        }]
 
         self.get(query_string=query)
 
@@ -1730,10 +1709,8 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
 
         expected = [{
             'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-            'metadata': {
-                'folder': '/TIFF/LANDSAT2/1975_07/LANDSAT2_MSS_19750724.123000/230_070_0/2_BC_UTM_WGS84'
-            },
-            'type': 'warning'
+            'metadata': {'folder': '/TIFF/LANDSAT2/1975_07/LANDSAT2_MSS_19750724.123000/230_070_0/2_BC_UTM_WGS84'},
+            'type': 'error'
         }]
 
         self.get(query_string=query)
@@ -1750,13 +1727,11 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
             'end_date': '2050-12-31'
         }
 
-        expected = [
-            {
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/LANDSAT3/1982_08/LANDSAT3_MSS_19820802.120000/231_072_0/2_BC_UTM_WGS84'},
-                'type': 'warning'
-            }
-        ]
+        expected = [{
+            'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+            'metadata': {'folder': '/TIFF/LANDSAT3/1982_08/LANDSAT3_MSS_19820802.120000/231_072_0/2_BC_UTM_WGS84'},
+            'type': 'error'
+        }]
 
         self.get(query_string=query)
 
@@ -1802,10 +1777,8 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
 
         expected = [{
             'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-            'metadata': {
-                'folder': '/TIFF/LANDSAT3/1982_08/LANDSAT3_MSS_19820802.120000/231_072_0/2_BC_UTM_WGS84'
-            },
-            'type': 'warning'
+            'metadata': {'folder': '/TIFF/LANDSAT3/1982_08/LANDSAT3_MSS_19820802.120000/231_072_0/2_BC_UTM_WGS84'},
+            'type': 'error'
         }]
 
         self.get(query_string=query)
@@ -1822,13 +1795,11 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
             'end_date': '2050-12-31'
         }
 
-        expected = [
-            {
-                'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-                'metadata': {'folder': '/TIFF/LANDSAT5/1984_04/LANDSAT5_TM_19840406.124930/223_062_0/2_BC_UTM_WGS84'},
-                'type': 'warning'
-            }
-        ]
+        expected = [{
+            'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
+            'metadata': {'folder': '/TIFF/LANDSAT5/1984_04/LANDSAT5_TM_19840406.124930/223_062_0/2_BC_UTM_WGS84'},
+            'type': 'error'
+        }]
 
         self.get(query_string=query)
 
@@ -1875,7 +1846,7 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
         expected = [{
             'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
             'metadata': {'folder': '/TIFF/LANDSAT5/1984_04/LANDSAT5_TM_19840406.124930/223_062_0/2_BC_UTM_WGS84'},
-            'type': 'warning'
+            'type': 'error'
         }]
 
         self.get(query_string=query)
@@ -1896,12 +1867,12 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
             {
                 'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/LANDSAT7/1999_07/LANDSAT7_ETM_19990719.124008/217_064_0/2_BC_UTM_WGS84'},
-                'type': 'warning'
+                'type': 'error'
             },
             {
                 'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/LANDSAT7/2003_06/LANDSAT7_ETM_20030601.125322/220_061_0/2_BC_UTM_WGS84'},
-                'type': 'warning'
+                'type': 'error'
             }
         ]
 
@@ -1948,11 +1919,9 @@ class ApiPublishLandsatOkTestCase(BaseTestCases.ApiBaseTestCase):
         }
 
         expected = [{
-            'type': 'warning',
             'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
-            'metadata': {
-                'folder': '/TIFF/LANDSAT7/1999_07/LANDSAT7_ETM_19990719.124008/217_064_0/2_BC_UTM_WGS84'
-            }
+            'metadata': {'folder': '/TIFF/LANDSAT7/1999_07/LANDSAT7_ETM_19990719.124008/217_064_0/2_BC_UTM_WGS84'},
+            'type': 'error'
         }]
 
         self.get(query_string=query)

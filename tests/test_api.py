@@ -126,6 +126,18 @@ class AsyncApiPublishOkTestCase(BaseTestCases.ApiBaseTestCase):
 
         expected = [
             {
+                'message': ('There is metadata to the `CBERS4A_XYZ_L4_DN` collection, however '
+                            'this collection does not exist in the database.'),
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_XYZ_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84'},
+                'type': 'error'
+            },
+            {
+                'message': ('There is metadata to the `CBERS4A_XYZ_L4_SR` collection, however '
+                            'this collection does not exist in the database.'),
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_XYZ_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84'},
+                'type': 'error'
+            },
+            {
                 'message': 'There is NOT a L4 JSON file (i.e. `*h5_*.json`) in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2021_06/CBERS_4A_WFI_RAW_2021_06_15.13_45_00_ETC2/207_132_0/4_BC_UTM_WGS84'},
                 'type': 'error'
@@ -1060,6 +1072,18 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
 
         expected = [
             {
+                'message': ('There is metadata to the `CBERS4A_XYZ_L4_DN` collection, however '
+                            'this collection does not exist in the database.'),
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_XYZ_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84'},
+                'type': 'error'
+            },
+            {
+                'message': ('There is metadata to the `CBERS4A_XYZ_L4_SR` collection, however '
+                            'this collection does not exist in the database.'),
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_XYZ_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84'},
+                'type': 'error'
+            },
+            {
                 'message': 'There is NOT a L4 JSON file (i.e. `*h5_*.json`) in this folder, then it will be ignored.',
                 'metadata': {'folder': '/TIFF/CBERS4A/2021_06/CBERS_4A_WFI_RAW_2021_06_15.13_45_00_ETC2/207_132_0/4_BC_UTM_WGS84'},
                 'type': 'error'
@@ -1577,6 +1601,41 @@ class ApiPublishCbers4AOkTestCase(BaseTestCases.ApiBaseTestCase):
 
         self.check_if_the_items_table_is_empty()
         self.check_if_the_errors_have_been_added_in_the_database(expected=[])
+
+    # CBERS4A XYZ
+
+    def test__api_publish__ok__cbers4a_xyz_l4_dn_and_sr__collection_does_not_exist(self):
+        # CBERS4A/2020_12/CBERS_4A_XYZ_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84/
+        query = {
+            'satellite': 'cbers4a',
+            'sensor': 'XyZ',
+            'start_date': '2020-12-07',
+            'end_date': '2020-12-07',
+            'path': '214',
+            'row': '108',
+            'geo_processing': '4'
+            # radio processing is empty in order to try to publish both `DN` and `SR` files
+        }
+
+        expected = [
+            {
+                'message': ('There is metadata to the `CBERS4A_XYZ_L4_DN` collection, however '
+                            'this collection does not exist in the database.'),
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_XYZ_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84'},
+                'type': 'error'
+            },
+            {
+                'message': ('There is metadata to the `CBERS4A_XYZ_L4_SR` collection, however '
+                            'this collection does not exist in the database.'),
+                'metadata': {'folder': '/TIFF/CBERS4A/2020_12/CBERS_4A_XYZ_RAW_2020_12_07.14_03_00_ETC2/214_108_0/4_BC_UTM_WGS84'},
+                'type': 'error'
+            }
+        ]
+
+        self.get(query_string=query)
+
+        self.check_if_the_items_table_is_empty()
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
 
 
 @mock.patch(*celery_sync)

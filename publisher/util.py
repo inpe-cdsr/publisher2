@@ -317,14 +317,17 @@ def create_item_and_get_insert_clauses(dir_path, metadata, assets, df_collection
         # if `collection` is an empty dataframe, a collection was not found by its name,
         # then save the warning and ignore it
         if len(collection.index) == 0:
-            # check if the collection has not already been added to the errors list
-            if not any(e['metadata']['collection'] == item['collection']['name'] \
-                        for e in errors_insert):
+            # create a substring to check if this message has already been added to the list
+            sub_message = f"There is metadata to the `{item['collection']['name']}` collection"
+
+            # check if the collection has not already been added to the errors list.
+            # prevent inserting the same message twice
+            if not any(sub_message in error_insert for error_insert in errors_insert):
                 errors_insert.append(
                     PostgreSQLPublisherConnection.create_task_error_insert_clause({
                         'message': (
-                            f'There is metadata to the `{item["collection"]["name"]}` collection, '
-                            'however this collection does not exist in the database.'
+                            f"There is metadata to the `{item['collection']['name']}` collection,"
+                            ' however this collection does not exist in the database.'
                         ),
                         'metadata': {'folder': dir_path},
                         'type': 'error'

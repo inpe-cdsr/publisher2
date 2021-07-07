@@ -2,7 +2,7 @@ from copy import deepcopy
 from datetime import datetime, timedelta
 from glob import glob
 from json import loads
-from numpy import nan as NaN, isnan
+from numpy import isnan
 from os import walk
 from os.path import abspath, dirname, join as os_path_join, sep as os_path_sep
 from re import search
@@ -177,15 +177,15 @@ def get_file_path_from_assets(assets, file_type='tiff'):
                 xml_path = v['href']
                 if 'BAND' in xml_path and 'RIGHT' not in xml_path \
                         and 'LEFT' not in xml_path:
-                    return  xml_path
+                    return xml_path
+
     # else, if there are just files with `RIGHT` and `LEFT` string,
     # then return it in the next loop
-
     for k, v in assets.items():
         # check if the asset is the selected `file_type`
         if file_type in v['type'] and 'BAND' in v['href']:
             # and return the first one path that is found
-            return  v['href']
+            return v['href']
 
     return None
 
@@ -327,7 +327,7 @@ def create_item_and_get_insert_clauses(dir_path, metadata, assets, df_collection
                             'however this collection does not exist in the database.'
                         ),
                         'metadata': {'folder': dir_path},
-                        'type': 'warning'
+                        'type': 'error'
                     })
                 )
             continue
@@ -377,10 +377,10 @@ class PublisherWalk:
         # create an iterator from generator method
         self.__generator_iterator = self.__generator()
 
-    def __create_assets_from_metadata(self, assets_matadata, dir_path):
+    def __create_assets_from_metadata(self, assets_matadata, dir_path, metadata):
         '''Create assets object based on assets metadata.'''
 
-        # search for all files that end with `.png`
+        # search for all files that end with `*.png`
         png_files = glob(f'{dir_path}/*.png')
 
         if not png_files:
@@ -388,10 +388,27 @@ class PublisherWalk:
                 PostgreSQLPublisherConnection.create_task_error_insert_clause({
                     'message': 'There is NOT a quicklook in this folder, then it will be ignored.',
                     'metadata': {'folder': dir_path},
-                    'type': 'warning'
+                    'type': 'error'
                 })
             )
             return None
+
+        # if this folder is WFI/L4, then this folder must contain `*h5_*.json` files
+        if metadata['geo_processing'] == '4' and \
+                (metadata['sensor'] == 'WFI' or metadata['sensor'] == 'AWFI'):
+            # search for all files that end with `*h5_*.json`
+            l4_json_files = glob(f'{dir_path}/*h5_*.json')
+
+            if not l4_json_files:
+                self.errors_insert.append(
+                    PostgreSQLPublisherConnection.create_task_error_insert_clause({
+                        'message': 'There is NOT a L4 JSON file (i.e. `*h5_*.json`) in this folder, '
+                                   'then it will be ignored.',
+                        'metadata': {'folder': dir_path},
+                        'type': 'error'
+                    })
+                )
+                return None
 
         # initialize `assets` object with the `thumbnail` key
         assets = {
@@ -417,7 +434,7 @@ class PublisherWalk:
                         'message': ('There is NOT a TIFF file in this folder that ends with the '
                                     f'`{band_template}` template, then it will be ignored.'),
                         'metadata': {'folder': dir_path},
-                        'type': 'warning'
+                        'type': 'error'
                     })
                 )
                 return None
@@ -445,16 +462,16 @@ class PublisherWalk:
                     if not json_files:
                         self.errors_insert.append(
                             PostgreSQLPublisherConnection.create_task_error_insert_clause({
-                                'type': 'warning',
                                 'message': ('There is NOT a JSON file in this folder that ends with the '
                                             f"`{band_template.replace('.tif', '.json')}` template, "
                                             'then it will be ignored.'),
-                                'metadata': {'folder': dir_path}
+                                'metadata': {'folder': dir_path},
+                                'type': 'error'
                             })
                         )
                         return None
 
-                    # add XML file as an asset
+                    # add JSON file as an asset
                     assets[band_name + '_json'] = {
                         'href': json_files[0],
                         'type': 'application/json',
@@ -470,11 +487,11 @@ class PublisherWalk:
             if not xml_files:
                 self.errors_insert.append(
                     PostgreSQLPublisherConnection.create_task_error_insert_clause({
-                        'type': 'warning',
                         'message': ('There is NOT an XML file in this folder that ends with the '
                                     f"`{band_template.replace('.tif', '.xml')}` template, "
                                     'then it will be ignored.'),
-                        'metadata': {'folder': dir_path}
+                        'metadata': {'folder': dir_path},
+                        'type': 'error'
                     })
                 )
                 return None
@@ -523,7 +540,7 @@ class PublisherWalk:
                         PostgreSQLPublisherConnection.create_task_error_insert_clause({
                             'message': error,
                             'metadata': {'folder': dir_path, 'method': 'check_scene_dir'},
-                            'type': 'warning'
+                            'type': 'error'
                         })
                     )
                     return None
@@ -561,7 +578,7 @@ class PublisherWalk:
                         PostgreSQLPublisherConnection.create_task_error_insert_clause({
                             'message': error,
                             'metadata': {'folder': dir_path, 'method': 'check_path_row_dir'},
-                            'type': 'warning'
+                            'type': 'error'
                         })
                     )
                     return None
@@ -668,7 +685,7 @@ class PublisherWalk:
                 )
 
                 # if there is not a valid asset, then ignore it
-                __assets = self.__create_assets_from_metadata(assets_metadata, dir_path)
+                __assets = self.__create_assets_from_metadata(assets_metadata, dir_path, metadata)
                 if not __assets:
                     continue
 
@@ -743,4 +760,4 @@ class SatelliteMetadata:
 
         # if a sensor has been found, then get the unique value inside the list
         # and return assets metadata based on the radiometric processing (i.e. DN or SR)
-        return  sensor[0]['assets'][radio_processing]
+        return sensor[0]['assets'][radio_processing]

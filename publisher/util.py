@@ -396,11 +396,20 @@ class PublisherWalk:
             )
             return None
 
+        # initialize `assets` object with the `thumbnail` key
+        assets = {
+            'thumbnail': {
+                'href': png_files[0],
+                'type': 'image/png',
+                'roles': ['thumbnail']
+            }
+        }
+
         # if this folder is WFI/L4, then this folder must contain `*h5_*.json` files
         if metadata['geo_processing'] == '4' and \
                 (metadata['sensor'] == 'WFI' or metadata['sensor'] == 'AWFI'):
             # search for all files that end with `*h5_*.json`
-            l4_json_files = glob(f'{dir_path}/*h5_*.json')
+            l4_json_files = sorted(glob(f'{dir_path}/*.h5_*.json'))
 
             if not l4_json_files:
                 self.errors_insert.append(
@@ -413,14 +422,19 @@ class PublisherWalk:
                 )
                 return None
 
-        # initialize `assets` object with the `thumbnail` key
-        assets = {
-            'thumbnail': {
-                'href': png_files[0],
-                'type': 'image/png',
-                'roles': ['thumbnail']
-            }
-        }
+            # # if there are L4 JSON files, then add them to the assets dict
+            for l4_json_file in l4_json_files:
+                # l4_json_file example:
+                # '/TIFF/CBERS4A/2020_11/.../4_BC_UTM_WGS84/CBERS_4A_WFI_20201122_217_156.h5_0.json'
+                # first get the file name, then get the `h5_N` part from the file name
+                # the asset name should be something like `h5_N_json`
+                # (e.g. either h5_0_json or h5_1_json)
+                asset_name = f"{l4_json_file.split('/')[-1].split('.')[1]}_json"
+                assets[asset_name] = {
+                    'href': l4_json_file,
+                    'type': 'application/json',
+                    'roles': ['metadata']
+                }
 
         for band, band_template in assets_matadata.items():
             # search for all TIFF files based on a template with `band_template`

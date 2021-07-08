@@ -453,6 +453,26 @@ class ApiPublishAmazonia1OkTestCase(BaseTestCases.ApiBaseTestCase):
         )
         self.check_if_the_errors_have_been_added_in_the_database(expected)
 
+    def test__api_publish__ok__amazonia1_wfi_l4_sr(self):
+        # AMAZONIA1/2021_04/AMAZONIA_1_WFI_DRD_2021_04_01.13_22_45_CP5_COROT/035_016_0
+        query = {
+            'satellite': 'AMAzoNIa1',
+            'sensor': 'wFi',
+            'start_date': '2021-04-01',
+            'end_date': '2021-04-05',
+            'path': '035',
+            'row': 16,
+            # 'geo_processing': '2',
+            'radio_processing': 'SR'
+        }
+
+        self.get(query_string=query)
+
+        self.check_if_the_errors_have_been_added_in_the_database(expected=[])
+        self.check_if_the_items_have_been_added_in_the_database(
+            'amazonia1/test__api_publish__ok__amazonia1_wfi_l4_sr.csv'
+        )
+
 
 @mock.patch(*celery_sync)
 class ApiPublishCbers2BOkTestCase(BaseTestCases.ApiBaseTestCase):

@@ -58,10 +58,10 @@ class AsyncPublisherOkTestCase(BaseTestCases.BaseTestCase):
 
         AsyncPublisherOkTestCase._create_and_execute_publisher(query)
 
+        self.check_if_the_errors_have_been_added_in_the_database(expected)
         self.check_if_the_items_have_been_added_in_the_database(
             'amazonia1/test__api_publish__ok__amazonia1.csv'
         )
-        self.check_if_the_errors_have_been_added_in_the_database(expected)
 
     # CBERS2B
 
